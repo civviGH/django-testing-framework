@@ -1,0 +1,17 @@
+front page:
+    list projects
+    for each project, show the last 5 tests
+
+
+db:
+    project:
+        id, name
+    test:
+        id, project_id, name, date_performed, successful, amount_success, amount_fail
+    test_result_type:   does this need to be in the db?
+        id, name
+
+api:
+    create_new_project
+    submit_test_results
+    create_new_test

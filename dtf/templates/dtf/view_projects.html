@@ -1,0 +1,44 @@
+{% extends 'dtf/base.html' %}
+
+{% block body %}
+
+<div class="bg-white sticky-top pt-3 pb-1">
+
+<nav>
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item active" aria-current="page">
+        Project List
+    </li>
+  </ol>
+</nav>
+
+<h2>List of all projects:</h2>
+
+</div>
+
+<table class="table table-striped table-hover tablesorter">
+    <thead>
+    <tr>
+        <th class="noselect">
+            Projektname
+        </th>
+        <th class="noselect">
+            Project ID
+        </th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for project in projects %}
+    <tr onclick="window.location='{% url 'project_details' project.name %}';" style="cursor:pointer">
+        <td>
+            {{ project.name }}
+        </td>
+        <td>
+            {{ project.id }}
+        </td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+{% endblock %}

@@ -1,0 +1,7 @@
+django==3.1b1
+djangorestframework
+Pillow
+sphinx
+sphinx_hand_theme
+Requests
+pylint-django

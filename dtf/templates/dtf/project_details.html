@@ -1,0 +1,65 @@
+{% extends 'dtf/base.html' %}
+
+{% load dtf.custom_filters %}
+
+{% block body %}
+
+<div class="bg-white sticky-top pt-3 pb-1">
+
+<nav>
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item" aria-current="page">
+        <a href="{% url 'projects' %}">Project List</a>
+    </li>
+    <li class="breadcrumb-item active" aria-current="page">{{project.name}}</li>
+  </ol>
+</nav>
+
+<div class="page-header">
+    <div class="w-100">
+        <h1>Submissions for {{project.name}}</h1>
+    </div>
+</div>
+
+</div>
+
+<table class="table table-striped table-hover table-sm tablesorter">
+    <thead>
+    <tr>
+        <th class="noselect">
+            Created on
+        </th>
+        <th class="noselect">
+            Last updated on
+        </th>
+        <th class="noselect">
+            ID
+        </th>
+        <th>
+            Additional Information
+        </th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for submission in submissions|dictsortreversed:"id" %}
+    <tr onclick="window.location='{% url 'submission_details' submission.pk %}';" style="cursor:pointer">
+        <td>
+            {{ submission.created }}
+        </td>
+        <td>
+            {{ submission.updated }}
+        </td>
+        <td>
+            {{ submission.pk }}
+        </td>
+        <td>
+            <div>
+                {{ submission.info|parse_json }}
+            </div>
+        </td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+{% endblock %}

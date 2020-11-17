@@ -1,0 +1,62 @@
+{% extends 'dtf/base.html' %}
+
+{% load dtf.custom_filters %}
+
+{% block body %}
+
+<div class="bg-white sticky-top pt-3 pb-1">
+
+<nav>
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item" aria-current="page">
+        <a href="{% url 'projects' %}">Project List</a>
+    </li>
+    <li class="breadcrumb-item" aria-current="page">
+        <a href="{% url 'project_details' submission.project.name %}">{{submission.project.name}}</a>
+    </li>
+    <li class="breadcrumb-item active" aria-current="page">{{submission.id}}</li>
+  </ol>
+</nav>
+
+<div class="page-header">
+    <div class="w-100">
+        <h1>Submission {{ submission.pk }} in {{ submission.project.name}}</h1>
+    </div>
+</div>
+
+{% include 'dtf/filter-box.html' %}
+
+</div>
+
+<table class="table table-striped table-hover table-sm tablesorter">
+    <thead>
+    <tr>
+        <th class="noselect">
+            Test Status
+        </th>
+        <th class="noselect">
+            Test Name
+        </th>
+        <th class="noselect">
+            Date
+        </th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for test in submission.tests.all %}
+    <tr onclick="window.location='{% url 'test_result_details' test.pk %}'" style="cursor:pointer">
+        <td>
+            {{ test.status|color_status_text }}
+        </td>
+        <td>
+            {{ test.name }}
+        </td>
+        <td>
+            {{ test.first_submitted }}
+        </td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+{% endblock %}

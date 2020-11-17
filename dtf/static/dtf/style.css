@@ -1,0 +1,37 @@
+input[type=checkbox] {
+    transform: scale(1.2);
+}
+
+.ref_link {
+    display: block;
+    width: 100%;
+}
+
+label {
+    cursor: pointer;
+    user-select: none;
+}
+
+img {
+    max-width: 100%;
+}
+
+.breadcrumb-item + .breadcrumb-item::before {
+    content: ">";
+}
+
+.infospan {
+    width: 50%;
+    display: inline-block;
+}
+
+/* https://stackoverflow.com/questions/826782/how-to-disable-text-selection-highlighting */
+.noselect {
+    -webkit-touch-callout: none; /* iOS Safari */
+      -webkit-user-select: none; /* Safari */
+       -khtml-user-select: none; /* Konqueror HTML */
+         -moz-user-select: none; /* Old versions of Firefox */
+          -ms-user-select: none; /* Internet Explorer/Edge */
+              user-select: none; /* Non-prefixed version, currently
+                                    supported by Chrome, Edge, Opera and Firefox */
+  }
