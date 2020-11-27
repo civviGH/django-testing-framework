@@ -1,2 +1,10 @@
+# Python specific
 **__pycache__**
-docs/.vscode
+env/
+
+# VS Code configuration files
+**.vscode
+
+# Django specific
+db.sqlite3
+
