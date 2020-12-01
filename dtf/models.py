@@ -50,7 +50,7 @@ class Project(models.Model):
         # most recent
         most_recent_test = same_project_tests.order_by("-submission__id").first()
         nav_data["most_recent"]["id"] = most_recent_test.id
-        return nav_data
+        return nav_data, same_project_tests
 
     def __str__(self):
         return f"{self.name} [id = {self.id}]"

@@ -51,6 +51,92 @@ function toggleAllBoxes(){
     }
 }
 
+var graph_data = {{graph_data|safe}}
+
+function plot_history(parameter_name){
+    // prepare render data
+    var data = graph_data[parameter_name].map(function (currentObject) {
+        return {
+            x: new Date(currentObject.x),
+            // x: Math.floor(Math.random() * 10),
+            y: parseFloat(currentObject.y)
+        };
+    });
+
+    // debug
+    console.log(data);
+
+    // delete any existing chart
+    Chart.helpers.each(Chart.instances, function(instance){
+        instance.destroy();
+    })
+
+    // plot the new chart
+    var ctx = document.getElementById('myChart').getContext('2d');
+    var myLineChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            datasets: [{
+                label: parameter_name,
+                fill: false,
+                lineTension: 0,
+                borderWidth: 3,
+                data: data
+            }]
+        },
+        options: {
+				responsive: false,
+				title: {
+					display: true,
+					text: 'History'
+				},
+				tooltips: {
+					mode: 'index',
+					intersect: false,
+				},
+				hover: {
+					mode: 'nearest',
+					intersect: true
+				},
+				scales: {
+					// xAxes: [{
+                    //     type: 'time',
+					// 	display: true,
+					// 	scaleLabel: {
+					// 		display: true,
+					// 		labelString: 'Date'
+					// 	}
+					// }],
+
+                    xAxes: [{
+                        type: 'time',
+                        time: {
+                            displayFormats: {
+                                'millisecond': 'MMM DD',
+                                'second': 'MMM DD',
+                                'minute': 'MMM DD',
+                                'hour': 'MMM DD',
+                                'day': 'MMM DD',
+                                'week': 'MMM DD',
+                                'month': 'MMM DD',
+                                'quarter': 'MMM DD',
+                                'year': 'MMM DD',
+                            }
+                        }
+                    }],
+					yAxes: [{
+						display: true,
+						scaleLabel: {
+							display: true,
+							labelString: 'Value'
+						}
+					}]
+				}
+			}
+    });
+}
+
+
 </script>
 
 <div class="bg-white sticky-top pt-3 pb-1">
@@ -111,6 +197,11 @@ function toggleAllBoxes(){
 
 </div>
 
+<!-- testing  -->
+<div class="chart-container" style="height:400; width:400">
+    <canvas id="myChart" width="400" height="400"></canvas>
+</div>
+
 <table class="table table-striped table-hover table-sm tablesorter">
     <thead>
     <tr>
@@ -136,7 +227,7 @@ function toggleAllBoxes(){
     </thead>
     <tbody>
     {% for parameter in data %}
-        <tr>
+        <tr onclick="plot_history('{{ parameter.name }}')" style="cursor:pointer">
             <td>
                 {{ parameter.status|color_status_text }}
             </td>
