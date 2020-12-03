@@ -22,6 +22,7 @@ class ProjectSerializer(serializers.Serializer):
     """
     id = serializers.IntegerField(required=False)
     name = serializers.CharField(max_length=100, required=True)
+    slug = serializers.SlugField(max_length=40, required=True)
 
     def create(self, validated_data):
         return Project.objects.create(**validated_data)
