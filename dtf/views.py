@@ -12,6 +12,7 @@ from dtf.serializers import ProjectSerializer
 from dtf.serializers import TestResultSerializer
 from dtf.serializers import TestReferenceSerializer
 from dtf.serializers import SubmissionSerializer
+from dtf.serializers import ProjectSubmissionPropertySerializer
 from dtf.models import TestResult, Project, TestReference, Submission, ProjectSubmissionProperty
 from dtf.functions import create_view_data_from_test_references, get_project_by_id_or_slug
 from dtf.forms import NewProjectForm, ProjectSettingsForm, ProjectSubmissionPropertyForm
@@ -147,6 +148,50 @@ def project(request, id):
 
     elif request.method == 'DELETE':
         project.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+@api_view(["GET", "POST"])
+def project_submission_properties(request, project_id):
+    project = get_project_by_id_or_slug(project_id)
+    if project is None:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+
+    if request.method == 'GET':
+        properties = ProjectSubmissionProperty.objects.filter(project=project).order_by('-pk')
+        serializer = ProjectSubmissionPropertySerializer(properties, many=True)
+        return Response(serializer.data, status.HTTP_200_OK)
+
+    elif request.method == 'POST':
+        request.data['project_id'] = project.id
+        serializer = ProjectSubmissionPropertySerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status.HTTP_400_BAD_REQUEST)
+
+@api_view(["GET", "PUT", "DELETE"])
+def project_submission_property(request, project_id, property_id):
+    project = get_project_by_id_or_slug(project_id)
+    if project is None:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+    try:
+        prop = ProjectSubmissionProperty.objects.get(project=project, pk=property_id)
+    except ProjectSubmissionProperty.DoesNotExist:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+
+    if request.method == 'GET':
+        serializer = ProjectSubmissionPropertySerializer(prop)
+        return Response(serializer.data)
+
+    elif request.method == 'PUT':
+        serializer = ProjectSubmissionPropertySerializer(prop, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    elif request.method == 'DELETE':
+        prop.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 @api_view(["GET"])
