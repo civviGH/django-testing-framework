@@ -59,6 +59,25 @@ class Project(models.Model):
     class Meta:
         app_label = 'dtf'
 
+class ProjectSubmissionProperty(models.Model):
+    project = models.ForeignKey(Project, on_delete=models.SET_NULL, null=True)
+
+    name = models.CharField(max_length=100, blank=False)
+    required = models.BooleanField(default=False)
+    display = models.BooleanField(default=True)
+    display_replace = models.CharField(max_length=100, blank=True)
+    display_as_link = models.BooleanField(default=False)
+    influence_reference = models.BooleanField(default=False)
+
+    class Meta:
+        app_label = 'dtf'
+        constraints = [
+            models.UniqueConstraint(
+                fields=['project', 'name'], 
+                name='unique_submission_property'
+            )
+        ]
+
 class Submission(models.Model):
     """
     Test results get grouped in submissions.
