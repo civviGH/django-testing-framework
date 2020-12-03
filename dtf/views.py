@@ -1,5 +1,7 @@
 from django.shortcuts import render, get_object_or_404
 from django.db import IntegrityError
+from django.http import HttpResponseRedirect
+from django.urls import reverse
 
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -11,7 +13,7 @@ from dtf.serializers import TestReferenceSerializer
 from dtf.serializers import SubmissionSerializer
 from dtf.models import TestResult, Project, TestReference, Submission
 from dtf.functions import create_view_data_from_test_references
-
+from dtf.forms import NewProjectForm
 
 """
 User views
@@ -24,6 +26,18 @@ def frontpage(request):
 def view_projects(request):
     projects = Project.objects.order_by('-name')
     return render(request, 'dtf/view_projects.html', {'projects':projects})
+
+def view_new_project(request):
+    if request.method == 'POST':
+        form = NewProjectForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return HttpResponseRedirect(reverse('projects'))
+    else:
+        form = NewProjectForm()
+    return render(request, 'dtf/new_project.html', {
+        'form': form}
+    )
 
 def view_project_details(request, project_slug):
     project = get_object_or_404(Project, slug=project_slug)
