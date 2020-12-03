@@ -16,9 +16,10 @@ from django.test import TestCase, Client
 from django.urls import reverse
 from django.utils.text import slugify
 
-from dtf.models import Project, TestResult, TestReference, Submission
+from dtf.models import Project, TestResult, TestReference, Submission, ProjectSubmissionProperty
 from dtf.serializers import ProjectSerializer
 from dtf.serializers import TestResultSerializer
+from dtf.serializers import ProjectSubmissionPropertySerializer
 
 client = Client()
 
@@ -105,9 +106,10 @@ class ProjectsApiTest(ApiTestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_get_projects(self):
-        _ = self.create_project('Test Project')
+        _ = self.create_project('Test Project 1')
+        _ = self.create_project('Test Project 2')
         response = client.get(reverse('api_projects'))
-        projects = Project.objects.all()
+        projects = Project.objects.order_by('-pk')
         serializer = ProjectSerializer(projects, many=True)
         self.assertEqual(response.data, serializer.data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -166,6 +168,101 @@ class ProjectApiTest(ApiTestCase):
 
     def test_delete_project(self):
         response = client.delete(reverse('api_project', kwargs={'id' : self.project_1_id}))
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(Project.objects.count(), 1)
+
+class ProjectSubmissionPropertiesApiTest(ApiTestCase):
+    def setUp(self):
+        _, data = self.create_project("Test Project", "test-project")
+        self.project_id = data['id']
+        self.url = reverse('api_project_submission_properties', kwargs={'project_id' : self.project_id})
+
+    def test_create(self):
+        min_payload = {
+            'name' : "Property 1",
+        }
+        response, data = self.post(self.url, min_payload)
+        self.assertEqual(ProjectSubmissionProperty.objects.count(), 1)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(data['id'], 1)
+        self.assertEqual(data['name'], min_payload['name'])
+
+        full_payload = {
+            'name' : "Property 2",
+            'required' : True,
+            'display' : False,
+            'display_replace' : "New {VALUE}",
+            'display_as_link' : True,
+            'influence_reference' : True,
+        }
+        response, data = self.post(self.url, full_payload)
+        self.assertEqual(ProjectSubmissionProperty.objects.count(), 2)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(data['id'], 2)
+        self.assertEqual(data['name'], full_payload['name'])
+        self.assertEqual(data['required'], full_payload['required'])
+        self.assertEqual(data['display'], full_payload['display'])
+        self.assertEqual(data['display_replace'], full_payload['display_replace'])
+        self.assertEqual(data['display_as_link'], full_payload['display_as_link'])
+        self.assertEqual(data['influence_reference'], full_payload['influence_reference'])
+
+    def test_get(self):
+        self.post(self.url, {'name' : "Property 1"})
+        self.post(self.url, {'name' : "Property 2"})
+        response = client.get(self.url)
+        properties = ProjectSubmissionProperty.objects.order_by('-pk')
+        serializer = ProjectSubmissionPropertySerializer(properties, many=True)
+        self.assertEqual(response.data, serializer.data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+class ProjectSubmissionPropertyApiTest(ApiTestCase):
+    def setUp(self):
+        _, data = self.create_project("Test Project", "test-project")
+        self.project_id = data['id']
+        create_url = reverse('api_project_submission_properties', kwargs={'project_id' : self.project_id})
+
+        response, data = self.post(create_url, {'name' : "Property 1"})
+        self.property_1_id = data['id']
+        self.url_1 = reverse('api_project_submission_property', kwargs={'project_id' : self.project_id, 'property_id' : self.property_1_id})
+        self.property_1 = ProjectSubmissionProperty.objects.get(id=self.property_1_id)
+
+        response, data = self.post(create_url, {'name' : "Property 2"})
+        self.property_2_id = data['id']
+        self.url_2 = reverse('api_project_submission_property', kwargs={'project_id' : self.project_id, 'property_id' : self.property_2_id})
+        self.property_2 = ProjectSubmissionProperty.objects.get(id=self.property_2_id)
+
+    def test_get(self):
+        response = client.get(self.url_1)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        serializer = ProjectSubmissionPropertySerializer(self.property_1)
+        self.assertEqual(response.data, serializer.data)
+
+        response = client.get(self.url_2)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        serializer = ProjectSubmissionPropertySerializer(self.property_2)
+        self.assertEqual(response.data, serializer.data)
+
+    def test_get_invalid(self):
+        response = client.get(reverse('api_project_submission_property', kwargs={'project_id' : "invalid", 'property_id' : self.property_1_id}))
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+        response = client.get(reverse('api_project_submission_property', kwargs={'project_id' : self.project_id, 'property_id' : 123}))
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_modify(self):
+        response = client.get(self.url_1)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        new_name = "Property 1 New Name"
+        response.data['name'] = new_name
+        response, data = self.put(self.url_1, response.data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        property_1 = ProjectSubmissionProperty.objects.get(id=self.property_1_id)
+        self.assertEqual(property_1.name, new_name)
+
+    def test_delete_project(self):
+        response = client.delete(self.url_1)
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertEqual(Project.objects.count(), 1)
 

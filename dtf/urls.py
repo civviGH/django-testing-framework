@@ -23,6 +23,9 @@ urlpatterns = [
     path('api/projects', views.projects, name='api_projects'),
     path('api/projects/<str:id>', views.project, name='api_project'),
 
+    path('api/projects/<str:project_id>/properties', views.project_submission_properties, name='api_project_submission_properties'),
+    path('api/projects/<str:project_id>/properties/<str:property_id>', views.project_submission_property, name='api_project_submission_property'),
+
     path('api/create_submission', views.create_submission, name='create_submission'),
     path('api/get_submission_by_id/<int:submission_id>',
      views.get_submission_by_id,
