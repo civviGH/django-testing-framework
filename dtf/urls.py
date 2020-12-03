@@ -23,7 +23,7 @@ urlpatterns = [
      views.get_submission_by_id,
      name='get_submission_by_id'),
 
-    path('api/get_reference/<str:project_name>/<str:test_name>',
+    path('api/get_reference/<str:project_slug>/<str:test_name>',
      views.get_reference,
      name='get_reference'),
     path('api/get_reference_by_test_id/<int:test_id>',

@@ -85,13 +85,13 @@ def get_projects(request):
     return Response(serializer.data, status.HTTP_200_OK)
 
 @api_view(["GET"])
-def get_reference(request, project_name, test_name):
+def get_reference(request, project_slug, test_name):
     """
-    Return the references of a test matching the given project and test name
+    Return the references of a test matching the given project slug and test name
     """
     data = TestReference.objects.filter(
         test_name=test_name,
-        project__name=project_name
+        project__slug=project_slug
     )
     serializer = TestReferenceSerializer(data, many=True)
     return Response(serializer.data, status.HTTP_200_OK)
