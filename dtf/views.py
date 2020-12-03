@@ -64,9 +64,11 @@ def view_project_settings(request, project_slug):
 
 def view_project_details(request, project_slug):
     project = get_object_or_404(Project, slug=project_slug)
+    properties = ProjectSubmissionProperty.objects.filter(project=project)
     submissions = Submission.objects.filter(project=project)
     return render(request, 'dtf/project_details.html', {
         'project':project,
+        'properties':properties,
         'submissions':submissions
     })
 
