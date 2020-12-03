@@ -135,15 +135,15 @@ def submit_test_results(request):
 
 @api_view(["POST"])
 def create_project(request):
-    """Looks for a 'name' field in the sent data. If a valid name is found, creates a \
+    """Looks for a 'name' and 'slug' fields in the sent data. If both are valid, creates a \
         new project and returns the id of the project
 
     :param request: The request object that is sent to the view
 
-    :raises [HTTP_400_BAD_REQUEST]: When no 'name' field is found in the post data
+    :raises [HTTP_400_BAD_REQUEST]: When no 'name' or 'slug' field is found in the post data
 
     :return: Returns a json object containing the id of the created project
-        If the project id is 'None' the project name was not unique.
+        If the project id is 'None' the project slug was invalid or not not unique.
         No project was created.
     """
     serializer = ProjectSerializer(data=request.data)

@@ -10,7 +10,8 @@ class Project(models.Model):
 
     Just stores the name of the project to be referenced in submitted test results
     """
-    name = models.CharField(max_length=100, blank=False, unique=True)
+    name = models.CharField(max_length=100, blank=False)
+    slug = models.SlugField(max_length=40, blank=False, unique=True)
 
     def get_nav_data(self, test_name, submission_id):
         nav_data = {

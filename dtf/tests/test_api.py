@@ -14,6 +14,7 @@ from rest_framework import status
 
 from django.test import TestCase, Client
 from django.urls import reverse
+from django.utils.text import slugify
 
 from dtf.models import Project, TestResult, TestReference, Submission
 from dtf.serializers import ProjectSerializer
@@ -39,9 +40,12 @@ class ApiTestCase(TestCase):
         )
         return response, response.data
 
-    def create_project(self, name):
+    def create_project(self, name, slug=None):
+        if slug is None:
+            slug = slugify(name)
         valid_payload = {
-            'name':name
+            'name':name,
+            'slug':slug
         }
         response = client.post(
             '/api/create_project',
@@ -69,17 +73,29 @@ class ProjectApiTest(ApiTestCase):
             'not_a_name':'no name given'
         }
 
-    def test_create_project(self):
-        response, data = self.create_project("test")
+    def test_create_project_success(self):
+        # Test success
+        response, data = self.create_project("test", "test")
         self.assertEqual(Project.objects.count(), 1)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(data['project_id'], 1)
 
+        # Test invalid payload
         response, data = self.post(
             '/api/create_project',
             self.invalid_payload
         )
         self.assertEqual(Project.objects.count(), 1)
+        self.assertEqual(response.status_code, 400)
+
+        # Test same name different slug
+        response, data = self.create_project("test", "test-2")
+        self.assertEqual(Project.objects.count(), 2)
+        self.assertEqual(response.status_code, 200)
+
+        # Test invalid slug
+        response, data = self.create_project("test", "invalid slug")
+        self.assertEqual(Project.objects.count(), 2)
         self.assertEqual(response.status_code, 400)
 
     def test_get_project_from_api(self):
