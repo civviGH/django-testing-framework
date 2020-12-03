@@ -48,13 +48,13 @@ class ApiTestCase(TestCase):
             'slug':slug
         }
         response = client.post(
-            '/api/create_project',
+            '/api/projects',
             json.dumps(valid_payload),
             content_type='application/json'
         )
         return response, response.data
 
-    def create_submission(self, project_id=None, project_slug=None, project_name=None):
+    def create_submission(self, project_id=None, project_slug=None, project_name=None, info=None):
         valid_payload = {}
         if project_id is not None:
             valid_payload['project_id'] = project_id
@@ -62,6 +62,8 @@ class ApiTestCase(TestCase):
             valid_payload['project_slug'] = project_slug
         if project_name is not None:
             valid_payload['project_name'] = project_name
+        if info is not None:
+            valid_payload['info'] = info
 
         response = client.post(
             '/api/create_submission',
@@ -71,45 +73,101 @@ class ApiTestCase(TestCase):
         return response, response.data
 
 # Create your tests here.
-class ProjectApiTest(ApiTestCase):
+class ProjectsApiTest(ApiTestCase):
     """ Test module for Project model interaction with API """
     def setUp(self):
         self.invalid_payload = {
             'not_a_name':'no name given'
         }
 
-    def test_create_project_success(self):
+    def test_create_project(self):
         # Test success
         response, data = self.create_project("Test Project", "test-project")
         self.assertEqual(Project.objects.count(), 1)
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(data['project_id'], 1)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(data['id'], 1)
+        self.assertEqual(data['name'], "Test Project")
+        self.assertEqual(data['slug'], "test-project")
 
         # Test invalid payload
-        response, data = self.post(
-            '/api/create_project',
-            self.invalid_payload
-        )
+        response, data = self.post(reverse('api_projects'), self.invalid_payload)
         self.assertEqual(Project.objects.count(), 1)
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
         # Test same name, different slug
         response, data = self.create_project("Test Project", "other-slug")
         self.assertEqual(Project.objects.count(), 2)
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
         # Test invalid slug
         response, data = self.create_project("Test Project", "Invalid Slug")
         self.assertEqual(Project.objects.count(), 2)
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
-    def test_get_project_from_api(self):
+    def test_get_projects(self):
         _ = self.create_project('Test Project')
-        response = client.get(reverse('get_projects'))
+        response = client.get(reverse('api_projects'))
         projects = Project.objects.all()
         serializer = ProjectSerializer(projects, many=True)
         self.assertEqual(response.data, serializer.data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+class ProjectApiTest(ApiTestCase):
+    def setUp(self):
+        self.project_1_name = "Test Project 1"
+        self.project_2_name = "Test Project 2"
+        self.project_1_slug = "test-project-1"
+        self.project_2_slug = "test-project-2"
+        _, data = self.create_project(self.project_1_name, self.project_1_slug)
+        self.project_1_id = data['id']
+        _, data = self.create_project(self.project_2_name, self.project_2_slug)
+        self.project_2_id = data['id']
+
+        self.project_1 = Project.objects.get(id=self.project_1_id)
+        self.project_2 = Project.objects.get(id=self.project_2_id)
+
+    def test_get_project_id(self):
+        response = client.get(reverse('api_project', kwargs={'id' : self.project_1_id}))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        serializer = ProjectSerializer(self.project_1)
+        self.assertEqual(response.data, serializer.data)
+
+        response = client.get(reverse('api_project', kwargs={'id' : self.project_2_id}))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        serializer = ProjectSerializer(self.project_2)
+        self.assertEqual(response.data, serializer.data)
+
+    def test_get_project_slug(self):
+        response = client.get(reverse('api_project', kwargs={'id' : self.project_1_slug}))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        serializer = ProjectSerializer(self.project_1)
+        self.assertEqual(response.data, serializer.data)
+
+        response = client.get(reverse('api_project', kwargs={'id' : self.project_2_slug}))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        serializer = ProjectSerializer(self.project_2)
+        self.assertEqual(response.data, serializer.data)
+
+    def test_get_project_invalid(self):
+        response = client.get(reverse('api_project', kwargs={'id' : "does-not-exist"}))
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_modify_project(self):
+        response = client.get(reverse('api_project', kwargs={'id' : self.project_1_id}))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        new_name = "Project 1 New Name"
+        response.data['name'] = new_name
+        response = client.put(reverse('api_project', kwargs={'id' : self.project_1_id}), data=response.data, content_type="application/json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        project_1 = Project.objects.get(id=self.project_1_id)
+        self.assertEqual(project_1.name, new_name)
+
+    def test_delete_project(self):
+        response = client.delete(reverse('api_project', kwargs={'id' : self.project_1_id}))
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(Project.objects.count(), 1)
 
 class SubmissionApiTest(ApiTestCase):
     """ Test module for submissions"""
@@ -118,7 +176,7 @@ class SubmissionApiTest(ApiTestCase):
         self.project_name = "Submission Project"
         self.project_slug = "submission-project"
         _, data = self.create_project(self.project_name, self.project_slug)
-        self.project_id = data['project_id']
+        self.project_id = data['id']
 
         self.invalid_project_name = "Does Not Exist"
         self.invalid_project_slug = "does-not-exist"
@@ -163,7 +221,7 @@ class TestResultApiTest(ApiTestCase):
         self.project_slug = "test-project"
         # create a test project to put test results in
         _, data = self.create_project(self.project_name, self.project_slug)
-        self.project_id = data['project_id']
+        self.project_id = data['id']
 
         _, data = self.create_submission(project_id=self.project_id)
         self.submission_id = data['id']
@@ -224,7 +282,7 @@ class TestReferenceApiTest(ApiTestCase):
         self.project_slug = "test-project"
         # create a test project to put test results in
         _, data = self.create_project(self.project_name, self.project_slug)
-        self.project_id = data['project_id']
+        self.project_id = data['id']
 
         _, data = self.create_submission(project_id=self.project_id)
         self.submission_id = data['id']
