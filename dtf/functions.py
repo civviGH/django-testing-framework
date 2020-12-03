@@ -86,10 +86,21 @@ def get_project_by_id(project_id):
 
 def get_project_by_name(project_name):
     """
-    Retrieve a project by its name. Returns None if no project is found.
+    Retrieve a project by its name. Returns None if no project is found or multiple projects with the same name exist.
     """
     try:
         return Project.objects.get(name=project_name)
+    except Project.DoesNotExist:
+        return None
+    except Project.MultipleObjectsReturned:
+        return None
+
+def get_project_by_slug(project_slug):
+    """
+    Retrieve a project by its slug. Returns None if no project is found.
+    """
+    try:
+        return Project.objects.get(slug=project_slug)
     except Project.DoesNotExist:
         return None
 
@@ -99,6 +110,8 @@ def get_project_from_data(data):
     """
     if 'project_id' in data:
         return get_project_by_id(data['project_id'])
+    if 'project_slug' in data:
+        return get_project_by_slug(data['project_slug'])
     if 'project_name' in data:
         return get_project_by_name(data['project_name'])
     return None
