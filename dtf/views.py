@@ -25,8 +25,8 @@ def view_projects(request):
     projects = Project.objects.order_by('-name')
     return render(request, 'dtf/view_projects.html', {'projects':projects})
 
-def view_project_details(request, project_name):
-    project = get_object_or_404(Project, name=project_name)
+def view_project_details(request, project_slug):
+    project = get_object_or_404(Project, slug=project_slug)
     submissions = Submission.objects.filter(project=project)
     return render(request, 'dtf/project_details.html', {
         'project':project,
