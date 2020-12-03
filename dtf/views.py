@@ -13,7 +13,7 @@ from dtf.serializers import TestReferenceSerializer
 from dtf.serializers import SubmissionSerializer
 from dtf.models import TestResult, Project, TestReference, Submission
 from dtf.functions import create_view_data_from_test_references
-from dtf.forms import NewProjectForm
+from dtf.forms import NewProjectForm, ProjectSettingsForm
 
 """
 User views
@@ -38,6 +38,21 @@ def view_new_project(request):
     return render(request, 'dtf/new_project.html', {
         'form': form}
     )
+
+def view_project_settings(request, project_slug):
+    project = get_object_or_404(Project, slug=project_slug)
+
+    if request.method == 'POST':
+        form = ProjectSettingsForm(request.POST, instance=project)
+        if form.is_valid():
+            form.save()
+    else:
+        form = ProjectSettingsForm(instance=project)
+
+    return render(request, 'dtf/project_settings.html', {
+        'project': project,
+        'form': form
+    })
 
 def view_project_details(request, project_slug):
     project = get_object_or_404(Project, slug=project_slug)

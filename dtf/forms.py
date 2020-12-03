@@ -12,3 +12,9 @@ class NewProjectForm(forms.ModelForm):
             'name': TextInput(attrs={'placeholder': 'My new project'}),
             'slug': TextInput(attrs={'placeholder': 'my-new-project'}),
         }
+
+class ProjectSettingsForm(forms.ModelForm):
+
+    class Meta:
+        model = Project
+        fields = ['name', 'slug']
