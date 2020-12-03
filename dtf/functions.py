@@ -104,6 +104,20 @@ def get_project_by_slug(project_slug):
     except Project.DoesNotExist:
         return None
 
+def get_project_by_id_or_slug(id):
+    """
+    Retrieve a project by its ID or slug. Returns None if no project is found.
+    """
+    if id.isdigit():
+        project = get_project_by_id(int(id))
+    else:
+        project = None
+
+    if project is None:
+        project = get_project_by_slug(id)
+
+    return project
+
 def get_project_from_data(data):
     """
     Get a project from json data posted to the API

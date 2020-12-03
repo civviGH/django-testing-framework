@@ -13,7 +13,7 @@ from dtf.serializers import TestResultSerializer
 from dtf.serializers import TestReferenceSerializer
 from dtf.serializers import SubmissionSerializer
 from dtf.models import TestResult, Project, TestReference, Submission, ProjectSubmissionProperty
-from dtf.functions import create_view_data_from_test_references
+from dtf.functions import create_view_data_from_test_references, get_project_by_id_or_slug
 from dtf.forms import NewProjectForm, ProjectSettingsForm, ProjectSubmissionPropertyForm
 
 """
@@ -114,14 +114,40 @@ def get_submission_by_id(request, submission_id):
     serializer = TestResultSerializer(data, many=True)
     return Response(serializer.data, status.HTTP_200_OK)
 
-@api_view(["GET"])
-def get_projects(request):
-    """
-    Returns a list with all current projects in the database
-    """
-    projects = Project.objects.order_by('-pk')
-    serializer = ProjectSerializer(projects, many=True)
-    return Response(serializer.data, status.HTTP_200_OK)
+@api_view(["GET", "POST"])
+def projects(request):
+    if request.method == 'GET':
+        projects = Project.objects.order_by('-pk')
+        serializer = ProjectSerializer(projects, many=True)
+        return Response(serializer.data, status.HTTP_200_OK)
+
+    elif request.method == 'POST':
+        serializer = ProjectSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status.HTTP_400_BAD_REQUEST)
+
+@api_view(["GET", "PUT", "DELETE"])
+def project(request, id):
+    project = get_project_by_id_or_slug(id)
+    if project is None:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+
+    if request.method == 'GET':
+        serializer = ProjectSerializer(project)
+        return Response(serializer.data)
+
+    elif request.method == 'PUT':
+        serializer = ProjectSerializer(project, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    elif request.method == 'DELETE':
+        project.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 @api_view(["GET"])
 def get_reference(request, project_slug, test_name):
@@ -173,34 +199,11 @@ def submit_test_results(request):
     return Response(serializer.errors, status.HTTP_400_BAD_REQUEST)
 
 @api_view(["POST"])
-def create_project(request):
-    """Looks for a 'name' and 'slug' fields in the sent data. If both are valid, creates a \
-        new project and returns the id of the project
-
-    :param request: The request object that is sent to the view
-
-    :raises [HTTP_400_BAD_REQUEST]: When no 'name' or 'slug' field is found in the post data
-
-    :return: Returns a json object containing the id of the created project
-        If the project id is 'None' the project slug was invalid or not not unique.
-        No project was created.
-    """
-    serializer = ProjectSerializer(data=request.data)
-    if serializer.is_valid():
-        try:
-            created_project = serializer.save()
-        except IntegrityError:
-            # the UNIQUE contraint has failed, a project with this name already exists
-            return Response({'project_id':None}, status.HTTP_200_OK)
-        return Response({'project_id':created_project.id}, status.HTTP_200_OK)
-    return Response(serializer.errors, status.HTTP_400_BAD_REQUEST)
-
-@api_view(["POST"])
 def create_submission(request):
     """
     Creates a new submission with incrementing IDs
 
-    Requires a project_id oder project_name to assign the submission to a project
+    Requires a project_id, project_slug or project_name to assign the submission to a project
     """
     serializer = SubmissionSerializer(data=request.data)
     if serializer.is_valid():
