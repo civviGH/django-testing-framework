@@ -2,6 +2,7 @@ from django.shortcuts import render, get_object_or_404
 from django.db import IntegrityError
 from django.http import HttpResponseRedirect
 from django.urls import reverse
+from django.forms import inlineformset_factory
 
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -11,9 +12,9 @@ from dtf.serializers import ProjectSerializer
 from dtf.serializers import TestResultSerializer
 from dtf.serializers import TestReferenceSerializer
 from dtf.serializers import SubmissionSerializer
-from dtf.models import TestResult, Project, TestReference, Submission
+from dtf.models import TestResult, Project, TestReference, Submission, ProjectSubmissionProperty
 from dtf.functions import create_view_data_from_test_references
-from dtf.forms import NewProjectForm, ProjectSettingsForm
+from dtf.forms import NewProjectForm, ProjectSettingsForm, ProjectSubmissionPropertyForm
 
 """
 User views
@@ -40,18 +41,25 @@ def view_new_project(request):
     )
 
 def view_project_settings(request, project_slug):
+    PropertiesFormset = inlineformset_factory(Project, ProjectSubmissionProperty, fields=('name', 'required', 'display', 'display_replace', 'display_as_link', 'influence_reference'), form=ProjectSubmissionPropertyForm)
+
     project = get_object_or_404(Project, slug=project_slug)
+    properties = ProjectSubmissionProperty.objects.filter(project=project)
 
     if request.method == 'POST':
         form = ProjectSettingsForm(request.POST, instance=project)
-        if form.is_valid():
+        properties_formset = PropertiesFormset(request.POST, instance=project)
+        if form.is_valid() and properties_formset.is_valid():
             form.save()
+            properties_formset.save()
     else:
         form = ProjectSettingsForm(instance=project)
+        properties_formset = PropertiesFormset(instance=project)
 
     return render(request, 'dtf/project_settings.html', {
         'project': project,
-        'form': form
+        'form': form,
+        'properties_formset': properties_formset
     })
 
 def view_project_details(request, project_slug):
