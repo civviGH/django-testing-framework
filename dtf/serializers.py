@@ -150,11 +150,26 @@ class SubmissionSerializer(serializers.Serializer):
     def validate(self, data):
         project = get_project_from_data(data)
         if not project:
-            raise serializers.ValidationError(\
+            raise serializers.ValidationError(
                 "Could not get a corresponding project. Did you provide a project_id, project_slug or a unique project_name?")
         data['project'] = project
+        if 'project_id' in data: del data['project_id']
+        if 'project_slug' in data: del data['project_slug']
+        if 'project_name' in data: del data['project_name']
+
+        info = data.get('info', None)
+        project_properties = ProjectSubmissionProperty.objects.filter(project=project, required=True)
+        missing_property_names = []
+        for prop in project_properties:
+            if not info or not prop.name in info:
+                missing_property_names.append(prop.name)
+
+        if len(missing_property_names) > 0:
+            missing_properties_str = ', '.join(missing_property_names)
+            raise serializers.ValidationError(f"Missing required properties '{missing_properties_str}' in submission info")
+
         return data
-    
+
     def create(self, validated_data):
-        obj = Submission.objects.create(project=validated_data['project'])
+        obj = Submission.objects.create(**validated_data)
         return obj
