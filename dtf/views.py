@@ -10,12 +10,23 @@ from rest_framework import status
 
 from dtf.serializers import ProjectSerializer
 from dtf.serializers import TestResultSerializer
+from dtf.serializers import ReferenceSetSerializer
 from dtf.serializers import TestReferenceSerializer
 from dtf.serializers import SubmissionSerializer
 from dtf.serializers import ProjectSubmissionPropertySerializer
-from dtf.models import TestResult, Project, TestReference, Submission, ProjectSubmissionProperty
+
+from dtf.models import TestResult, Project, ReferenceSet, TestReference, Submission, ProjectSubmissionProperty
 from dtf.functions import create_view_data_from_test_references, get_project_by_id_or_slug
 from dtf.forms import NewProjectForm, ProjectSettingsForm, ProjectSubmissionPropertyForm
+
+def _create_reference_query(project, query_params):
+    queries = {}
+    for prop in project.properties.all():
+        if prop.influence_reference:
+            prop_value = query_params.get(prop.name, None)
+            if not prop_value is None:
+                queries['property_values__' + prop.name] = prop_value
+    return queries
 
 """
 User views
@@ -75,15 +86,20 @@ def view_project_details(request, project_slug):
 
 def view_test_result_details(request, test_id):
     test_result = get_object_or_404(TestResult, pk=test_id)
-    project = test_result.submission.project
-    # we did try except at this point. with our current method, there is no way that
-    # a test result object exists without a corresponding reference object
-    # worst case the references are empty, but the object still exists
-    references_object = TestReference.objects.get(
-        test_name=test_result.name,
-        project=project)
-    # this can fail if a submission gets assigned another project by hand
-    references = references_object.references
+    submission = test_result.submission
+    project = submission.project
+
+    queries = _create_reference_query(project, submission.info)
+
+    try:
+        reference_set = project.reference_sets.get(**queries)
+        if reference_set.test_references.exists():
+            references = reference_set.test_references.get().references
+        else:
+            references = {}
+    except ReferenceSet.DoesNotExist:
+        references = {}
+
     data = create_view_data_from_test_references(
         test_result.results, references)
     nav_data = project.get_nav_data(test_result.name, test_result.submission.id)
@@ -295,6 +311,30 @@ def project_submission_test(request, project_id, submission_id, test_id):
 """
 Project Reference API endpoints
 """
+
+@api_view(["GET", "POST"])
+def project_references(request, project_id):
+    project = get_project_by_id_or_slug(project_id)
+    if project is None:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+
+    queries = _create_reference_query(project, request.query_params)
+
+    if request.method == 'GET':
+        reference_sets = project.reference_sets.filter(**queries)
+        serializer = ReferenceSetSerializer(reference_sets, many=True)
+        return Response(serializer.data, status.HTTP_200_OK)
+
+    elif request.method == 'POST':
+        request.data['project_id'] = project.id
+        serializer = ReferenceSetSerializer(data=request.data)
+        if serializer.is_valid():
+            try:
+                serializer.save()
+            except IntegrityError as error:
+                return Response(str(error), status.HTTP_400_BAD_REQUEST)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status.HTTP_400_BAD_REQUEST)
 
 @api_view(["GET"])
 def get_reference(request, project_slug, test_name):

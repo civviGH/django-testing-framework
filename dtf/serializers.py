@@ -3,12 +3,14 @@ Contains all serializers needed for the API to transition between the json repre
 and the database model of data
 """
 
+import collections
+
 from rest_framework import serializers
 
 from dtf.functions import reference_structure_is_valid
 from dtf.functions import get_project_from_data
 
-from dtf.models import Project, TestResult, TestReference, Submission, ProjectSubmissionProperty
+from dtf.models import Project, TestResult, ReferenceSet, TestReference, Submission, ProjectSubmissionProperty
 from dtf.functions import check_result_structure
 
 from django.core.exceptions import ObjectDoesNotExist
@@ -77,6 +79,29 @@ class ProjectSubmissionPropertySerializer(serializers.Serializer):
         instance.display_replace = validated_data.get('display_replace', instance.display_replace)
         instance.display_as_link = validated_data.get('display_as_link', instance.display_as_link)
         instance.influence_reference = validated_data.get('influence_reference', instance.influence_reference)
+        instance.save()
+        return instance
+
+class ReferenceSetSerializer(serializers.Serializer):
+
+    project_id = serializers.IntegerField(required=False)
+    project_slug = serializers.SlugField(required=False)
+    project_name = serializers.CharField(required=False)
+
+    id = serializers.IntegerField(required=False)
+
+    property_values = serializers.JSONField(required=True)
+
+    def validate(self, data):
+        _validate_project_reference(data)
+        return data
+
+    def create(self, validated_data):
+        obj = ReferenceSet.objects.create(**validated_data)
+        return obj
+
+    def update(self, instance, validated_data):
+        instance.property_values = validated_data.get('property_values', instance.property_values)
         instance.save()
         return instance
 

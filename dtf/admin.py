@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from dtf.models import Project, ProjectSubmissionProperty, TestResult, TestReference, Submission
+from dtf.models import Project, ProjectSubmissionProperty, TestResult, ReferenceSet, TestReference, Submission
 
 # Register your models here.
 @admin.register(Project)
@@ -13,6 +13,10 @@ class ProjectSubmissionPropertyAdmin(admin.ModelAdmin):
 
 @admin.register(TestResult)
 class TestResultAdmin(admin.ModelAdmin):
+    pass
+
+@admin.register(ReferenceSet)
+class ReferenceSetAdmin(admin.ModelAdmin):
     pass
 
 @admin.register(TestReference)
