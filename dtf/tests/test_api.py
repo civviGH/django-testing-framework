@@ -373,18 +373,17 @@ class SubmissionApiTest(ApiTestCase):
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertEqual(Project.objects.count(), 1)
 
-class TestResultApiTest(ApiTestCase):
+class TestResultsApiTest(ApiTestCase):
     """ Test module for submitting test results via the API """
 
     def setUp(self):
-        self.project_name = "Test Project"
-        self.project_slug = "test-project"
-        # create a test project to put test results in
-        _, data = self.create_project(self.project_name, self.project_slug)
+        _, data = self.create_project("Test Project", "test-project")
         self.project_id = data['id']
-
         _, data = self.create_submission(project_id=self.project_id)
         self.submission_id = data['id']
+
+        self.url = reverse('api_project_submission_tests', kwargs={'project_id' : self.project_id, 'submission_id' : self.submission_id})
+
         self.valid_payload = {
             "name":"UNIT_TEST",
             "results":[
@@ -394,46 +393,96 @@ class TestResultApiTest(ApiTestCase):
                     "valuetype":"integer"
                 }
             ],
-            "submission_id":1
         }
+
         self.missing_name_payload = {
             "results":[
-            ],
-            "submission":1
-        }
-        self.missing_submission_id_payload = {
-            "name":"UNIT_TEST",
-            "results":[
-                {
-                    "name":"parameter1",
-                    "value":5,
-                    "valuetype":"integer"
-                }
             ]
         }
 
-    def test_submit_test_results(self):
-        # submit some test results to the api
-        response, _ = self.post(
-            '/api/submit_test_results',
-            self.valid_payload,
-        )
+    def test_create(self):
+        response, data = self.post(self.url, self.valid_payload)
         self.assertEqual(TestResult.objects.count(), 1)
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(data['id'], 1)
+        self.assertEqual(data['name'], self.valid_payload['name'])
+        self.assertEqual(data['results'][0]["name"], self.valid_payload['results'][0]["name"])
+        self.assertEqual(data['results'][0]["value"], self.valid_payload['results'][0]["value"])
+        self.assertEqual(data['results'][0]["valuetype"], self.valid_payload['results'][0]["valuetype"])
 
-        response, _ = self.post(
-            '/api/submit_test_results',
-            self.missing_name_payload
-        )
-        self.assertEqual(TestResult.objects.count(), 1)
-        self.assertEqual(response.status_code, 400)
+    def test_create_invalid(self):
+        response, data = self.post(self.url, self.missing_name_payload)
+        self.assertEqual(TestResult.objects.count(), 0)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
-        response, _ = self.post(
-            '/api/submit_test_results',
-            self.missing_submission_id_payload
-        )
-        self.assertEqual(TestResult.objects.count(), 1)
-        self.assertEqual(response.status_code, 400)
+    def test_get(self):
+        response, data = self.post(self.url, self.valid_payload)
+        response = client.get(self.url)
+        tests = TestResult.objects.order_by('-pk')
+        serializer = TestResultSerializer(tests, many=True)
+        self.assertEqual(response.data, serializer.data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+class TestResultApiTest(ApiTestCase):
+    def setUp(self):
+        _, data = self.create_project("Test Project", "test-project")
+        self.project_id = data['id']
+        _, data = self.create_submission(project_id=self.project_id)
+        self.submission_id = data['id']
+        create_url = reverse('api_project_submission_tests', kwargs={'project_id' : self.project_id, 'submission_id' : self.submission_id})
+
+        response, data = self.post(create_url, {'name' : 'Test 1', 'results' : [{'name' : 'Result1', 'value' : 1, 'valuetype' : 'integer'}]})
+        self.test_1_id = data['id']
+        self.url_1 = reverse('api_project_submission_test', kwargs={'project_id' : self.project_id, 'submission_id' : self.submission_id, 'test_id' : self.test_1_id})
+        self.test_1 = TestResult.objects.get(id=self.test_1_id)
+
+        response, data = self.post(create_url, {'name' : 'Test 2', 'results' : [{'name' : 'Result1', 'value' : 1, 'valuetype' : 'integer'}]})
+        self.test_2_id = data['id']
+        self.url_2 = reverse('api_project_submission_test', kwargs={'project_id' : self.project_id, 'submission_id' : self.submission_id, 'test_id' : self.test_2_id})
+        self.test_2 = TestResult.objects.get(id=self.test_2_id)
+
+    def test_get(self):
+        response = client.get(self.url_1)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        serializer = TestResultSerializer(self.test_1)
+        self.assertEqual(response.data, serializer.data)
+
+        response = client.get(self.url_2)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        serializer = TestResultSerializer(self.test_2)
+        self.assertEqual(response.data, serializer.data)
+
+    def test_get_invalid(self):
+        response = client.get(reverse('api_project_submission_test', kwargs={'project_id' : "invalid", 'submission_id' : self.submission_id, 'test_id' : self.test_1_id}))
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+        response = client.get(reverse('api_project_submission_test', kwargs={'project_id' : self.project_id, 'submission_id' : 123, 'test_id' : self.test_1_id}))
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        
+        response = client.get(reverse('api_project_submission_test', kwargs={'project_id' : self.project_id, 'submission_id' : self.submission_id, 'test_id' : 123}))
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_modify(self):
+        response = client.get(self.url_1)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        new_name = "Test 1 New Name"
+        response.data['name'] = new_name
+        new_test_data = {'name' : 'Result2', 'value' : 2, 'valuetype' : 'integer'}
+        response.data['results'].append(new_test_data)
+        response, data = self.put(self.url_1, response.data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        test_1 = TestResult.objects.get(id=self.test_1_id)
+        self.assertEqual(test_1.name, new_name)
+        self.assertEqual(test_1.results[1]["name"], new_test_data["name"])
+        self.assertEqual(test_1.results[1]["value"], new_test_data["value"])
+        self.assertEqual(test_1.results[1]["valuetype"], new_test_data["valuetype"])
+
+    def test_delete(self):
+        response = client.delete(self.url_1)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(Project.objects.count(), 1)
 
 class TestReferenceApiTest(ApiTestCase):
     def setUp(self):
@@ -448,8 +497,7 @@ class TestReferenceApiTest(ApiTestCase):
         self.submission_id = data['id']
         # submit test results to update references for
         # on an empty/test database, the test_id will always be 1
-        self.post(
-        '/api/submit_test_results',
+        self.post(reverse('api_project_submission_tests', kwargs={'project_id' : self.project_id, 'submission_id' : self.submission_id}),
             {
                 "name":self.test_name,
                 "results":[
@@ -458,8 +506,7 @@ class TestReferenceApiTest(ApiTestCase):
                         "value":5,
                         "valuetype":"integer"
                     }
-                ],
-                "submission_id":self.submission_id
+                ]
             },
         )
 

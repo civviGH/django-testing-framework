@@ -15,8 +15,6 @@ urlpatterns = [
     path('submission_details/<int:submission_id>', views.view_submission_details, name='submission_details'),
     path('test_details/<int:test_id>', views.view_test_result_details, name='test_result_details'),
 
-    path('api/submit_test_results', views.submit_test_results),
-
     path('api/projects', views.projects, name='api_projects'),
     path('api/projects/<str:id>', views.project, name='api_project'),
 
@@ -25,6 +23,9 @@ urlpatterns = [
 
     path('api/projects/<str:project_id>/submissions', views.project_submissions, name='api_project_submissions'),
     path('api/projects/<str:project_id>/submissions/<str:submission_id>', views.project_submission, name='api_project_submission'),
+
+    path('api/projects/<str:project_id>/submissions/<str:submission_id>/tests', views.project_submission_tests, name='api_project_submission_tests'),
+    path('api/projects/<str:project_id>/submissions/<str:submission_id>/tests/<str:test_id>', views.project_submission_test, name='api_project_submission_test'),
 
     path('api/get_reference/<str:project_slug>/<str:test_name>',
      views.get_reference,
