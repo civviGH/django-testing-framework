@@ -9,6 +9,7 @@ update_references
 """
 
 import json
+import copy
 
 from rest_framework import status
 
@@ -20,6 +21,7 @@ from dtf.models import Project, TestResult, TestReference, Submission, ProjectSu
 from dtf.serializers import ProjectSerializer
 from dtf.serializers import TestResultSerializer
 from dtf.serializers import ProjectSubmissionPropertySerializer
+from dtf.serializers import SubmissionSerializer
 
 client = Client()
 
@@ -48,30 +50,14 @@ class ApiTestCase(TestCase):
             'name':name,
             'slug':slug
         }
-        response = client.post(
-            '/api/projects',
-            json.dumps(valid_payload),
-            content_type='application/json'
-        )
-        return response, response.data
+        return self.post(reverse('api_projects'), valid_payload)
 
-    def create_submission(self, project_id=None, project_slug=None, project_name=None, info=None):
+    def create_submission(self, project_id=None, info=None):
         valid_payload = {}
-        if project_id is not None:
-            valid_payload['project_id'] = project_id
-        if project_slug is not None:
-            valid_payload['project_slug'] = project_slug
-        if project_name is not None:
-            valid_payload['project_name'] = project_name
         if info is not None:
             valid_payload['info'] = info
 
-        response = client.post(
-            '/api/create_submission',
-            json.dumps(valid_payload),
-            content_type='application/json'
-        )
-        return response, response.data
+        return self.post(reverse('api_project_submissions', kwargs={'project_id' : project_id}), valid_payload)
 
 # Create your tests here.
 class ProjectsApiTest(ApiTestCase):
@@ -266,7 +252,7 @@ class ProjectSubmissionPropertyApiTest(ApiTestCase):
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertEqual(Project.objects.count(), 1)
 
-class SubmissionApiTest(ApiTestCase):
+class SubmissionsApiTest(ApiTestCase):
     """ Test module for submissions"""
 
     def setUp(self):
@@ -275,40 +261,117 @@ class SubmissionApiTest(ApiTestCase):
         _, data = self.create_project(self.project_name, self.project_slug)
         self.project_id = data['id']
 
-        self.invalid_project_name = "Does Not Exist"
         self.invalid_project_slug = "does-not-exist"
         self.invalid_project_id = "123"
 
-    def test_create_submission(self):
-        # Create by name
-        response, data = self.create_submission(project_name=self.project_name)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+    def test_create(self):
+        # Create with project slug
+        response, data = self.create_submission(project_id=self.project_slug)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Submission.objects.count(), 1)
         self.assertEqual(data['id'], 1)
 
-        response, _ = self.create_submission(project_name=self.invalid_project_name)
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        response, _ = self.create_submission(project_id=self.invalid_project_slug)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
         self.assertEqual(Submission.objects.count(), 1)
 
-        # Create by slug
-        response, data = self.create_submission(project_slug=self.project_slug)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        # Create with project ID
+        response, data = self.create_submission(project_id=self.project_id)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Submission.objects.count(), 2)
         self.assertEqual(data['id'], 2)
 
-        response, _ = self.create_submission(project_slug=self.invalid_project_slug)
+        response, _ = self.create_submission(project_id=self.invalid_project_id)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(Submission.objects.count(), 2)
+
+    def test_create_with_info(self):
+        response, data = self.create_submission(project_id=self.project_id, info={"Key": "Value"})
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(Submission.objects.count(), 1)
+        self.assertEqual(data['id'], 1)
+
+    def test_create_with_required_info(self):
+        create_property_url = reverse('api_project_submission_properties', kwargs={'project_id' : self.project_id})
+        response, data = self.post(create_property_url, {'name' : "Property1", "required" : True})
+
+        # Create with only required info
+        response, data = self.create_submission(project_id=self.project_id, info={"Property1": "Value"})
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(Submission.objects.count(), 1)
+        self.assertEqual(data['id'], 1)
+
+        # Create with additional info
+        response, data = self.create_submission(project_id=self.project_id, info={"Property1": "Value", "Property2": "Other Value"})
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(Submission.objects.count(), 2)
+        self.assertEqual(data['id'], 2)
+
+        # Create with missing info
+        response, data = self.create_submission(project_id=self.project_id, info={"Property2": "Other Value"})
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(Submission.objects.count(), 2)
 
-        # Create by id
-        response, data = self.create_submission(project_id=self.project_id)
+    def test_get(self):
+        self.create_submission(project_id=self.project_id, info={"Key": "Value"})
+        self.create_submission(project_id=self.project_id, info={"Key": "Value"})
+        response = client.get(reverse('api_project_submissions', kwargs={'project_id' : self.project_id}))
+        submissions = Submission.objects.order_by('-pk')
+        serializer = SubmissionSerializer(submissions, many=True)
+        self.assertEqual(response.data, serializer.data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(Submission.objects.count(), 3)
-        self.assertEqual(data['id'], 3)
 
-        response, _ = self.create_submission(project_id=self.invalid_project_id)
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(Submission.objects.count(), 3)
+class SubmissionApiTest(ApiTestCase):
+    def setUp(self):
+        _, data = self.create_project("Test Project", "test-project")
+        self.project_id = data['id']
+
+        _, data = self.create_submission(project_id=self.project_id, info={"Key": "Value"})
+        self.submission_1_id = data['id']
+        self.url_1 = reverse('api_project_submission', kwargs={'project_id' : self.project_id, 'submission_id' : self.submission_1_id})
+        self.submission_1 = Submission.objects.get(id=self.submission_1_id)
+
+        _, data = self.create_submission(project_id=self.project_id, info={"Key": "Value"})
+        self.submission_2_id = data['id']
+        self.url_2 = reverse('api_project_submission', kwargs={'project_id' : self.project_id, 'submission_id' : self.submission_2_id})
+        self.submission_2 = Submission.objects.get(id=self.submission_2_id)
+
+    def test_get(self):
+        response = client.get(self.url_1)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        serializer = SubmissionSerializer(self.submission_1)
+        self.assertEqual(response.data, serializer.data)
+
+        response = client.get(self.url_2)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        serializer = SubmissionSerializer(self.submission_2)
+        self.assertEqual(response.data, serializer.data)
+
+    def test_get_invalid(self):
+        response = client.get(reverse('api_project_submission', kwargs={'project_id' : "invalid", 'submission_id' : self.submission_1_id}))
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+        response = client.get(reverse('api_project_submission', kwargs={'project_id' : self.project_id, 'submission_id' : 123}))
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_modify(self):
+        response = client.get(self.url_1)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        new_info = copy.deepcopy(response.data['info'])
+        new_info["Key"] = "Other Value"
+        new_info["Key2"] = "Second Value"
+        response.data['info'] = new_info
+        response, data = self.put(self.url_1, response.data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        submission_1 = Submission.objects.get(id=self.submission_1_id)
+        self.assertEqual(submission_1.info, new_info)
+
+    def test_delete_project(self):
+        response = client.delete(self.url_1)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(Project.objects.count(), 1)
 
 class TestResultApiTest(ApiTestCase):
     """ Test module for submitting test results via the API """
