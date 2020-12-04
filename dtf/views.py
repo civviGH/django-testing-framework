@@ -237,6 +237,62 @@ def project_submission(request, project_id, submission_id):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 """
+Project Submission Test API endpoints
+"""
+
+@api_view(["GET", "POST"])
+def project_submission_tests(request, project_id, submission_id):
+    project = get_project_by_id_or_slug(project_id)
+    if project is None:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+    try:
+        submission = Submission.objects.get(project=project, pk=submission_id)
+    except Submission.DoesNotExist:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+
+    if request.method == 'GET':
+        tests = TestResult.objects.filter(submission=submission).order_by('-pk')
+        serializer = TestResultSerializer(tests, many=True)
+        return Response(serializer.data, status.HTTP_200_OK)
+
+    elif request.method == 'POST':
+        request.data['submission_id'] = submission.id
+        serializer = TestResultSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status.HTTP_400_BAD_REQUEST)
+
+@api_view(["GET", "PUT", "DELETE"])
+def project_submission_test(request, project_id, submission_id, test_id):
+    project = get_project_by_id_or_slug(project_id)
+    if project is None:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+    try:
+        submission = Submission.objects.get(project=project, pk=submission_id)
+    except Submission.DoesNotExist:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+    try:
+        test = TestResult.objects.get(submission=submission, pk=test_id)
+    except TestResult.DoesNotExist:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+
+    if request.method == 'GET':
+        serializer = TestResultSerializer(test)
+        return Response(serializer.data)
+
+    elif request.method == 'PUT':
+        serializer = TestResultSerializer(test, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    elif request.method == 'DELETE':
+        test.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+"""
 Project Reference API endpoints
 """
 
@@ -267,27 +323,6 @@ def get_reference_by_test_id(request, test_id):
     )
     serializer = TestReferenceSerializer(data, many=True)
     return Response(serializer.data, status.HTTP_200_OK)
-
-"""
-POST API endpoints
-"""
-
-@api_view(["POST"])
-def submit_test_results(request):
-    serializer = TestResultSerializer(data=request.data)
-    if serializer.is_valid():
-        # we just get or create the reference object here
-        test_reference, _ = TestReference.objects.get_or_create(
-            project=serializer.validated_data['submission'].project,
-            test_name=serializer.validated_data['name']
-        )
-        # we do NOT automatically set the posted test as a reference
-        # no matter if the reference is set yet or not. just save it
-        test_reference.save()
-
-        created_test_result = serializer.save()
-        return Response({'test_result_id':created_test_result.pk}, status.HTTP_200_OK)
-    return Response(serializer.errors, status.HTTP_400_BAD_REQUEST)
 
 """
 PUT API endpoints

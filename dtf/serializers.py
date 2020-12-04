@@ -193,6 +193,12 @@ class TestResultSerializer(serializers.Serializer):
         obj = TestResult.objects.create(**validated_data)
         return obj
 
+    def update(self, instance, validated_data):
+        instance.name = validated_data.get('name', instance.name)
+        instance.results = validated_data.get('results', instance.results)
+        instance.save()
+        return instance
+
 class SubmissionSerializer(serializers.Serializer):
 
     project_id = serializers.IntegerField(required=False)
