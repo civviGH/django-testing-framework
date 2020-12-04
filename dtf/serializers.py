@@ -198,6 +198,9 @@ class SubmissionSerializer(serializers.Serializer):
     project_id = serializers.IntegerField(required=False)
     project_slug = serializers.SlugField(required=False)
     project_name = serializers.CharField(required=False)
+
+    id = serializers.IntegerField(required=False)
+
     info = serializers.JSONField(required=False)
 
     def validate(self, data):
@@ -219,3 +222,8 @@ class SubmissionSerializer(serializers.Serializer):
     def create(self, validated_data):
         obj = Submission.objects.create(**validated_data)
         return obj
+
+    def update(self, instance, validated_data):
+        instance.info = validated_data.get('info', instance.info)
+        instance.save()
+        return instance

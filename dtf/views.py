@@ -102,18 +102,8 @@ def view_submission_details(request, submission_id):
     })
 
 """
-GET API endpoints
+Project API endpoints
 """
-
-@api_view(["GET"])
-def get_submission_by_id(request, submission_id):
-    """
-    Returns a list of test results assigned to the submission with the given id
-    """
-    submission = get_object_or_404(Submission, pk=submission_id)
-    data = submission.tests.all()
-    serializer = TestResultSerializer(data, many=True)
-    return Response(serializer.data, status.HTTP_200_OK)
 
 @api_view(["GET", "POST"])
 def projects(request):
@@ -149,6 +139,10 @@ def project(request, id):
     elif request.method == 'DELETE':
         project.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+"""
+Project Submission Properties API endpoints
+"""
 
 @api_view(["GET", "POST"])
 def project_submission_properties(request, project_id):
@@ -193,6 +187,58 @@ def project_submission_property(request, project_id, property_id):
     elif request.method == 'DELETE':
         prop.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+"""
+Project Submission API endpoints
+"""
+
+@api_view(["GET", "POST"])
+def project_submissions(request, project_id):
+    project = get_project_by_id_or_slug(project_id)
+    if project is None:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+
+    if request.method == 'GET':
+        submissions = Submission.objects.filter(project=project).order_by('-pk')
+        serializer = SubmissionSerializer(submissions, many=True)
+        return Response(serializer.data, status.HTTP_200_OK)
+
+    elif request.method == 'POST':
+        request.data['project_id'] = project.id
+        serializer = SubmissionSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status.HTTP_400_BAD_REQUEST)
+
+@api_view(["GET", "PUT", "DELETE"])
+def project_submission(request, project_id, submission_id):
+    project = get_project_by_id_or_slug(project_id)
+    if project is None:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+    try:
+        submission = Submission.objects.get(project=project, pk=submission_id)
+    except Submission.DoesNotExist:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+
+    if request.method == 'GET':
+        serializer = SubmissionSerializer(submission)
+        return Response(serializer.data)
+
+    elif request.method == 'PUT':
+        serializer = SubmissionSerializer(submission, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    elif request.method == 'DELETE':
+        submission.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+"""
+Project Reference API endpoints
+"""
 
 @api_view(["GET"])
 def get_reference(request, project_slug, test_name):
@@ -241,19 +287,6 @@ def submit_test_results(request):
 
         created_test_result = serializer.save()
         return Response({'test_result_id':created_test_result.pk}, status.HTTP_200_OK)
-    return Response(serializer.errors, status.HTTP_400_BAD_REQUEST)
-
-@api_view(["POST"])
-def create_submission(request):
-    """
-    Creates a new submission with incrementing IDs
-
-    Requires a project_id, project_slug or project_name to assign the submission to a project
-    """
-    serializer = SubmissionSerializer(data=request.data)
-    if serializer.is_valid():
-        submission = serializer.save()
-        return Response({'id':submission.pk}, status.HTTP_200_OK)
     return Response(serializer.errors, status.HTTP_400_BAD_REQUEST)
 
 """
