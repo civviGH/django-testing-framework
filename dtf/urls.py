@@ -23,10 +23,8 @@ urlpatterns = [
     path('api/projects/<str:project_id>/properties', views.project_submission_properties, name='api_project_submission_properties'),
     path('api/projects/<str:project_id>/properties/<str:property_id>', views.project_submission_property, name='api_project_submission_property'),
 
-    path('api/create_submission', views.create_submission, name='create_submission'),
-    path('api/get_submission_by_id/<int:submission_id>',
-     views.get_submission_by_id,
-     name='get_submission_by_id'),
+    path('api/projects/<str:project_id>/submissions', views.project_submissions, name='api_project_submissions'),
+    path('api/projects/<str:project_id>/submissions/<str:submission_id>', views.project_submission, name='api_project_submission'),
 
     path('api/get_reference/<str:project_slug>/<str:test_name>',
      views.get_reference,
