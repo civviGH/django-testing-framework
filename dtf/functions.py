@@ -102,3 +102,31 @@ def get_project_from_data(data):
     if 'project_name' in data:
         return get_project_by_name(data['project_name'])
     return None
+
+def create_graph_data(same_projects_tests):
+    """
+    This function prepares all data for the parameters of the respective tests for the charts
+
+    For every parameter name, we need every test that has this parameter, its time of creation 
+    and its value. Before we iterate over every test to do that, we check if the valuetype is 
+    something we can actually draw in a 2 dimensional graph, i.e. int and float
+    """
+    out = {}
+    for test in same_projects_tests:
+        test_datetime = test.first_submitted
+        for parameter in test.results:
+            # print(parameter["name"])
+            # print(parameter["valuetype"])
+            # print()
+            # sort out everything that is not chartable
+            if parameter["valuetype"] not in ["integer", "float"]:
+                continue
+            tmp = {
+                "x": test_datetime.strftime('%Y-%m-%d %H:%M'),
+                "y": parameter["value"]
+            }
+            try:
+                out[parameter["name"]].append(tmp)
+            except:
+                out[parameter["name"]] = [ tmp ]
+    return out

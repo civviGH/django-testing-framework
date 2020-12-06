@@ -11,6 +11,7 @@ from dtf.serializers import TestReferenceSerializer
 from dtf.serializers import SubmissionSerializer
 from dtf.models import TestResult, Project, TestReference, Submission
 from dtf.functions import create_view_data_from_test_references
+from dtf.functions import create_graph_data
 
 
 """
@@ -46,13 +47,20 @@ def view_test_result_details(request, test_id):
     references = references_object.references
     data = create_view_data_from_test_references(
         test_result.results, references)
-    nav_data = project.get_nav_data(test_result.name, test_result.submission.id)
+    nav_data, same_project_tests = project.get_nav_data(test_result.name, test_result.submission.id)
+
+    # this is the data used to draw the history graphs for every parameter
+    graph_data = create_graph_data(same_project_tests)
+    # for k,_ in graph_data.items():
+    #     print(k)
+
     return render(request, 'dtf/test_result_details.html', {
         'project':project,
         'test_name':test_result.name,
         'test_result':test_result,
         'data':data,
-        'nav_data':nav_data
+        'nav_data':nav_data,
+        'graph_data':graph_data
     })
 
 def view_submission_details(request, submission_id):
