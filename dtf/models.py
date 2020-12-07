@@ -202,9 +202,15 @@ class TestReference(models.Model):
         return self.references.get(value_name, None)
 
     def __str__(self):
-        if self.project:
-            return f"{self.test_name} [{self.project.name}]"
+        if self.reference_set:
+            return f"{self.test_name} [{self.reference_set.project.name}]"
         return f"{self.test_name} [None]"
 
     class Meta:
         app_label = 'dtf'
+        constraints = [
+            models.UniqueConstraint(
+                fields=['reference_set', 'test_name'], 
+                name='unique_test_reference_property'
+            )
+        ]

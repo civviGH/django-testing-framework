@@ -117,9 +117,7 @@ class TestReferenceSerializer(serializers.Serializer):
     test_id = serializers.IntegerField(required=False)
 
     # these are not saved, but rather used to make sure they are existent and valid
-    project_id = serializers.IntegerField(required=False)
-    project_slug = serializers.SlugField(required=False)
-    project_name = serializers.CharField(required=False)
+    reference_set_id = serializers.IntegerField(required=False)
 
     def validate(self, data):
         """
@@ -127,7 +125,7 @@ class TestReferenceSerializer(serializers.Serializer):
 
         It should be a dictionary, where the parameter name is the key, and the value contains another dictionary with value and valuetype
 
-        We also need a project_id, project_slug or unique project_name to create the model
+        We also need a reference_set_id to create the model
         """
         if not "test_id" in data:
             raise serializers.ValidationError(\
@@ -138,11 +136,13 @@ class TestReferenceSerializer(serializers.Serializer):
             raise serializers.ValidationError(\
                 "No test found with the given test_id. Need a valid test_id to properly set the reference")
 
-        project = get_project_from_data(data)
-        if not project:
-            raise serializers.ValidationError(\
-                "Could not get a corresponding project. Did you provide a project_id, project_slug or a unique project_name?")
-        data['project'] = project
+        if not 'reference_set' in data:
+            try:
+                reference_set = ReferenceSet.objects.get(id=data['reference_set_id'])
+            except ReferenceSet.DoesNotExist:
+                raise serializers.ValidationError(\
+                    "Could not get a corresponding reference set. Did you provide a reference_set_id?")
+            data['reference_set'] = reference_set
 
         reference_data_errors = ["Format in 'references' is not valid:"]
         try:
@@ -158,21 +158,22 @@ class TestReferenceSerializer(serializers.Serializer):
                 if not reference_structure_is_valid(parameter_values):
                     reference_data_errors.append(f"field {parameter_name}  in references does not match reference format")
                     raise serializers.ValidationError()
+                parameter_values['ref_id'] = data['test_id']
         except:
             raise serializers.ValidationError(reference_data_errors)
+
+        del data['test_id']
 
         return data
 
     def create(self, validated_data):
-        test_reference, _ = TestReference.objects.get_or_create(
-            project=validated_data['project'],
-            test_name=validated_data['test_name']
-        )
-        test_reference.update_references(
-            validated_data['references'],
-            validated_data['test_id'])
-        test_reference.save()
-        return test_reference
+        return TestReference.objects.create(**validated_data)
+
+    def update(self, instance, validated_data):
+        instance.test_name = validated_data.get('test_name', instance.test_name)
+        instance.references = validated_data.get('references', instance.references)
+        instance.save()
+        return instance
 
 class TestResultSerializer(serializers.Serializer):
     """
