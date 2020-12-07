@@ -16,17 +16,8 @@ from dtf.serializers import SubmissionSerializer
 from dtf.serializers import ProjectSubmissionPropertySerializer
 
 from dtf.models import TestResult, Project, ReferenceSet, TestReference, Submission, ProjectSubmissionProperty
-from dtf.functions import create_view_data_from_test_references, get_project_by_id_or_slug
+from dtf.functions import create_view_data_from_test_references, get_project_by_id_or_slug, create_reference_query
 from dtf.forms import NewProjectForm, ProjectSettingsForm, ProjectSubmissionPropertyForm
-
-def _create_reference_query(project, query_params):
-    queries = {}
-    for prop in project.properties.all():
-        if prop.influence_reference:
-            prop_value = query_params.get(prop.name, None)
-            if not prop_value is None:
-                queries['property_values__' + prop.name] = prop_value
-    return queries
 
 """
 User views
@@ -89,15 +80,29 @@ def view_test_result_details(request, test_id):
     submission = test_result.submission
     project = submission.project
 
-    queries = _create_reference_query(project, submission.info)
+    queries = create_reference_query(project, submission.info)
 
+    reference_set = None
+    property_values = None
+    test_reference = None
     try:
         reference_set = project.reference_sets.get(**queries)
         if reference_set.test_references.exists():
-            references = reference_set.test_references.get().references
-        else:
-            references = {}
+            try:
+                test_reference = reference_set.test_references.get(test_name=test_result.name)
+            except TestReference.DoesNotExist:
+                test_reference = None
     except ReferenceSet.DoesNotExist:
+        property_values = {}
+        for prop in project.properties.all():
+            if prop.influence_reference:
+                prop_value = submission.info.get(prop.name, None)
+                if not prop_value is None:
+                    property_values[prop.name] = prop_value
+
+    if test_reference is not None:
+        references = test_reference.references
+    else:
         references = {}
 
     data = create_view_data_from_test_references(
@@ -105,8 +110,10 @@ def view_test_result_details(request, test_id):
     nav_data = project.get_nav_data(test_result.name, test_result.submission.id)
     return render(request, 'dtf/test_result_details.html', {
         'project':project,
-        'test_name':test_result.name,
+        'reference_set':reference_set,
+        'test_reference':test_reference,
         'test_result':test_result,
+        'property_values':str(property_values),
         'data':data,
         'nav_data':nav_data
     })
@@ -318,7 +325,7 @@ def project_references(request, project_id):
     if project is None:
         return Response(status=status.HTTP_404_NOT_FOUND)
 
-    queries = _create_reference_query(project, request.query_params)
+    queries = create_reference_query(project, request.query_params)
 
     if request.method == 'GET':
         reference_sets = project.reference_sets.filter(**queries)
@@ -336,45 +343,116 @@ def project_references(request, project_id):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status.HTTP_400_BAD_REQUEST)
 
-@api_view(["GET"])
-def get_reference(request, project_slug, test_name):
-    """
-    Return the references of a test matching the given project slug and test name
-    """
-    data = TestReference.objects.filter(
-        test_name=test_name,
-        project__slug=project_slug
-    )
-    serializer = TestReferenceSerializer(data, many=True)
-    return Response(serializer.data, status.HTTP_200_OK)
-
-@api_view(["GET"])
-def get_reference_by_test_id(request, test_id):
-    """
-    Return the references for the test with the given test_id
-    """
+@api_view(["GET", "PUT", "DELETE"])
+def project_reference(request, project_id, reference_id):
+    project = get_project_by_id_or_slug(project_id)
+    if project is None:
+        return Response(status=status.HTTP_404_NOT_FOUND)
     try:
-        test_result = TestResult.objects.get(id=test_id)
-    except TestResult.DoesNotExist:
-        return Response({"error":"No test_result with given id found"}, status.HTTP_400_BAD_REQUEST)
-    data = TestReference.objects.filter(
-        test_name=test_result.name,
-        project=test_result.submission.project
-    )
-    serializer = TestReferenceSerializer(data, many=True)
-    return Response(serializer.data, status.HTTP_200_OK)
+        reference_set = project.reference_sets.get(pk=reference_id)
+    except ReferenceSet.DoesNotExist:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+
+    if request.method == 'GET':
+        serializer = ReferenceSetSerializer(reference_set)
+        return Response(serializer.data)
+
+    elif request.method == 'PUT':
+        serializer = ReferenceSetSerializer(reference_set, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    elif request.method == 'DELETE':
+        reference_set.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 """
-PUT API endpoints
+Reference Tests API endpoints
 """
+
+@api_view(["GET", "POST"])
+def project_reference_tests(request, project_id, reference_id):
+    project = get_project_by_id_or_slug(project_id)
+    if project is None:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+    try:
+        reference_set = project.reference_sets.get(pk=reference_id)
+    except ReferenceSet.DoesNotExist:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+
+    if request.method == 'GET':
+        query = {}
+        for key, value in request.query_params.items():
+            query[key] = value#.replace('%20', " ")
+        test_references = reference_set.test_references.filter(**query).order_by("-pk")
+        serializer = TestReferenceSerializer(test_references, many=True)
+        return Response(serializer.data, status.HTTP_200_OK)
+
+    elif request.method == 'POST':
+        request.data['reference_set_id'] = reference_set.id
+        serializer = TestReferenceSerializer(data=request.data)
+        if serializer.is_valid():
+            try:
+                serializer.save()
+            except IntegrityError as error:
+                return Response(str(error), status.HTTP_400_BAD_REQUEST)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status.HTTP_400_BAD_REQUEST)
+
+@api_view(["GET", "PUT", "DELETE"])
+def project_reference_test(request, project_id, reference_id, test_id):
+    project = get_project_by_id_or_slug(project_id)
+    if project is None:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+    try:
+        reference_set = project.reference_sets.get(pk=reference_id)
+    except ReferenceSet.DoesNotExist:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+    try:
+        test_references = reference_set.test_references.get(pk=test_id)
+    except TestReference.DoesNotExist:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+
+    if request.method == 'GET':
+        serializer = TestReferenceSerializer(test_references)
+        return Response(serializer.data)
+
+    elif request.method == 'PUT':
+        serializer = TestReferenceSerializer(test_references, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    elif request.method == 'DELETE':
+        test_references.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 @api_view(["PUT"])
-def update_references(request):
-    serializer = TestReferenceSerializer(data=request.data)
-    if serializer.is_valid():
-        serializer.save()
-        return Response({}, status.HTTP_200_OK)
-    return Response(serializer.errors, status.HTTP_400_BAD_REQUEST)
+def update_project_reference_test(request, project_id, reference_id, test_id):
+    project = get_project_by_id_or_slug(project_id)
+    if project is None:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+    try:
+        reference_set = project.reference_sets.get(pk=reference_id)
+    except ReferenceSet.DoesNotExist:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+    try:
+        test_references = reference_set.test_references.get(pk=test_id)
+    except TestReference.DoesNotExist:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+
+    test_references.update_references(
+        request.data['references'],
+        request.data['test_id'])
+
+    try:
+        test_references.save()
+        return Response({}, status=status.HTTP_200_OK)
+    except Exception as err:
+        return Response(str(err), status=status.HTTP_400_BAD_REQUEST)
 
 """
 DEBUGGING
@@ -382,6 +460,6 @@ DEBUGGING
 
 @api_view(["GET"])
 def WIPE_DATABASE(request):
-    for model in [Project, Submission, TestResult, TestReference]:
+    for model in [Project, ProjectSubmissionProperty, Submission, TestResult, ReferenceSet, TestReference]:
         model.objects.all().delete()
     return Response({}, status.HTTP_200_OK)

@@ -484,119 +484,119 @@ class TestResultApiTest(ApiTestCase):
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertEqual(Project.objects.count(), 1)
 
-class TestReferenceApiTest(ApiTestCase):
-    def setUp(self):
-        self.test_name = "UNIT_TEST"
-        self.project_name = "Test Project"
-        self.project_slug = "test-project"
-        # create a test project to put test results in
-        _, data = self.create_project(self.project_name, self.project_slug)
-        self.project_id = data['id']
+# class TestReferenceApiTest(ApiTestCase):
+#     def setUp(self):
+#         self.test_name = "UNIT_TEST"
+#         self.project_name = "Test Project"
+#         self.project_slug = "test-project"
+#         # create a test project to put test results in
+#         _, data = self.create_project(self.project_name, self.project_slug)
+#         self.project_id = data['id']
 
-        _, data = self.create_submission(project_id=self.project_id)
-        self.submission_id = data['id']
-        # submit test results to update references for
-        # on an empty/test database, the test_id will always be 1
-        self.post(reverse('api_project_submission_tests', kwargs={'project_id' : self.project_id, 'submission_id' : self.submission_id}),
-            {
-                "name":self.test_name,
-                "results":[
-                    {
-                        "name":"parameter1",
-                        "value":5,
-                        "valuetype":"integer"
-                    }
-                ]
-            },
-        )
+#         _, data = self.create_submission(project_id=self.project_id)
+#         self.submission_id = data['id']
+#         # submit test results to update references for
+#         # on an empty/test database, the test_id will always be 1
+#         self.post(reverse('api_project_submission_tests', kwargs={'project_id' : self.project_id, 'submission_id' : self.submission_id}),
+#             {
+#                 "name":self.test_name,
+#                 "results":[
+#                     {
+#                         "name":"parameter1",
+#                         "value":5,
+#                         "valuetype":"integer"
+#                     }
+#                 ]
+#             },
+#         )
 
-        self.valid_payload = {
-            "project_id":self.project_id,
-            "test_name":self.test_name,
-            "references":{
-                "parameter1":
-                {
-                    "value":7
-                }
-            },
-            "test_id": 1
-        }
+#         self.valid_payload = {
+#             "project_id":self.project_id,
+#             "test_name":self.test_name,
+#             "references":{
+#                 "parameter1":
+#                 {
+#                     "value":7
+#                 }
+#             },
+#             "test_id": 1
+#         }
 
-        self.new_references = {
-            "project_id":self.project_id,
-            "test_name":self.test_name,
-            "references":{
-                "parameter1":
-                {
-                    "value":23
-                }
-            },
-            "test_id": 1
-        }
-        self.missing_id = {
-            "project_id":self.project_id,
-            "test_name":self.test_name,
-            "references":{
-                "parameter1":
-                {
-                    "value":23
-                }
-            }
-        }
-        self.invalid_id = {
-            "project_id":self.project_id,
-            "test_name":self.test_name,
-            "references":{
-                "parameter1":
-                {
-                    "value":23
-                }
-            },
-            "test_id": 999999
-        }
+#         self.new_references = {
+#             "project_id":self.project_id,
+#             "test_name":self.test_name,
+#             "references":{
+#                 "parameter1":
+#                 {
+#                     "value":23
+#                 }
+#             },
+#             "test_id": 1
+#         }
+#         self.missing_id = {
+#             "project_id":self.project_id,
+#             "test_name":self.test_name,
+#             "references":{
+#                 "parameter1":
+#                 {
+#                     "value":23
+#                 }
+#             }
+#         }
+#         self.invalid_id = {
+#             "project_id":self.project_id,
+#             "test_name":self.test_name,
+#             "references":{
+#                 "parameter1":
+#                 {
+#                     "value":23
+#                 }
+#             },
+#             "test_id": 999999
+#         }
 
 
-    def test_update_test_references(self):
-        response, _ = self.put(
-            '/api/update_references',
-            self.valid_payload
-        )
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        references = TestReference.objects.all()
-        self.assertEqual(len(references), 1)
+#     def test_update_test_references(self):
+#         response, _ = self.put(
+#             '/api/update_references',
+#             self.valid_payload
+#         )
+#         self.assertEqual(response.status_code, status.HTTP_200_OK)
+#         references = TestReference.objects.all()
+#         self.assertEqual(len(references), 1)
 
-        response, _ = self.put(
-            '/api/update_references',
-            self.new_references
-        )
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        references = TestReference.objects.all()
-        self.assertEqual(len(references), 1)
+#         response, _ = self.put(
+#             '/api/update_references',
+#             self.new_references
+#         )
+#         self.assertEqual(response.status_code, status.HTTP_200_OK)
+#         references = TestReference.objects.all()
+#         self.assertEqual(len(references), 1)
 
-        response, _ = self.put(
-            '/api/update_references',
-            self.missing_id
-        )
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+#         response, _ = self.put(
+#             '/api/update_references',
+#             self.missing_id
+#         )
+#         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
-        response, _ = self.put(
-            '/api/update_references',
-            self.invalid_id
-        )
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+#         response, _ = self.put(
+#             '/api/update_references',
+#             self.invalid_id
+#         )
+#         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
-        response = client.get(reverse('get_reference', kwargs={
-            "project_slug":self.project_slug,
-            "test_name": self.test_name
-        }))
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data), 1)
-        self.assertEqual(response.data[0]['test_name'], self.test_name)
+#         response = client.get(reverse('get_reference', kwargs={
+#             "project_slug":self.project_slug,
+#             "test_name": self.test_name
+#         }))
+#         self.assertEqual(response.status_code, status.HTTP_200_OK)
+#         self.assertEqual(len(response.data), 1)
+#         self.assertEqual(response.data[0]['test_name'], self.test_name)
         
-        response_alternative = client.get(reverse('get_reference_by_test_id', kwargs={
-            "test_id":1
-        }))
-        self.assertEqual(response_alternative.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data), 1)
-        self.assertEqual(response.data[0]['test_name'], self.test_name)
-        self.assertEqual(response.data, response_alternative.data)
+#         response_alternative = client.get(reverse('get_reference_by_test_id', kwargs={
+#             "test_id":1
+#         }))
+#         self.assertEqual(response_alternative.status_code, status.HTTP_200_OK)
+#         self.assertEqual(len(response.data), 1)
+#         self.assertEqual(response.data[0]['test_name'], self.test_name)
+#         self.assertEqual(response.data, response_alternative.data)
