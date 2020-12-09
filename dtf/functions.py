@@ -35,15 +35,21 @@ def check_result_structure(results, test_name, submission):
         return None, errors
 
     reference_query = create_reference_query(submission.project, submission.info)
+    reference_set = submission.project.reference_sets.filter(**reference_query).first()
 
-    reference_set, _ = submission.project.reference_sets.get_or_create(**reference_query)
-    current_reference, _ = reference_set.test_references.get_or_create(test_name=test_name)
+    if reference_set is not None:
+        current_reference = reference_set.test_references.filter(test_name=test_name).first()
+    else:
+        current_reference = None
 
     for r in results:
         if not result_structure_is_valid(r):
             errors.append(f"field {r} does not match wanted format")
         if not 'reference' in r:
-            r['reference'] = current_reference.get_reference_or_none(r['name'])
+            if current_reference is not None:
+                r['reference'] = current_reference.get_reference_or_none(r['name'])
+            else:
+                r['reference'] = None
         if not 'margin' in r:
             r['margin'] = get_default_margin(r['valuetype'])
         r['status'] = check_status_of_test_parameter(r.get('status'))
