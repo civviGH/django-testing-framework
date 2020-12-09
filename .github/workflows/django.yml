@@ -25,6 +25,12 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
+        pip install -r requirements-devel.txt
     - name: Run Tests
       run: |
-        python manage.py test
+        coverage run --source='dtf' --omit='*tests*,*migrations*,*wsgi*,*asgi*' manage.py test -v2
+    - name: Publish coverage report to coveralls
+      uses: AndreMiras/coveralls-python-action@v20201129
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        flag-name: python-${{ matrix.python-version }}

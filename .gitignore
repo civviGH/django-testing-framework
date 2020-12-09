@@ -8,3 +8,5 @@ env/
 # Django specific
 db.sqlite3
 
+# Code coverage
+.coverage
