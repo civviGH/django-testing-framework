@@ -147,9 +147,6 @@ class TestReferenceSerializer(serializers.Serializer):
         reference_data_errors = ["Format in 'references' is not valid:"]
         try:
             reference_data = data['references']
-            if len(reference_data) == 0:
-                reference_data_errors.append(f"the 'references' dictionary is empty")
-                raise serializers.ValidationError()
             if not isinstance(reference_data, dict):
                 reference_data_errors.append("'references' field is not a dict")
                 raise serializers.ValidationError()
