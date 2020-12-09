@@ -94,6 +94,7 @@ class ProjectsApiTest(ApiTestCase):
     def test_get_projects(self):
         _ = self.create_project('Test Project 1')
         _ = self.create_project('Test Project 2')
+        _ = self.create_project('Test/Project#?3')
         response = client.get(reverse('api_projects'))
         projects = Project.objects.order_by('-pk')
         serializer = ProjectSerializer(projects, many=True)
@@ -103,7 +104,7 @@ class ProjectsApiTest(ApiTestCase):
 class ProjectApiTest(ApiTestCase):
     def setUp(self):
         self.project_1_name = "Test Project 1"
-        self.project_2_name = "Test Project 2"
+        self.project_2_name = "Test/Project#?2"
         self.project_1_slug = "test-project-1"
         self.project_2_slug = "test-project-2"
         _, data = self.create_project(self.project_1_name, self.project_1_slug)
