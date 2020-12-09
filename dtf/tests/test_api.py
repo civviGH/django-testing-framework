@@ -16,12 +16,14 @@ from rest_framework import status
 from django.test import TestCase, Client
 from django.urls import reverse
 from django.utils.text import slugify
+from django.db import transaction
 
-from dtf.models import Project, TestResult, TestReference, Submission, ProjectSubmissionProperty
+from dtf.models import Project, TestResult, ReferenceSet, TestReference, Submission, ProjectSubmissionProperty
 from dtf.serializers import ProjectSerializer
 from dtf.serializers import TestResultSerializer
 from dtf.serializers import ProjectSubmissionPropertySerializer
 from dtf.serializers import SubmissionSerializer
+from dtf.serializers import ReferenceSetSerializer
 
 client = Client()
 
@@ -484,6 +486,160 @@ class TestResultApiTest(ApiTestCase):
         response = client.delete(self.url_1)
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertEqual(Project.objects.count(), 1)
+
+class ReferenceSetsApiTest(ApiTestCase):
+    def setUp(self):
+        # Create simple project without properties
+        _, data = self.create_project("Test Project 1", "test-project-1")
+        self.project_1_id = data['id']
+        self.project_1 = Project.objects.get(id=self.project_1_id)
+        self.url_1 = reverse('api_project_references', kwargs={'project_id' : self.project_1_id})
+
+        # Create project with some properties
+        _, data = self.create_project("Test Project 2", "test-project-2")
+        self.project_2_id = data['id']
+        self.project_2 = Project.objects.get(id=self.project_2_id)
+        self.url_2 = reverse('api_project_references', kwargs={'project_id' : self.project_2_id})
+        property_url = reverse('api_project_submission_properties', kwargs={'project_id' : self.project_2_id})
+        self.post(property_url, {
+            'name' : "Property 1",
+            'required' : True,
+            'influence_reference' : True,
+        })
+        self.post(property_url, {
+            'name' : "Property 2",
+            'required' : True,
+            'influence_reference' : True,
+        })
+        self.post(property_url, {
+            'name' : "Property 3",
+            'influence_reference' : False,
+        })
+
+    def test_create_empty(self):
+        response, data = self.post(self.url_1, {'property_values' : {}})
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(ReferenceSet.objects.count(), 1)
+        self.assertEqual(self.project_1.reference_sets.count(), 1)
+
+        response, data = self.post(self.url_2, {'property_values' : {}})
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(ReferenceSet.objects.count(), 2)
+        self.assertEqual(self.project_2.reference_sets.count(), 1)
+
+    def test_create_non_empty(self):
+        response, data = self.post(self.url_1, {'property_values' : {"Property 1" : "Value 1"}})
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(ReferenceSet.objects.count(), 1)
+        self.assertEqual(self.project_1.reference_sets.count(), 1)
+
+        response, data = self.post(self.url_2, {'property_values' : {"Property 1" : "Value 1"}})
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(ReferenceSet.objects.count(), 2)
+        self.assertEqual(self.project_2.reference_sets.count(), 1)
+
+    def test_create_non_unique(self):
+        response, data = self.post(self.url_1, {'property_values' : {"Property 1" : "Value 1", "Property 2" : "Value 2"}})
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(ReferenceSet.objects.count(), 1)
+        self.assertEqual(self.project_1.reference_sets.count(), 1)
+
+        with transaction.atomic():
+            response, data = self.post(self.url_1, {'property_values' : {"Property 1" : "Value 1", "Property 2" : "Value 2"}})
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(ReferenceSet.objects.count(), 1)
+        self.assertEqual(self.project_1.reference_sets.count(), 1)
+
+        with transaction.atomic():
+            response, data = self.post(self.url_1, {'property_values' : {"Property 2" : "Value 2", "Property 1" : "Value 1"}})
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(ReferenceSet.objects.count(), 1)
+        self.assertEqual(self.project_1.reference_sets.count(), 1)
+
+    def test_get(self):
+        self.post(self.url_1, {'property_values' : {}})
+        self.post(self.url_1, {'property_values' : {"Property 1" : "Value 1"}})
+        self.post(self.url_2, {'property_values' : {"Property 1" : "Value 1"}})
+        response = client.get(self.url_1)
+        reference_sets = self.project_1.reference_sets.order_by('-pk')
+        serializer = ReferenceSetSerializer(reference_sets, many=True)
+        self.assertEqual(response.data, serializer.data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        response = client.get(self.url_2)
+        reference_sets = self.project_2.reference_sets.order_by('-pk')
+        serializer = ReferenceSetSerializer(reference_sets, many=True)
+        self.assertEqual(response.data, serializer.data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+class ReferenceSetApiTest(ApiTestCase):
+    def setUp(self):
+        _, data = self.create_project("Test Project", "test-project")
+        self.project_id = data['id']
+        create_url = reverse('api_project_references', kwargs={'project_id' : self.project_id})
+
+        response, data = self.post(create_url, {'property_values' : {}})
+        self.reference_set_1_id = data['id']
+        self.url_1 = reverse('api_project_reference', kwargs={'project_id' : self.project_id, 'reference_id' : self.reference_set_1_id})
+        self.reference_set_1 = ReferenceSet.objects.get(id=self.reference_set_1_id)
+
+        response, data = self.post(create_url, {'property_values' : {"Property 1" : "Value 1", "Property 2" : "Value 1"}})
+        self.reference_set_2_id = data['id']
+        self.url_2 = reverse('api_project_reference', kwargs={'project_id' : self.project_id, 'reference_id' : self.reference_set_2_id})
+        self.reference_set_2 = ReferenceSet.objects.get(id=self.reference_set_2_id)
+
+        response, data = self.post(create_url, {'property_values' : {"Property 1" : "Value 2", "Property 2" : "Value 1"}})
+        self.reference_set_3_id = data['id']
+        self.url_3 = reverse('api_project_reference', kwargs={'project_id' : self.project_id, 'reference_id' : self.reference_set_3_id})
+        self.reference_set_3 = ReferenceSet.objects.get(id=self.reference_set_3_id)
+
+    def test_get(self):
+        response = client.get(self.url_1)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        serializer = ReferenceSetSerializer(self.reference_set_1)
+        self.assertEqual(response.data, serializer.data)
+
+        response = client.get(self.url_2)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        serializer = ReferenceSetSerializer(self.reference_set_2)
+        self.assertEqual(response.data, serializer.data)
+
+        response = client.get(self.url_3)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        serializer = ReferenceSetSerializer(self.reference_set_3)
+        self.assertEqual(response.data, serializer.data)
+
+    def test_get_invalid(self):
+        response = client.get(reverse('api_project_reference', kwargs={'project_id' : "invalid", 'reference_id' : self.reference_set_1_id}))
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+        response = client.get(reverse('api_project_reference', kwargs={'project_id' : self.project_id, 'reference_id' : 123}))
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_modify(self):
+        response = client.get(self.url_1)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        response.data['property_values']['Property 1'] = "Value 3"
+        response, data = self.put(self.url_1, response.data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        reference_set = ReferenceSet.objects.get(id=self.reference_set_1_id)
+        self.assertEqual(reference_set.property_values, {"Property 1" : "Value 3"})
+
+    def test_modify_non_unique(self):
+        response = client.get(self.url_2)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # Try to modify reference set 2 to have the same property values as reference set 3
+        response.data['property_values'] = self.reference_set_3.property_values
+        response, data = self.put(self.url_2, response.data)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_delete(self):
+        response = client.delete(self.url_1)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(ReferenceSet.objects.count(), 2)
 
 # class TestReferenceApiTest(ApiTestCase):
 #     def setUp(self):
