@@ -166,7 +166,7 @@ class ReferenceSet(models.Model):
         def __init__(self, *args, **kwargs):
             kwargs['object_pairs_hook']=collections.OrderedDict
             super().__init__(*args, **kwargs)
-    property_values = models.JSONField(decoder=OrderedDictJSONDecoder, null=False, default=collections.OrderedDict, unique=True)
+    property_values = models.JSONField(decoder=OrderedDictJSONDecoder, null=False, default=collections.OrderedDict)
 
     def save(self, *args, **kwargs):
         if not isinstance(self.property_values, collections.OrderedDict):
@@ -175,6 +175,13 @@ class ReferenceSet(models.Model):
 
     class Meta:
         app_label = 'dtf'
+
+        constraints = [
+            models.UniqueConstraint(
+                fields=['project', 'property_values'], 
+                name='unique_project_property_values'
+            )
+        ]
 
 class TestReference(models.Model):
     """
