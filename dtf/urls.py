@@ -36,8 +36,6 @@ urlpatterns = [
     path('api/projects/<str:project_id>/references/<str:reference_id>/tests', views.project_reference_tests, name='api_project_reference_tests'),
     path('api/projects/<str:project_id>/references/<str:reference_id>/tests/<str:test_id>', views.project_reference_test, name='api_project_reference_test'),
 
-    path('api/projects/<str:project_id>/references/<str:reference_id>/tests/<str:test_id>/update', views.update_project_reference_test, name='api_update_project_reference_test'),
-
     path('api/WIPE_DATABASE', views.WIPE_DATABASE),
 ]
 
