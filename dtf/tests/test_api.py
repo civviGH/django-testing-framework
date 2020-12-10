@@ -485,7 +485,7 @@ class TestResultApiTest(ApiTestCase):
     def test_delete(self):
         response = client.delete(self.url_1)
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
-        self.assertEqual(Project.objects.count(), 1)
+        self.assertEqual(TestResult.objects.count(), 1)
 
 class ReferenceSetsApiTest(ApiTestCase):
     def setUp(self):
