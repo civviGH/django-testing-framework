@@ -572,6 +572,46 @@ class ReferenceSetsApiTest(ApiTestCase):
         self.assertEqual(response.data, serializer.data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
+    def test_get_query(self):
+        _, data = self.post(self.url_2, {'property_values' : {"Property 1" : "Value 1", "Property 2" : "Value 1", "Property 3" : "Value 1"}})
+        reference_set_1 = self.project_2.reference_sets.get(id=data['id'])
+        serializer_1 = ReferenceSetSerializer(reference_set_1)
+        _, data = self.post(self.url_2, {'property_values' : {"Property 1" : "Value 1", "Property 2" : "Value 2", "Property 3" : "Value 2"}})
+        reference_set_2 = self.project_2.reference_sets.get(id=data['id'])
+        serializer_2 = ReferenceSetSerializer(reference_set_2)
+        _, data = self.post(self.url_2, {'property_values' : {"Property 1" : "Value 2", "Property 2" : "Value 2", "Property 3" : "Value 3"}})
+        reference_set_3 = self.project_2.reference_sets.get(id=data['id'])
+        serializer_3 = ReferenceSetSerializer(reference_set_3)
+
+        # Filter for 'Property 1' only:
+        # we should get two results
+        response = client.get(self.url_2 + "?Property 1=Value 1")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 2)
+        self.assertEqual(response.data[0], serializer_1.data)
+        self.assertEqual(response.data[1], serializer_2.data)
+
+        # Filter for 'Property 1' and 'Property 2':
+        # we should get a single result
+        response = client.get(self.url_2 + "?Property 1=Value 1&Property 2=Value 2")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 1)
+        self.assertEqual(response.data[0], serializer_2.data)
+
+        # Filter for 'Property 1' and 'Property 2':
+        # we should get no results
+        response = client.get(self.url_2 + "?Property 1=Value 1&Property 2=Value 3")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 0)
+
+        # Filter for 'Property 1' and 'Property 3':
+        # Since Property 3 does not influence the reference, we still get two results
+        response = client.get(self.url_2 + "?Property 1=Value 1&Property 3=Value 2")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 2)
+        self.assertEqual(response.data[0], serializer_1.data)
+        self.assertEqual(response.data[1], serializer_2.data)
+
 class ReferenceSetApiTest(ApiTestCase):
     def setUp(self):
         _, data = self.create_project("Test Project", "test-project")
