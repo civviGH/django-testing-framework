@@ -13,14 +13,6 @@ function postReferenceUpdate(reference_set_id){
         "references":{
         }
     }
-    
-    {% if test_reference %}
-    var url = `/api/projects/{{ project.id }}/references/${reference_set_id}/tests/{{ test_reference.id }}/update`
-    var method = "PUT"
-    {% else %}
-    var url = `/api/projects/{{ project.id }}/references/${reference_set_id}/tests`
-    var method = "POST"
-    {% endif %}
 
     for (var i = 0; i < parameterBoxes.length; i++) {
         box = parameterBoxes[i];
@@ -30,6 +22,15 @@ function postReferenceUpdate(reference_set_id){
             };
         }
     }
+
+    {% if test_reference %}
+    var url = `/api/projects/{{ project.id }}/references/${reference_set_id}/tests/{{ test_reference.id }}`
+    var method = "PATCH"
+    {% else %}
+    var url = `/api/projects/{{ project.id }}/references/${reference_set_id}/tests`
+    var method = "POST"
+    {% endif %}
+
     $.ajax({
         beforeSend: function(xhr, settings) {
             xhr.setRequestHeader("X-CSRFToken", "{{ csrf_token }}");

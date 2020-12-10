@@ -404,7 +404,7 @@ def project_reference_tests(request, project_id, reference_id):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status.HTTP_400_BAD_REQUEST)
 
-@api_view(["GET", "PUT", "DELETE"])
+@api_view(["GET", "PUT", "PATCH", "DELETE"])
 def project_reference_test(request, project_id, reference_id, test_id):
     project = get_project_by_id_or_slug(project_id)
     if project is None:
@@ -429,33 +429,20 @@ def project_reference_test(request, project_id, reference_id, test_id):
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+    elif request.method == 'PATCH':
+        # TODO: should we introduce a special serializer here?
+        test_references.update_references(
+            request.data['references'],
+            request.data['test_id'])
+        try:
+            test_references.save()
+            return Response({}, status=status.HTTP_200_OK)
+        except Exception as err:
+            return Response(str(err), status=status.HTTP_400_BAD_REQUEST)
+
     elif request.method == 'DELETE':
         test_references.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
-
-@api_view(["PUT"])
-def update_project_reference_test(request, project_id, reference_id, test_id):
-    project = get_project_by_id_or_slug(project_id)
-    if project is None:
-        return Response(status=status.HTTP_404_NOT_FOUND)
-    try:
-        reference_set = project.reference_sets.get(pk=reference_id)
-    except ReferenceSet.DoesNotExist:
-        return Response(status=status.HTTP_404_NOT_FOUND)
-    try:
-        test_references = reference_set.test_references.get(pk=test_id)
-    except TestReference.DoesNotExist:
-        return Response(status=status.HTTP_404_NOT_FOUND)
-
-    test_references.update_references(
-        request.data['references'],
-        request.data['test_id'])
-
-    try:
-        test_references.save()
-        return Response({}, status=status.HTTP_200_OK)
-    except Exception as err:
-        return Response(str(err), status=status.HTTP_400_BAD_REQUEST)
 
 """
 DEBUGGING
