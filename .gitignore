@@ -9,3 +9,6 @@ env/
 db.sqlite3
 
 settings/local.py
+
+# Code coverage
+.coverage
