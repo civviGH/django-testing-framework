@@ -328,7 +328,7 @@ def project_references(request, project_id):
     queries = create_reference_query(project, request.query_params)
 
     if request.method == 'GET':
-        reference_sets = project.reference_sets.filter(**queries)
+        reference_sets = project.reference_sets.filter(**queries).order_by('-pk')
         serializer = ReferenceSetSerializer(reference_sets, many=True)
         return Response(serializer.data, status.HTTP_200_OK)
 

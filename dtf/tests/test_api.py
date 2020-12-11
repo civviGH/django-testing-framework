@@ -597,8 +597,8 @@ class ReferenceSetsApiTest(ApiTestCase):
         response = client.get(self.url_2 + "?Property 1=Value 1")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 2)
-        self.assertEqual(response.data[0], serializer_1.data)
-        self.assertEqual(response.data[1], serializer_2.data)
+        self.assertEqual(response.data[0], serializer_2.data)
+        self.assertEqual(response.data[1], serializer_1.data)
 
         # Filter for 'Property 1' and 'Property 2':
         # we should get a single result
@@ -618,8 +618,8 @@ class ReferenceSetsApiTest(ApiTestCase):
         response = client.get(self.url_2 + "?Property 1=Value 1&Property 3=Value 2")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 2)
-        self.assertEqual(response.data[0], serializer_1.data)
-        self.assertEqual(response.data[1], serializer_2.data)
+        self.assertEqual(response.data[0], serializer_2.data)
+        self.assertEqual(response.data[1], serializer_1.data)
 
 class ReferenceSetApiTest(ApiTestCase):
     def setUp(self):
