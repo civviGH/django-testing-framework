@@ -24,7 +24,7 @@ User views
 """
 
 def frontpage(request):
-    results = TestResult.objects.order_by('-first_submitted')[:5]
+    results = TestResult.objects.order_by('-created')[:5]
     return render(request, 'dtf/index.html', {'data':results})
 
 def view_projects(request):
