@@ -1,0 +1,139 @@
+{% extends 'dtf/base.html' %}
+
+{% load dtf.custom_filters %}
+
+{% block body %}
+
+<div class="bg-white sticky-top pt-3 pb-1">
+
+  <nav>
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item" aria-current="page">
+        <a href="{% url 'projects' %}">Project List</a>
+      </li>
+      <li class="breadcrumb-item" aria-current="page">
+        <a href="{% url 'project_details' project.slug %}">{{ project.name }}</a>
+      </li>
+      <li class="breadcrumb-item active" aria-current="page">Settings</li>
+    </ol>
+  </nav>
+
+  <div class="page-header">
+    <div class="w-100">
+      <h1>Settings for {{ project.name }}</h1>
+    </div>
+  </div>
+
+  <h3>General</h3>
+  <form action="{% url 'project_settings' project.slug %}" method="post" novalidate>
+    {% csrf_token %}
+
+    <!-- General -->
+
+    {% for hidden_field in form.hidden_fields %}
+      {{ hidden_field }}
+    {% endfor %}
+
+    {% if form.non_field_errors %}
+      <div class="alert alert-danger" role="alert">
+        {% for error in form.non_field_errors %}
+          {{ error }}
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    <div class="form-row">
+      <div class="form-group col-md">
+        {{ form.name.label_tag }}
+        {{ form.name|as_bootstrap_field }}
+      </div>
+      <div class="form-group col-">
+        {{ form.slug.label_tag }}
+        {{ form.slug|as_bootstrap_field }}
+      </div>
+      <div class="form-group col-">
+        <label for="project_id">ID:</label>
+        <input type="text" id="project_id" class="form-control" value="{{ project.id }}" disabled>
+      </div>
+    </div>
+
+    <!-- Properties -->
+    <h3>Properties</h3>
+
+    {{ properties_formset.management_form }}
+    <div class="form-row">
+      <div class="form-group col-sm">
+        <label>Name</label>
+      </div>
+      <div class="form-check col-1 text-center">
+        <label>Required</label>
+      </div>
+      <div class="form-check col-1 text-center">
+        <label>Display</label>
+      </div>
+      <div class="form-check col-sm text-center">
+        <label>Replace</label>
+      </div>
+      <div class="form-check col-1 text-center">
+        <label>As Link</label>
+      </div>
+      <div class="form-check col-1 text-center">
+        <label>Reference</label>
+      </div>
+      <div class="form-check col-1 text-center">
+        <label>Delete</label>
+      </div>
+    </div>
+    {% for property_form in properties_formset %}
+      <div class="form-row">
+        {% for hidden_field in property_form.hidden_fields %}
+          {{ hidden_field }}
+        {% endfor %}
+
+        {% if property_form.non_field_errors %}
+          <div class="alert alert-danger" role="alert">
+            {% for error in property_form.non_field_errors %}
+              {{ error }}
+            {% endfor %}
+          </div>
+        {% endif %}
+
+        <div class="form-group col-sm">
+          <label class="sr-only" for="{{ property_form.name.id_for_label }}">{{ property_form.name.label }}</label>
+          {{ property_form.name|as_bootstrap_field }}
+        </div>
+        <div class="form-check col-1 text-center">
+          {{ property_form.required|as_bootstrap_field }}
+          <label class="form-check-label sr-only" for="{{ property_form.required.id_for_label }}">{{ property_form.required.label }}</label>
+        </div>
+        <div class="form-check col-1 text-center">
+          {{ property_form.display|as_bootstrap_field }}
+          <label class="form-check-label sr-only" for="{{ property_form.display.id_for_label }}">{{ property_form.display.label }}</label>
+        </div>
+        <div class="form-group col-sm">
+          <label class="sr-only" for="{{ property_form.display_replace.id_for_label }}">{{ property_form.display_replace.label }}</label>
+          {{ property_form.display_replace|as_bootstrap_field }}
+        </div>
+        <div class="form-check col-1 text-center">
+          {{ property_form.display_as_link|as_bootstrap_field }}
+          <label class="form-check-label sr-only" for="{{ property_form.display_as_link.id_for_label }}">{{ property_form.display_as_link.label }}</label>
+        </div>
+        <div class="form-check col-1 text-center">
+          {{ property_form.influence_reference|as_bootstrap_field }}
+          <label class="form-check-label sr-only" for="{{ property_form.influence_reference.id_for_label }}">{{ property_form.influence_reference.label }}</label>
+        </div>
+        <div class="form-check col-1 text-center">
+          {{ property_form.DELETE|as_bootstrap_field }}
+          <label class="form-check-label sr-only" for="{{ property_form.DELETE.id_for_label }}">{{ property_form.DELETE.label }}</label>
+        </div>
+      </div>
+    {% endfor %}
+
+    <input type="submit" value="Save" class="btn btn-success">
+    <a class="btn btn-outline-secondary float-right" href="{% url 'project_details' project.slug %}">Cancel</a>
+  </form>
+
+</div>
+
+
+{% endblock %}
