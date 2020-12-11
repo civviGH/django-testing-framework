@@ -40,6 +40,9 @@ class ProjectSerializer(serializers.Serializer):
     name = serializers.CharField(max_length=100, required=True)
     slug = serializers.SlugField(max_length=40, required=True)
 
+    created = serializers.DateTimeField(required=False)
+    last_updated = serializers.DateTimeField(required=False)
+
     def create(self, validated_data):
         return Project.objects.create(**validated_data)
 
@@ -90,6 +93,9 @@ class ReferenceSetSerializer(serializers.Serializer):
 
     id = serializers.IntegerField(required=False)
 
+    created = serializers.DateTimeField(required=False)
+    last_updated = serializers.DateTimeField(required=False)
+
     property_values = serializers.JSONField(required=True)
 
     def validate(self, data):
@@ -111,6 +117,10 @@ class TestReferenceSerializer(serializers.Serializer):
     """
     id = serializers.IntegerField(required=False)
     test_name = serializers.CharField(max_length=100, required=True)
+
+    created = serializers.DateTimeField(required=False)
+    last_updated = serializers.DateTimeField(required=False)
+
     references = serializers.JSONField(required=True)
 
     # when updating a reference, we need to know the test id which was used to do so. If we set the field to required the serializer looks for a test_id field in the TestReference Model on Deserializsation, which is why we set it to False and manually check for a valid test_id in the validate method
@@ -182,8 +192,10 @@ class TestResultSerializer(serializers.Serializer):
     name = serializers.CharField(required=True)
     results = serializers.JSONField(required=True)
     id = serializers.IntegerField(required=False)
-    first_submitted = serializers.DateTimeField(required=False)
+
+    created = serializers.DateTimeField(required=False)
     last_updated = serializers.DateTimeField(required=False)
+
     submission_id = serializers.IntegerField(required=True)
     # submission = serializers.PrimaryKeyRelatedField(required=True)
     # TODO 
@@ -229,6 +241,9 @@ class SubmissionSerializer(serializers.Serializer):
     project_name = serializers.CharField(required=False)
 
     id = serializers.IntegerField(required=False)
+
+    created = serializers.DateTimeField(required=False)
+    last_updated = serializers.DateTimeField(required=False)
 
     info = serializers.JSONField(required=False)
 
