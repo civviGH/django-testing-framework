@@ -1,0 +1,26 @@
+
+{% load dtf.custom_filters %}
+
+{% if field.is_hidden %}
+  {{ field }}
+{% else %}
+
+  {% if field.form.is_bound %}
+    {% if field.errors %}
+      {{ field|add_bootstrap_class:"is-invalid"}}
+      {% for error in field.errors %}
+        <div class="invalid-feedback">
+          {{ error }}
+        </div>
+      {% endfor %}
+    {% else %}
+      {{ field|add_bootstrap_class:"is-valid"}}
+    {% endif %}
+  {% else %}
+    {{ field|add_bootstrap_class}}
+  {% endif %}
+
+  {% if field.help_text %}
+    <small class="form-text text-muted">{{ field.help_text }}</small>
+  {% endif %}
+{% endif %}
