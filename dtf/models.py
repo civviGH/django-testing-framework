@@ -1,7 +1,11 @@
 """
 Module containing all database definitions
 """
+import collections
+import json
+
 from django.db import models
+from django.utils import timezone
 
 # Create your models here.
 class Project(models.Model):
@@ -10,7 +14,11 @@ class Project(models.Model):
 
     Just stores the name of the project to be referenced in submitted test results
     """
-    name = models.CharField(max_length=100, blank=False, unique=True)
+    name = models.CharField(max_length=100, blank=False)
+    slug = models.SlugField(max_length=40, blank=False, unique=True)
+
+    created = models.DateTimeField(default=timezone.now, editable=False, blank=True)
+    last_updated = models.DateTimeField(auto_now=True)
 
     def get_nav_data(self, test_name, submission_id):
         nav_data = {
@@ -58,15 +66,34 @@ class Project(models.Model):
     class Meta:
         app_label = 'dtf'
 
+class ProjectSubmissionProperty(models.Model):
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, null=True, related_name="properties")
+
+    name = models.CharField(max_length=100, blank=False)
+    required = models.BooleanField(default=False)
+    display = models.BooleanField(default=True)
+    display_replace = models.CharField(max_length=100, blank=True)
+    display_as_link = models.BooleanField(default=False)
+    influence_reference = models.BooleanField(default=False)
+
+    class Meta:
+        app_label = 'dtf'
+        constraints = [
+            models.UniqueConstraint(
+                fields=['project', 'name'], 
+                name='unique_submission_property'
+            )
+        ]
+
 class Submission(models.Model):
     """
     Test results get grouped in submissions.
 
     Basically a submission is a run of a whole test suite. Every test and parameter of that suit gets assigned to this submission
     """
-    project = models.ForeignKey(Project, on_delete=models.SET_NULL, null=True)
-    created = models.DateTimeField(auto_now_add=True)
-    updated = models.DateTimeField(auto_now=True)
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, null=True, related_name="submissions")
+    created = models.DateTimeField(default=timezone.now, editable=False, blank=True)
+    last_updated = models.DateTimeField(auto_now=True)
     info = models.JSONField(null=False, default=dict)
 
     class Meta:
@@ -77,8 +104,8 @@ class TestResult(models.Model):
     Model to store test results and metadata
     """
     name = models.CharField(max_length=100, blank=False, db_index=True)
-    submission = models.ForeignKey(Submission, on_delete=models.SET_NULL, null=True, default=None, related_name="tests")
-    first_submitted = models.DateTimeField(auto_now_add=True)
+    submission = models.ForeignKey(Submission, on_delete=models.CASCADE, null=True, default=None, related_name="tests")
+    created = models.DateTimeField(default=timezone.now, editable=False, blank=True)
     last_updated = models.DateTimeField(auto_now=True)
     results = models.JSONField(null=True)
 
@@ -116,8 +143,8 @@ class TestResult(models.Model):
     def get_next_not_successful_test_id(self):
         same_submission_tests = self.submission.tests.all()
         not_successful = same_submission_tests.filter(
-            first_submitted__gt=self.first_submitted
-        ).exclude(status = "successful").order_by("first_submitted").values("id").first()
+            created__gt=self.created
+        ).exclude(status = "successful").order_by("created").values("id").first()
         
         if not_successful:
             return not_successful["id"]
@@ -131,6 +158,38 @@ class TestResult(models.Model):
     class Meta:
         app_label = 'dtf'
 
+
+class ReferenceSet(models.Model):
+
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, null=True, related_name="reference_sets")
+
+    created = models.DateTimeField(default=timezone.now, editable=False, blank=True)
+    last_updated = models.DateTimeField(auto_now=True)
+
+    # We do use a special JSON decoder, that creates `OrderedDict` instead of `dict`
+    # objects. This will allow us to sort the properties by their keys, so that the
+    # ordering of entries does not mess with the `unique` database field constraint.
+    class OrderedDictJSONDecoder(json.JSONDecoder):
+        def __init__(self, *args, **kwargs):
+            kwargs['object_pairs_hook']=collections.OrderedDict
+            super().__init__(*args, **kwargs)
+    property_values = models.JSONField(decoder=OrderedDictJSONDecoder, null=False, default=collections.OrderedDict)
+
+    def save(self, *args, **kwargs):
+        if not isinstance(self.property_values, collections.OrderedDict):
+            self.property_values = collections.OrderedDict(sorted(self.property_values.items()))
+        super().save(*args, **kwargs)
+
+    class Meta:
+        app_label = 'dtf'
+
+        constraints = [
+            models.UniqueConstraint(
+                fields=['project', 'property_values'], 
+                name='unique_project_property_values'
+            )
+        ]
+
 class TestReference(models.Model):
     """
     Model to store references to every test
@@ -139,8 +198,12 @@ class TestReference(models.Model):
     The test_name is not, since the references can be from different test result \
         objects. The test name will be the same though. The test_name must not be UNIQUE constraint though, in order to allow equally named tests from multiple projects to be saved
     """
-    project = models.ForeignKey(Project, on_delete=models.SET_NULL, null=True)
+    reference_set = models.ForeignKey(ReferenceSet, on_delete=models.CASCADE, null=True, related_name="test_references")
     test_name = models.CharField(max_length=100, blank=False)
+
+    created = models.DateTimeField(default=timezone.now, editable=False, blank=True)
+    last_updated = models.DateTimeField(auto_now=True)
+
     # maybe this should just have a testresult as a foreign key?
     references = models.JSONField(null=False, default=dict)
 
@@ -157,9 +220,15 @@ class TestReference(models.Model):
         return self.references.get(value_name, None)
 
     def __str__(self):
-        if self.project:
-            return f"{self.test_name} [{self.project.name}]"
+        if self.reference_set:
+            return f"{self.test_name} [{self.reference_set.project.name}]"
         return f"{self.test_name} [None]"
 
     class Meta:
         app_label = 'dtf'
+        constraints = [
+            models.UniqueConstraint(
+                fields=['reference_set', 'test_name'], 
+                name='unique_test_reference_property'
+            )
+        ]
