@@ -54,6 +54,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'dtf.middleware.TimezoneMiddleware'
 ]
 
 ROOT_URLCONF = 'dtf.urls'
@@ -119,3 +120,7 @@ STATIC_URL = '/static/'
 
 # https://github.com/wagtail/wagtail/issues/4254
 DATA_UPLOAD_MAX_NUMBER_FIELDS = 10000
+
+# The default time zone to present dates/times in the front end
+# when no user is logged in.
+DTF_DEFAULT_DISPLAY_TIME_ZONE = "UTC"
