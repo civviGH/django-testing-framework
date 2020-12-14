@@ -1,6 +1,6 @@
 from django.shortcuts import render, get_object_or_404
 from django.db import IntegrityError
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, JsonResponse, HttpResponse
 from django.urls import reverse
 from django.forms import inlineformset_factory
 
@@ -18,7 +18,7 @@ from dtf.serializers import WebhookSerializer
 
 from dtf.models import TestResult, Project, ReferenceSet, TestReference, Submission, ProjectSubmissionProperty, Webhook
 from dtf.functions import create_view_data_from_test_references, get_project_by_id_or_slug, create_reference_query
-from dtf.forms import NewProjectForm, ProjectSettingsForm, ProjectSubmissionPropertyForm
+from dtf.forms import NewProjectForm, ProjectSettingsForm, ProjectSubmissionPropertyForm, WebhookForm
 
 """
 User views
@@ -45,25 +45,73 @@ def view_new_project(request):
     )
 
 def view_project_settings(request, project_slug):
-    PropertiesFormset = inlineformset_factory(Project, ProjectSubmissionProperty, fields=('name', 'required', 'display', 'display_replace', 'display_as_link', 'influence_reference'), form=ProjectSubmissionPropertyForm)
-
     project = get_object_or_404(Project, slug=project_slug)
-    properties = ProjectSubmissionProperty.objects.filter(project=project)
+    properties = project.properties.all()
+    webhooks = project.webhooks.all()
 
     if request.method == 'POST':
-        form = ProjectSettingsForm(request.POST, instance=project)
-        properties_formset = PropertiesFormset(request.POST, instance=project)
-        if form.is_valid() and properties_formset.is_valid():
-            form.save()
-            properties_formset.save()
-    else:
-        form = ProjectSettingsForm(instance=project)
-        properties_formset = PropertiesFormset(instance=project)
+        if request.POST.get('scope') == 'project':
+            project_form = ProjectSettingsForm(request.POST, instance=project)
 
+            if project_form.is_valid():
+                project_form.save()
+                serializer = ProjectSerializer(project_form.instance)
+                return JsonResponse({'result' : 'valid', 'property' : serializer.data})
+            else:
+                data = project_form.errors.get_json_data()
+                return JsonResponse({'result' : 'invalid', 'errors' : project_form.errors.get_json_data()})
+
+        if request.POST.get('scope') == 'property':
+            if request.POST.get('action') == 'add':
+                property_form = ProjectSubmissionPropertyForm(request.POST, initial={'project': project,})
+            elif request.POST.get('action') == 'edit':
+                try:
+                    prop = ProjectSubmissionProperty.objects.get(pk=request.POST.get('id', None))
+                except ProjectSubmissionProperty.DoesNotExist:
+                    return HttpResponse(status=status.HTTP_404_NOT_FOUND)
+                property_form = ProjectSubmissionPropertyForm(request.POST, initial={'project': project,}, instance=prop)
+            else:
+                return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
+
+            if property_form.is_valid():
+                property_form.save()
+                serializer = ProjectSubmissionPropertySerializer(property_form.instance)
+                return JsonResponse({'result' : 'valid', 'property' : serializer.data})
+            else:
+                data = property_form.errors.get_json_data()
+                return JsonResponse({'result' : 'invalid', 'errors' : property_form.errors.get_json_data()})
+
+        if request.POST.get('scope') == 'webhook':
+            if request.POST.get('action') == 'add':
+                webhook_form = WebhookForm(request.POST, initial={'project': project,})
+            elif request.POST.get('action') == 'edit':
+                try:
+                    webhook = Webhook.objects.get(pk=request.POST.get('id', None))
+                except Webhook.DoesNotExist:
+                    return HttpResponse(status=status.HTTP_404_NOT_FOUND)
+                webhook_form = WebhookForm(request.POST, initial={'project': project,}, instance=webhook)
+            else:
+                return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
+
+            if webhook_form.is_valid():
+                webhook_form.save()
+                serializer = WebhookSerializer(webhook_form.instance)
+                return JsonResponse({'result' : 'valid', 'webhook' : serializer.data})
+            else:
+                data = webhook_form.errors.get_json_data()
+                return JsonResponse({'result' : 'invalid', 'errors' : webhook_form.errors.get_json_data()})
+
+    # Not any valid POST request: return the site
+    project_form = ProjectSettingsForm(instance=project)
+    property_form = ProjectSubmissionPropertyForm(initial={'project': project})
+    webhook_form = WebhookForm(initial={'project': project,})
     return render(request, 'dtf/project_settings.html', {
         'project': project,
-        'form': form,
-        'properties_formset': properties_formset
+        'project_form': project_form,
+        'properties' : properties,
+        'property_form': property_form,
+        'webhooks' : webhooks,
+        'webhook_form': webhook_form
     })
 
 def view_project_details(request, project_slug):
