@@ -1,0 +1,17 @@
+
+{% load dtf.custom_filters %}
+
+{% if field.is_hidden %}
+  {{ field }}
+{% else %}
+
+  {{ field|add_bootstrap_class }}
+  <div class="invalid-feedback">
+  </div>
+
+  {% if field.widget_type == 'text' %}
+    {% if field.help_text %}
+      <small class="form-text text-muted">{{ field.help_text }}</small>
+    {% endif %}
+  {% endif %}
+{% endif %}

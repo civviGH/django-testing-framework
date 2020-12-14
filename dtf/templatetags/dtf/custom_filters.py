@@ -79,6 +79,15 @@ def as_bootstrap_field(field):
     return template.render(context)
 
 @register.filter
+def as_dynamic_bootstrap_field(field):
+    if not isinstance(field, forms.BoundField):
+        return field
+    attributes = {'field': field}
+    template = get_template("dtf/bootstrap/field_dynamic.html")
+    context = Context(attributes).flatten()
+    return template.render(context)
+
+@register.filter
 def add_bootstrap_class(field, add_class=""):
     if not isinstance(field, forms.BoundField):
         return field
