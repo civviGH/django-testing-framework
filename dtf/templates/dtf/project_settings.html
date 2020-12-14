@@ -1,10 +1,12 @@
 {% extends 'dtf/base.html' %}
 
+{% load static %}
+
 {% load dtf.custom_filters %}
 
 {% block body %}
 
-<div class="bg-white sticky-top pt-3 pb-1">
+<div class="bg-white pt-3 pb-1">
 
   <nav>
     <ol class="breadcrumb">
@@ -24,116 +26,420 @@
     </div>
   </div>
 
-  <h3>General</h3>
-  <form action="{% url 'project_settings' project.slug %}" method="post" novalidate>
-    {% csrf_token %}
-
-    <!-- General -->
-
-    {% for hidden_field in form.hidden_fields %}
-      {{ hidden_field }}
-    {% endfor %}
-
-    {% if form.non_field_errors %}
-      <div class="alert alert-danger" role="alert">
-        {% for error in form.non_field_errors %}
-          {{ error }}
-        {% endfor %}
-      </div>
-    {% endif %}
-
-    <div class="form-row">
-      <div class="form-group col-md">
-        {{ form.name.label_tag }}
-        {{ form.name|as_bootstrap_field }}
-      </div>
-      <div class="form-group col-">
-        {{ form.slug.label_tag }}
-        {{ form.slug|as_bootstrap_field }}
-      </div>
-      <div class="form-group col-">
-        <label for="project_id">ID:</label>
-        <input type="text" id="project_id" class="form-control" value="{{ project.id }}" disabled>
-      </div>
-    </div>
-
-    <!-- Properties -->
-    <h3>Properties</h3>
-
-    {{ properties_formset.management_form }}
-    <div class="form-row">
-      <div class="form-group col-sm">
-        <label>Name</label>
-      </div>
-      <div class="form-check col-1 text-center">
-        <label>Required</label>
-      </div>
-      <div class="form-check col-1 text-center">
-        <label>Display</label>
-      </div>
-      <div class="form-check col-sm text-center">
-        <label>Replace</label>
-      </div>
-      <div class="form-check col-1 text-center">
-        <label>As Link</label>
-      </div>
-      <div class="form-check col-1 text-center">
-        <label>Reference</label>
-      </div>
-      <div class="form-check col-1 text-center">
-        <label>Delete</label>
-      </div>
-    </div>
-    {% for property_form in properties_formset %}
-      <div class="form-row">
-        {% for hidden_field in property_form.hidden_fields %}
-          {{ hidden_field }}
-        {% endfor %}
-
-        {% if property_form.non_field_errors %}
-          <div class="alert alert-danger" role="alert">
-            {% for error in property_form.non_field_errors %}
-              {{ error }}
-            {% endfor %}
-          </div>
-        {% endif %}
-
-        <div class="form-group col-sm">
-          <label class="sr-only" for="{{ property_form.name.id_for_label }}">{{ property_form.name.label }}</label>
-          {{ property_form.name|as_bootstrap_field }}
-        </div>
-        <div class="form-check col-1 text-center">
-          {{ property_form.required|as_bootstrap_field }}
-          <label class="form-check-label sr-only" for="{{ property_form.required.id_for_label }}">{{ property_form.required.label }}</label>
-        </div>
-        <div class="form-check col-1 text-center">
-          {{ property_form.display|as_bootstrap_field }}
-          <label class="form-check-label sr-only" for="{{ property_form.display.id_for_label }}">{{ property_form.display.label }}</label>
-        </div>
-        <div class="form-group col-sm">
-          <label class="sr-only" for="{{ property_form.display_replace.id_for_label }}">{{ property_form.display_replace.label }}</label>
-          {{ property_form.display_replace|as_bootstrap_field }}
-        </div>
-        <div class="form-check col-1 text-center">
-          {{ property_form.display_as_link|as_bootstrap_field }}
-          <label class="form-check-label sr-only" for="{{ property_form.display_as_link.id_for_label }}">{{ property_form.display_as_link.label }}</label>
-        </div>
-        <div class="form-check col-1 text-center">
-          {{ property_form.influence_reference|as_bootstrap_field }}
-          <label class="form-check-label sr-only" for="{{ property_form.influence_reference.id_for_label }}">{{ property_form.influence_reference.label }}</label>
-        </div>
-        <div class="form-check col-1 text-center">
-          {{ property_form.DELETE|as_bootstrap_field }}
-          <label class="form-check-label sr-only" for="{{ property_form.DELETE.id_for_label }}">{{ property_form.DELETE.label }}</label>
-        </div>
-      </div>
-    {% endfor %}
-
-    <input type="submit" value="Save" class="btn btn-success">
-    <a class="btn btn-outline-secondary float-right" href="{% url 'project_details' project.slug %}">Cancel</a>
-  </form>
-
 </div>
 
+<div class="content">
+
+<section>
+  <div class="section-header">
+    <h3 data-toggle="collapse" data-target="#general" class="section-toggle collapsed" aria-expanded="false">General</h3>
+    <p>Change your projects name or move it to another URL.</p>
+  </div>
+
+  <div id="general" class="section-content collapse">
+    <form id="project_form_id" novalidate>
+      {% csrf_token %}
+
+      <!-- General -->
+
+      {% for hidden_field in project_form.hidden_fields %}
+        {{ hidden_field }}
+      {% endfor %}
+
+      <div class="alert alert-danger" role="alert" hidden>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group col-md">
+          {{ project_form.name.label_tag }}
+          {{ project_form.name|as_dynamic_bootstrap_field }}
+        </div>
+        <div class="form-group col-">
+          {{ project_form.slug.label_tag }}
+          {{ project_form.slug|as_dynamic_bootstrap_field }}
+        </div>
+        <div class="form-group col-">
+          <label for="project_id">ID:</label>
+          <input type="text" id="project_id" class="form-control" value="{{ project.id }}" disabled>
+        </div>
+      </div>
+
+      <input type="submit" value="Save" name="edit" class="btn btn-success btn-sm">
+    </form>
+  </div>
+</section>
+
+<hr>
+
+<section>
+  <div class="section-header">
+    <h3 data-toggle="collapse" data-target="#properties" class="section-toggle collapsed" aria-expanded="false">Properties</h3>
+    <p>Add properties to your project to control what additional information can be attached to submissions.</p>
+  </div>
+
+  <div id="properties" class="section-content collapse">
+    <form id="property_form_id" novalidate>
+      {% csrf_token %}
+
+      {% for hidden_field in property_form.hidden_fields %}
+        {{ hidden_field }}
+      {% endfor %}
+
+      <div class="alert alert-danger" role="alert" hidden>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group col-md">
+          {{ property_form.name.label_tag }}
+          {{ property_form.name|as_dynamic_bootstrap_field }}
+        </div>
+      </div>
+      <div class="form-check col-md">
+        {{ property_form.required|as_dynamic_bootstrap_field }}
+        <label class="form-check-label" for="{{ property_form.required.id_for_label }}">{{ property_form.required.label }}</label>
+        {% if property_form.required.help_text %}
+          <small class="form-text text-muted">{{ property_form.required.help_text }}</small>
+        {% endif %}
+      </div>
+      <div class="form-check col-md">
+        {{ property_form.influence_reference|as_dynamic_bootstrap_field }}
+        <label class="form-check-label" for="{{ property_form.influence_reference.id_for_label }}">{{ property_form.influence_reference.label }}</label>
+        {% if property_form.influence_reference.help_text %}
+          <small class="form-text text-muted">{{ property_form.influence_reference.help_text }}</small>
+        {% endif %}
+      </div>
+      <div class="form-check col-md">
+        {{ property_form.display|as_dynamic_bootstrap_field }}
+        <label class="form-check-label" for="{{ property_form.display.id_for_label }}">{{ property_form.display.label }}</label>
+        {% if property_form.display.help_text %}
+          <small class="form-text text-muted">{{ property_form.display.help_text }}</small>
+        {% endif %}
+      </div>
+      <div class="form-check col-md">
+        {{ property_form.display_as_link|as_dynamic_bootstrap_field }}
+        <label class="form-check-label" for="{{ property_form.display_as_link.id_for_label }}">{{ property_form.display_as_link.label }}</label>
+        {% if property_form.display_as_link.help_text %}
+          <small class="form-text text-muted">{{ property_form.display_as_link.help_text }}</small>
+        {% endif %}
+      </div>
+      <div class="form-row">
+        <div class="form-group col-md">
+          {{ property_form.display_replace.label_tag }}
+          {{ property_form.display_replace|as_dynamic_bootstrap_field }}
+        </div>
+      </div>
+
+      <input type="submit" value="Add property" name="add" class="btn btn-success btn-sm">
+      <input type="submit" value="Save changes" name="edit" class="btn btn-success btn-sm" hidden>
+      <a id="property_edit_cancel" class="btn btn-outline-secondary btn-sm float-right" onclick="cancelEditProperty()" hidden>Cancel</a>
+    </form>
+
+    <table id="property_table" class="table table-hover table-sm mt-md-3">
+      <thead>
+        <tr>
+          <th scope="col" class="col-auto">Name</th>
+          <th scope="col" class="col-sm-auto text-center">Required</th>
+          <th scope="col" class="col-sm-auto text-center">Reference</th>
+          <th scope="col" class="col-sm-auto text-center">Display</th>
+          <th scope="col" class="col-sm-auto"><span hidden>Controls</span></th>
+        </tr>
+      </thead>
+      <tbody>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<hr>
+
+<section>
+  <div class="section-header">
+    <h3 data-toggle="collapse" data-target="#webhooks" class="section-toggle collapsed" aria-expanded="false">Webhooks</h3>
+    <p>Use Webhooks to notify downstream applications about changes in this project.</p>
+  </div>
+
+  <div id="webhooks" class="section-content collapse">
+    <form id="webhook_form_id" novalidate>
+      {% csrf_token %}
+
+      {% for hidden_field in webhook_form.hidden_fields %}
+        {{ hidden_field }}
+      {% endfor %}
+
+      <div class="alert alert-danger" role="alert" hidden>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group col-md">
+          {{ webhook_form.name.label_tag }}
+          {{ webhook_form.name|as_dynamic_bootstrap_field }}
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group col-md">
+          {{ webhook_form.url.label_tag }}
+          {{ webhook_form.url|as_dynamic_bootstrap_field }}
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group col-md">
+          {{ webhook_form.secret_token.label_tag }}
+          {{ webhook_form.secret_token|as_dynamic_bootstrap_field }}
+        </div>
+      </div>
+      
+      <div class="form-group">
+        <label>Triggers:</label>
+        <div class="form-check col-md">
+          {{ webhook_form.on_submission|as_dynamic_bootstrap_field }}
+          <label class="form-check-label" for="{{ webhook_form.on_submission.id_for_label }}">{{ webhook_form.on_submission.label }}</label>
+          {% if webhook_form.on_submission.help_text %}
+            <small class="form-text text-muted">{{ webhook_form.on_submission.help_text }}</small>
+          {% endif %}
+        </div>
+        <div class="form-check col-md">
+          {{ webhook_form.on_test_result|as_dynamic_bootstrap_field }}
+          <label class="form-check-label" for="{{ webhook_form.on_test_result.id_for_label }}">{{ webhook_form.on_test_result.label }}</label>
+          {% if webhook_form.on_test_result.help_text %}
+            <small class="form-text text-muted">{{ webhook_form.on_test_result.help_text }}</small>
+          {% endif %}
+        </div>
+        <div class="form-check col-md">
+          {{ webhook_form.on_reference_set|as_dynamic_bootstrap_field }}
+          <label class="form-check-label" for="{{ webhook_form.on_reference_set.id_for_label }}">{{ webhook_form.on_reference_set.label }}</label>
+          {% if webhook_form.on_reference_set.help_text %}
+            <small class="form-text text-muted">{{ webhook_form.on_reference_set.help_text }}</small>
+          {% endif %}
+        </div>
+        <div class="form-check col-md">
+          {{ webhook_form.on_test_reference|as_dynamic_bootstrap_field }}
+          <label class="form-check-label" for="{{ webhook_form.on_test_reference.id_for_label }}">{{ webhook_form.on_test_reference.label }}</label>
+          {% if webhook_form.on_test_reference.help_text %}
+            <small class="form-text text-muted">{{ webhook_form.on_test_reference.help_text }}</small>
+          {% endif %}
+        </div>
+      </div>
+
+      <input type="submit" value="Add webhook" name="add" class="btn btn-success btn-sm">
+      <input type="submit" value="Save changes" name="edit" class="btn btn-success btn-sm" hidden>
+      <a id="webhook_edit_cancel" class="btn btn-outline-secondary btn-sm float-right" onclick="cancelEditWebhook()" hidden>Cancel</a>
+    </form>
+
+    <table id="webhook_table" class="table table-hover table-sm mt-md-3">
+      <thead>
+        <tr>
+          <th scope="col" class="col-auto">Name</th>
+          <th scope="col" class="col-auto">URL</th>
+          <th scope="col" class="col-sm-auto"><span hidden>Controls</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% comment %} Will be added by JavaScript {% endcomment %}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<script src="{% static 'dtf/dynamic_forms.js' %}"></script>
+
+<script>
+
+    function deleteWebhook(webhook_id) {
+      deleteInstance('/api/projects/{{ project.id }}/webhooks/', webhook_id, '#webhook_', "{{ csrf_token }}")
+    }
+
+    function startEditWebhook(webhook_id) {
+      startEditInstance( '/api/projects/{{ project.id }}/webhooks/', webhook_id, '#webhook_', "{{ csrf_token }}")
+    }
+
+    function cancelEditWebhook() {
+      cancelEditInstance('#webhook_')
+    }
+
+    function addWebhookRow(data) {
+        $("#webhook_table").find('tbody')
+          .append($('<tr>')
+              .attr('id', 'webhook_' + data['id'])
+              .append($('<td>')
+                  .text(data['name'])
+              )
+              .append($('<td>')
+                  .text(data['url'])
+              )
+              .append($('<td>')
+                  .attr('class', 'text-right fit')
+                  .append($('<div>')
+                      .append($('<button>')
+                          .attr('class', 'btn btn-outline-success btn-sm mr-md-1 ml-md-1')
+                          .append($('<i>')
+                              .attr('class', 'bi bi-play')
+                          )
+                      )
+                      .append($('<button>')
+                          .attr('class', 'btn btn-outline-dark btn-sm mr-md-1 ml-md-1')
+                          .attr('onclick', 'startEditWebhook(' + data['id'] + ')')
+                          .append($('<i>')
+                              .attr('class', 'bi bi-pencil')
+                          )
+                      )
+                      .append($('<button>')
+                          .attr('class', 'btn btn-danger btn-sm mr-md-1 ml-md-1')
+                          .attr('onclick', 'deleteWebhook(' + data['id'] + ')')
+                          .append($('<i>')
+                              .attr('class', 'bi bi-trash')
+                          )
+                      )
+                  )
+              )
+        );
+    }
+
+    function updateWebhookRow(data) {
+      let tableData = $("#webhook_" + data['id']).find('td')
+      $(tableData[0]).text(data['name'])
+      $(tableData[1]).text(data['url'])
+    }
+
+    function deleteProperty(property_id) {
+      deleteInstance('/api/projects/{{ project.id }}/properties/', property_id, '#property_', "{{ csrf_token }}")
+    }
+
+    function startEditProperty(property_id) {
+      startEditInstance( '/api/projects/{{ project.id }}/properties/', property_id, '#property_', "{{ csrf_token }}")
+    }
+
+    function cancelEditProperty() {
+      cancelEditInstance('#property_')
+    }
+
+    function addPropertyRow(data) {
+        let row = $('<tr>')
+              .attr('id', 'property_' + data['id'])
+              .append($('<td>')
+                  .text(data['name'])
+              )
+              .append($('<td>')
+                  .attr('class', 'text-center')
+              )
+              .append($('<td>')
+                  .attr('class', 'text-center')
+              )
+              .append($('<td>')
+                  .attr('class', 'text-center')
+              )
+              .append($('<td>')
+                  .attr('class', 'text-right fit')
+                  .append($('<div>')
+                      .append($('<button>')
+                          .attr('class', 'btn btn-outline-dark btn-sm mr-md-1 ml-md-1')
+                          .attr('onclick', 'startEditProperty(' + data['id'] + ')')
+                          .append($('<i>')
+                              .attr('class', 'bi bi-pencil')
+                          )
+                      )
+                      .append($('<button>')
+                          .attr('class', 'btn btn-danger btn-sm mr-md-1 ml-md-1')
+                          .attr('onclick', 'deleteProperty(' + data['id'] + ')')
+                          .append($('<i>')
+                              .attr('class', 'bi bi-trash')
+                          )
+                      )
+                  )
+              )
+        
+        let tableData = row.find('td');
+        if(data['required']) {
+          $(tableData[1]).append($('<i>').attr('class', 'bi bi-x-circle'))
+        }
+        if(data['influence_reference']) {
+          $(tableData[2]).append($('<i>').attr('class', 'bi bi-x-circle'))
+        }
+        if(data['display']) {
+          $(tableData[3]).append($('<i>').attr('class', 'bi bi-x-circle'))
+        }
+        $("#property_table").find('tbody').append(row);
+    }
+
+    function updatePropertyRow(data) {
+      let tableData = $("#property_" + data['id']).find('td')
+
+      $(tableData[0]).text(data['name'])
+
+      $(tableData[1]).empty();
+      if(data['required']) {
+        $(tableData[1]).append($('<i>').attr('class', 'bi bi-x-circle'))
+      }
+
+      $(tableData[2]).empty();
+      if(data['influence_reference']) {
+        $(tableData[2]).append($('<i>').attr('class', 'bi bi-x-circle'))
+      }
+
+      $(tableData[3]).empty();
+      if(data['display']) {
+        $(tableData[3]).append($('<i>').attr('class', 'bi bi-x-circle'))
+      }
+    }
+
+    $(function () {
+      $("#project_form_id :submit").click(function (ev) {
+          ev.preventDefault()
+          submitForm('{% url 'project_settings' project.slug %}', "#project_", 'project', 'add', "{{ csrf_token }}", function(data){
+            location.reload();
+          })
+      });
+
+      $("#property_form_id :submit").click(function (ev) {
+          ev.preventDefault()
+          if ($(this).attr("name") == "add") {
+            submitForm('{% url 'project_settings' project.slug %}', "#property_", 'property', 'add', "{{ csrf_token }}", function(data){
+              addPropertyRow(data);
+              resetForm("#property_form_id");
+            });
+          }
+          if ($(this).attr("name") == "edit") {
+            submitForm('{% url 'project_settings' project.slug %}', "#property_", 'property', 'edit', "{{ csrf_token }}", function(data){
+              updatePropertyRow(data);
+              cancelEditInstance("#property_");
+            });
+          }
+      });
+
+      $("#webhook_form_id :submit").click(function (ev) {
+          ev.preventDefault()
+          if ($(this).attr("name") == "add") {
+            submitForm('{% url 'project_settings' project.slug %}', "#webhook_", 'webhook', 'add', "{{ csrf_token }}", function(data){
+              addWebhookRow(data);
+              resetForm("#webhook_form_id");
+            });
+          }
+          if ($(this).attr("name") == "edit") {
+            submitForm('{% url 'project_settings' project.slug %}', "#webhook_", 'webhook', 'edit', "{{ csrf_token }}", function(data){
+              updateWebhookRow(data);
+              cancelEditInstance("#webhook_");
+            });
+          }
+      });
+  });
+
+  {% for property in properties %}
+      addPropertyRow({'id'   : {{ property.id }},
+                      'name' : '{{ property.name }}',
+                      'required' : '{{ property.required }}' == 'True',
+                      'display'  : '{{ property.display }}' == 'True',
+                      'influence_reference' : '{{ property.influence_reference }}' == 'True',
+                     })
+  {% endfor %}
+
+  {% for webhook in webhooks %}
+      addWebhookRow({'id'   : {{ webhook.id }},
+                     'name' : '{{ webhook.name }}',
+                     'url'  : '{{ webhook.url }}',
+                    })
+  {% endfor %}
+</script>
+
+
+</div>
 
 {% endblock %}

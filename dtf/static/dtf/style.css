@@ -35,3 +35,21 @@ img {
               user-select: none; /* Non-prefixed version, currently
                                     supported by Chrome, Edge, Opera and Firefox */
   }
+
+.table td.fit, 
+.table th.fit {
+    white-space: nowrap;
+    width: 1%;
+}
+
+.section-header .section-toggle:before {
+    font-family: 'bootstrap-icons';
+    content: "\f273";
+    float: left;
+    margin-right: 0.5rem;
+    transition: all 0.5s ease;
+}
+
+.section-header .section-toggle.collapsed:before {
+    transform: rotate(90deg);
+}
