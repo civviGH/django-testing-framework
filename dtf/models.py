@@ -232,3 +232,18 @@ class TestReference(models.Model):
                 name='unique_test_reference_property'
             )
         ]
+
+class Webhook(models.Model):
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, null=False, related_name="webhooks")
+
+    name = models.CharField(max_length=100, blank=False)
+    url = models.URLField(null=False, blank=False)
+    secret_token = models.CharField(max_length=200, null=False, blank=False)
+
+    on_submission     = models.BooleanField(default=True)
+    on_test_result    = models.BooleanField(default=True)
+    on_reference_set  = models.BooleanField(default=True)
+    on_test_reference = models.BooleanField(default=True)
+
+    class Meta:
+        app_label = 'dtf'
