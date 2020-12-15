@@ -1,10 +1,33 @@
 
+import concurrent
+
 import requests
 
 from django.db.models import signals
 
 from dtf.models import Submission, TestResult, ReferenceSet, TestReference
 from dtf.serializers import SubmissionSerializer, TestResultSerializer, ReferenceSetSerializer, TestReferenceSerializer
+
+class WebhookExecutionPool(concurrent.futures.ThreadPoolExecutor):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._outstanding_futures = []
+
+    def submit(self, *args, **kwargs):
+        future = super().submit(*args, **kwargs)
+
+        self._outstanding_futures.append(future)
+        future.add_done_callback(lambda f: self._outstanding_futures.remove(f))
+
+        return future
+
+    def wait(self, timeout=None):
+        current_outstanging = list(self._outstanding_futures)
+        concurrent.futures.wait(current_outstanging, timeout=timeout)
+
+webhook_execution_pool = WebhookExecutionPool(max_workers=4)
+
 
 def _submit_webhook_request(request):
     prepared_request = request.prepare()
@@ -25,7 +48,7 @@ def trigger_webhook(webhook, data):
 
     request = requests.Request('POST', webhook.url, data=data, headers=headers)
 
-    _submit_webhook_request(request)
+    webhook_execution_pool.submit(_submit_webhook_request, request)
 
 def _get_webhooks(instance):
     if isinstance(instance, Submission):
