@@ -115,7 +115,8 @@ class WebhooksTest(TestCase):
 
     def test_on_test_result(self):
         submission = Submission(project=self.project)
-        submission.save()
+        with patch('dtf.webhooks._submit_webhook_request'):
+            submission.save()
         test_result = TestResult(submission=submission, name="Test 1", results=[{'name' : 'Result1', 'value' : 1, 'valuetype' : 'integer', 'status' : 'successful'}])
 
         # Create
@@ -161,7 +162,9 @@ class WebhooksTest(TestCase):
 
     def test_on_reference_set(self):
         submission = Submission(project=self.project)
-        submission.save()
+        with patch('dtf.webhooks._submit_webhook_request'):
+            submission.save()
+
         reference_set = ReferenceSet(project=self.project, property_values={"Key" : "Value"})
 
         # Create
@@ -206,11 +209,17 @@ class WebhooksTest(TestCase):
 
     def test_on_test_reference(self):
         submission = Submission(project=self.project)
-        submission.save()
+        with patch('dtf.webhooks._submit_webhook_request'):
+            submission.save()
+
         test_result = TestResult(submission=submission, name="Test 1", results=[{'name' : 'Result1', 'value' : 1, 'valuetype' : 'integer', 'status' : 'successful'}])
-        test_result.save()
+        with patch('dtf.webhooks._submit_webhook_request'):
+            test_result.save()
+
         reference_set = ReferenceSet(project=self.project, property_values={"Key" : "Value"})
-        reference_set.save()
+        with patch('dtf.webhooks._submit_webhook_request'):
+            reference_set.save()
+
         test_reference = TestReference(reference_set=reference_set, test_name="Test 1", references={'Result1' : {'value' : 2, 'ref_id' : test_result.id}})
 
         # Create
