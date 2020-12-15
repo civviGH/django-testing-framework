@@ -43,10 +43,9 @@ def _submit_webhook_request(request):
 def trigger_webhook(webhook, data):
     headers = {
         "X-DTF-Token": webhook.secret_token,
-        "Content-Type": "application/json"
     }
 
-    request = requests.Request('POST', webhook.url, data=data, headers=headers)
+    request = requests.Request('POST', webhook.url, json=data, headers=headers)
 
     webhook_execution_pool.submit(_submit_webhook_request, request)
 
