@@ -277,7 +277,7 @@
                       .text(data['name'])
                   )
                   .append($('<a>')
-                      .attr('href', '#')
+                      .attr('href', '{% url 'webhook_log' project.slug 1234%}'.replace('1234', data['id']))
                       .attr('class', 'mr-md-1 ml-md-1 badge ' + status_badge_class)
                       .text(data['status'])
                   )

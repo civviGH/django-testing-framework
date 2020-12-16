@@ -53,3 +53,12 @@ img {
 .section-header .section-toggle.collapsed:before {
     transform: rotate(90deg);
 }
+
+.table-hover > tbody > tr.no-hover:hover,
+.no-hover {
+    background-color: transparent;
+}
+
+.highlight {
+    background-color: #f6f6f6;
+}
