@@ -1,3 +1,5 @@
+import json
+
 from django import template
 from django.template import Context
 from django.template.loader import get_template
@@ -103,3 +105,17 @@ def add_bootstrap_class(field, add_class=""):
     bootstrap_class = bootstrap_classes_per_widget.get(field.widget_type, None)
     new_class = ' '.join(filter(None, [current_class, bootstrap_class, add_class]))
     return field.as_widget(attrs={'class' : new_class})
+
+@register.filter
+def format_json(data):
+    return json.dumps(data, indent=2)
+
+@register.filter
+def print_webhook_log_response(log_entry):
+    lower_case_header = dict((k.lower(),v) for k,v in log_entry.response_headers.items())
+    if 'content-type' in lower_case_header and lower_case_header['content-type'].lower() == "application/json":
+        try:
+            return format_json(json.loads(log_entry.response_data))
+        except:
+            return log_entry.response_data
+    return log_entry.response_data

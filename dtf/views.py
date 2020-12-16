@@ -115,6 +115,14 @@ def view_project_settings(request, project_slug):
         'webhook_form': webhook_form
     })
 
+
+def view_webhook_log(request, project_slug, webhook_id):
+    project = get_object_or_404(Project, slug=project_slug)
+    webhook = project.webhooks.get(id=webhook_id)
+    return render(request, 'dtf/webhook_log.html', {
+        'webhook': webhook,
+    })
+
 def view_project_details(request, project_slug):
     project = get_object_or_404(Project, slug=project_slug)
     properties = ProjectSubmissionProperty.objects.filter(project=project)

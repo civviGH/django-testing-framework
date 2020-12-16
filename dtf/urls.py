@@ -15,6 +15,7 @@ urlpatterns = [
     path('projects/new', views.view_new_project, name='new_project'),
     path('<str:project_slug>', views.view_project_details, name='project_details'),
     path('<str:project_slug>/settings', views.view_project_settings, name='project_settings'),
+    path('<str:project_slug>/webhook/<int:webhook_id>/log', views.view_webhook_log, name='webhook_log'),
     path('submission_details/<int:submission_id>', views.view_submission_details, name='submission_details'),
     path('test_details/<int:test_id>', views.view_test_result_details, name='test_result_details'),
 
