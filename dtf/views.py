@@ -15,6 +15,7 @@ from dtf.serializers import TestReferenceSerializer
 from dtf.serializers import SubmissionSerializer
 from dtf.serializers import ProjectSubmissionPropertySerializer
 from dtf.serializers import WebhookSerializer
+from dtf.serializers import WebhookLogEntrySerializer
 
 from dtf.models import TestResult, Project, ReferenceSet, TestReference, Submission, ProjectSubmissionProperty, Webhook
 from dtf.functions import create_view_data_from_test_references, get_project_by_id_or_slug, create_reference_query
@@ -307,6 +308,20 @@ def project_webhook(request, project_id, webhook_id):
     elif request.method == 'DELETE':
         webhook.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+@api_view(["GET"])
+def project_webhook_logs(request, project_id, webhook_id):
+    project = get_project_by_id_or_slug(project_id)
+    if project is None:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+    try:
+        webhook = Webhook.objects.get(project=project, pk=webhook_id)
+    except Webhook.DoesNotExist:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+
+    if request.method == 'GET':
+        serializer = WebhookLogEntrySerializer(webhook.logs, many=True)
+        return Response(serializer.data, status.HTTP_200_OK)
 
 """
 Project Submission API endpoints
