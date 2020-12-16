@@ -245,6 +245,12 @@ class Webhook(models.Model):
     on_reference_set  = models.BooleanField(default=True)
     on_test_reference = models.BooleanField(default=True)
 
+    def most_recent_status(self):
+        recent_log = WebhookLogEntry.objects.filter(webhook=self).order_by('-created').first()
+        if recent_log is None:
+            return None
+        return recent_log.response_status
+
     class Meta:
         app_label = 'dtf'
 

@@ -257,11 +257,30 @@
     }
 
     function addWebhookRow(data) {
+        if(data['status'] == "unknown") {
+            var status_badge_class = 'badge-secondary'
+        }
+        else if(data['status'] >= 200 && data['status'] < 300) {
+            var status_badge_class = 'badge-success'
+        }
+        else if(data['status'] >= 400 && data['status'] < 600) {
+            var status_badge_class = 'badge-danger'
+        }
+        else {
+            var status_badge_class = 'badge-warning'
+        }
         $("#webhook_table").find('tbody')
           .append($('<tr>')
               .attr('id', 'webhook_' + data['id'])
               .append($('<td>')
-                  .text(data['name'])
+                  .append($('<span>')
+                      .text(data['name'])
+                  )
+                  .append($('<a>')
+                      .attr('href', '#')
+                      .attr('class', 'mr-md-1 ml-md-1 badge ' + status_badge_class)
+                      .text(data['status'])
+                  )
               )
               .append($('<td>')
                   .text(data['url'])
@@ -296,7 +315,7 @@
 
     function updateWebhookRow(data) {
       let tableData = $("#webhook_" + data['id']).find('td')
-      $(tableData[0]).text(data['name'])
+      $(tableData[0]).find('span').first().text(data['name'])
       $(tableData[1]).text(data['url'])
     }
 
@@ -409,6 +428,7 @@
           ev.preventDefault()
           if ($(this).attr("name") == "add") {
             submitForm('{% url 'project_settings' project.slug %}', "#webhook_", 'webhook', 'add', "{{ csrf_token }}", function(data){
+              data['status'] = 'unknown';
               addWebhookRow(data);
               resetForm("#webhook_form_id");
             });
@@ -432,9 +452,14 @@
   {% endfor %}
 
   {% for webhook in webhooks %}
-      addWebhookRow({'id'   : {{ webhook.id }},
-                     'name' : '{{ webhook.name }}',
-                     'url'  : '{{ webhook.url }}',
+      addWebhookRow({'id'     : {{ webhook.id }},
+                     'name'   : '{{ webhook.name }}',
+                     'url'    : '{{ webhook.url }}',
+                     {% if webhook.most_recent_status is None %}
+                     'status' : 'unknown',
+                     {% else %}
+                     'status' : '{{ webhook.most_recent_status }}',
+                     {% endif %}
                     })
   {% endfor %}
 </script>
