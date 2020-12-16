@@ -1,12 +1,13 @@
 
 import concurrent
+import json
 
 import requests
 
 from django.conf import settings
 from django.db.models import signals
 
-from dtf.models import Submission, TestResult, ReferenceSet, TestReference
+from dtf.models import Submission, TestResult, ReferenceSet, TestReference, WebhookLogEntry
 from dtf.serializers import SubmissionSerializer, TestResultSerializer, ReferenceSetSerializer, TestReferenceSerializer
 
 class WebhookExecutionPool(concurrent.futures.ThreadPoolExecutor):
@@ -30,17 +31,35 @@ class WebhookExecutionPool(concurrent.futures.ThreadPoolExecutor):
 if settings.DTF_WEBHOOK_THREADPOOL:
     webhook_execution_pool = WebhookExecutionPool(max_workers=4)
 
-
-def _submit_webhook_request(request):
+def _submit_webhook_request(request, webhook_id):
     prepared_request = request.prepare()
 
     with requests.Session() as session:
         try:
             response = session.send(prepared_request)
-        except requests.RequestException as e:
-            pass
+        except requests.RequestException as exception:
+            webhook_log = WebhookLogEntry(webhook_id=webhook_id,
+                                          request_url=request.url,
+                                          request_data=request.json,
+                                          request_headers=dict(prepared_request.headers),
+                                          response_status=0,
+                                          response_data=str(exception),
+                                          response_headers=dict())
         else:
-            pass
+            webhook_log = WebhookLogEntry(webhook_id=webhook_id,
+                                          request_url=request.url,
+                                          request_data=request.json,
+                                          request_headers=dict(prepared_request.headers),
+                                          response_status=response.status_code,
+                                          response_data=response.text,
+                                          response_headers=dict(response.headers))
+
+    webhook_log.save()
+
+    # Delete old log entries
+    max_logs_to_keep = 10
+    log_ids = WebhookLogEntry.objects.filter(webhook_id=webhook_id).order_by('-created')[max_logs_to_keep:].values_list("id", flat=True)
+    WebhookLogEntry.objects.filter(pk__in=log_ids).delete()
 
 def trigger_webhook(webhook, data):
     headers = {
@@ -50,9 +69,9 @@ def trigger_webhook(webhook, data):
     request = requests.Request('POST', webhook.url, json=data, headers=headers)
 
     if settings.DTF_WEBHOOK_THREADPOOL:
-        webhook_execution_pool.submit(_submit_webhook_request, request)
+        webhook_execution_pool.submit(_submit_webhook_request, request, webhook.id)
     else:
-        _submit_webhook_request(request)
+        _submit_webhook_request(request, webhook.id)
 
 def _get_webhooks(instance):
     if isinstance(instance, Submission):

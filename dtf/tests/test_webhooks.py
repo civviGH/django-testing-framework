@@ -6,7 +6,7 @@ from unittest.mock import Mock, patch
 
 from django.test import TestCase, override_settings
 
-from dtf.models import Project, TestResult, ReferenceSet, TestReference, Submission, Webhook
+from dtf.models import Project, TestResult, ReferenceSet, TestReference, Submission, Webhook, WebhookLogEntry
 from dtf.serializers import SubmissionSerializer, TestResultSerializer, ReferenceSetSerializer, TestReferenceSerializer
 
 @override_settings(DTF_WEBHOOK_THREADPOOL=False)
@@ -57,8 +57,8 @@ class WebhooksTest(TestCase):
 
         self._mock_response = Mock(spec=requests.Response)
         self._mock_response.status_code = 200
-        self._mock_response.data = {}
-        self._mock_response.headers = {}
+        self._mock_response.text = "some content"
+        self._mock_response.headers = {"X-Some-Header" : "value"}
 
     def _check_webhook_submission(self, call_args, event_type, data, required_webhooks):
         (prepared_request,) = call_args.args
@@ -83,6 +83,15 @@ class WebhooksTest(TestCase):
 
         self.assertTrue(found_webhook)
 
+        self.assertGreater(webhook.logs.count(), 0)
+        log_entry = webhook.logs.last()
+        self.assertEqual(log_entry.request_url, prepared_request.url)
+        self.assertEqual(log_entry.request_data, request_data)
+        self.assertEqual(log_entry.request_headers, prepared_request.headers)
+        self.assertEqual(log_entry.response_status, self._mock_response.status_code)
+        self.assertEqual(log_entry.response_data, self._mock_response.text)
+        self.assertEqual(log_entry.response_headers, self._mock_response.headers)
+
     def test_on_submission(self):
         submission = Submission(project=self.project)
 
@@ -90,6 +99,7 @@ class WebhooksTest(TestCase):
         with patch('dtf.webhooks.requests.Session.send', return_value=self._mock_response) as send_mock:
             submission.save()
             self.assertEqual(send_mock.call_count, 2)
+            self.assertEqual(WebhookLogEntry.objects.count(), 2)
 
             required_webhooks = [self.all_webhook, self.submission_webhook]
 
