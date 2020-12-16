@@ -3,6 +3,7 @@ import concurrent
 
 import requests
 
+from django.conf import settings
 from django.db.models import signals
 
 from dtf.models import Submission, TestResult, ReferenceSet, TestReference
@@ -26,7 +27,8 @@ class WebhookExecutionPool(concurrent.futures.ThreadPoolExecutor):
         current_outstanging = list(self._outstanding_futures)
         concurrent.futures.wait(current_outstanging, timeout=timeout)
 
-webhook_execution_pool = WebhookExecutionPool(max_workers=4)
+if settings.DTF_WEBHOOK_THREADPOOL:
+    webhook_execution_pool = WebhookExecutionPool(max_workers=4)
 
 
 def _submit_webhook_request(request):
@@ -47,7 +49,10 @@ def trigger_webhook(webhook, data):
 
     request = requests.Request('POST', webhook.url, json=data, headers=headers)
 
-    webhook_execution_pool.submit(_submit_webhook_request, request)
+    if settings.DTF_WEBHOOK_THREADPOOL:
+        webhook_execution_pool.submit(_submit_webhook_request, request)
+    else:
+        _submit_webhook_request(request)
 
 def _get_webhooks(instance):
     if isinstance(instance, Submission):
