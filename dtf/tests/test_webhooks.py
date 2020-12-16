@@ -60,7 +60,7 @@ class WebhooksTest(TestCase):
         self._mock_response.text = "some content"
         self._mock_response.headers = {"X-Some-Header" : "value"}
 
-    def _check_webhook_submission(self, call_args, event_type, data, required_webhooks):
+    def _check_webhook_submission(self, call_args, sender, event_type, data, required_webhooks):
         (prepared_request,) = call_args.args
 
         self.assertEqual(prepared_request.method, "POST")
@@ -86,6 +86,7 @@ class WebhooksTest(TestCase):
         self.assertGreater(webhook.logs.count(), 0)
         log_entry = webhook.logs.last()
         self.assertEqual(log_entry.request_url, prepared_request.url)
+        self.assertEqual(log_entry.trigger, sender.__name__)
         self.assertEqual(log_entry.request_data, request_data)
         self.assertEqual(log_entry.request_headers, prepared_request.headers)
         self.assertEqual(log_entry.response_status, self._mock_response.status_code)
@@ -104,8 +105,8 @@ class WebhooksTest(TestCase):
             required_webhooks = [self.all_webhook, self.submission_webhook]
 
             data = SubmissionSerializer(submission).data
-            self._check_webhook_submission(send_mock.call_args_list[0], 'create', data, required_webhooks)
-            self._check_webhook_submission(send_mock.call_args_list[1], 'create', data, required_webhooks)
+            self._check_webhook_submission(send_mock.call_args_list[0], Submission, 'create', data, required_webhooks)
+            self._check_webhook_submission(send_mock.call_args_list[1], Submission, 'create', data, required_webhooks)
 
             self.assertEqual(len(required_webhooks), 0)
 
@@ -118,8 +119,8 @@ class WebhooksTest(TestCase):
             required_webhooks = [self.all_webhook, self.submission_webhook]
 
             data = SubmissionSerializer(submission).data
-            self._check_webhook_submission(send_mock.call_args_list[0], 'edit', data, required_webhooks)
-            self._check_webhook_submission(send_mock.call_args_list[1], 'edit', data, required_webhooks)
+            self._check_webhook_submission(send_mock.call_args_list[0], Submission, 'edit', data, required_webhooks)
+            self._check_webhook_submission(send_mock.call_args_list[1], Submission, 'edit', data, required_webhooks)
 
             self.assertEqual(len(required_webhooks), 0)
 
@@ -131,8 +132,8 @@ class WebhooksTest(TestCase):
 
             required_webhooks = [self.all_webhook, self.submission_webhook]
 
-            self._check_webhook_submission(send_mock.call_args_list[0], 'delete', data, required_webhooks)
-            self._check_webhook_submission(send_mock.call_args_list[1], 'delete', data, required_webhooks)
+            self._check_webhook_submission(send_mock.call_args_list[0], Submission, 'delete', data, required_webhooks)
+            self._check_webhook_submission(send_mock.call_args_list[1], Submission, 'delete', data, required_webhooks)
 
             self.assertEqual(len(required_webhooks), 0)
 
@@ -150,8 +151,8 @@ class WebhooksTest(TestCase):
             required_webhooks = [self.all_webhook, self.test_result_webhook]
 
             data = TestResultSerializer(test_result).data
-            self._check_webhook_submission(send_mock.call_args_list[0], 'create', data, required_webhooks)
-            self._check_webhook_submission(send_mock.call_args_list[1], 'create', data, required_webhooks)
+            self._check_webhook_submission(send_mock.call_args_list[0], TestResult, 'create', data, required_webhooks)
+            self._check_webhook_submission(send_mock.call_args_list[1], TestResult, 'create', data, required_webhooks)
 
             self.assertEqual(len(required_webhooks), 0)
 
@@ -164,8 +165,8 @@ class WebhooksTest(TestCase):
             required_webhooks = [self.all_webhook, self.test_result_webhook]
 
             data = TestResultSerializer(test_result).data
-            self._check_webhook_submission(send_mock.call_args_list[0], 'edit', data, required_webhooks)
-            self._check_webhook_submission(send_mock.call_args_list[1], 'edit', data, required_webhooks)
+            self._check_webhook_submission(send_mock.call_args_list[0], TestResult, 'edit', data, required_webhooks)
+            self._check_webhook_submission(send_mock.call_args_list[1], TestResult, 'edit', data, required_webhooks)
 
             self.assertEqual(len(required_webhooks), 0)
 
@@ -177,8 +178,8 @@ class WebhooksTest(TestCase):
 
             required_webhooks = [self.all_webhook, self.test_result_webhook]
 
-            self._check_webhook_submission(send_mock.call_args_list[0], 'delete', data, required_webhooks)
-            self._check_webhook_submission(send_mock.call_args_list[1], 'delete', data, required_webhooks)
+            self._check_webhook_submission(send_mock.call_args_list[0], TestResult, 'delete', data, required_webhooks)
+            self._check_webhook_submission(send_mock.call_args_list[1], TestResult, 'delete', data, required_webhooks)
 
             self.assertEqual(len(required_webhooks), 0)
 
@@ -197,8 +198,8 @@ class WebhooksTest(TestCase):
             required_webhooks = [self.all_webhook, self.reference_set_webhook]
 
             data = ReferenceSetSerializer(reference_set).data
-            self._check_webhook_submission(send_mock.call_args_list[0], 'create', data, required_webhooks)
-            self._check_webhook_submission(send_mock.call_args_list[1], 'create', data, required_webhooks)
+            self._check_webhook_submission(send_mock.call_args_list[0], ReferenceSet, 'create', data, required_webhooks)
+            self._check_webhook_submission(send_mock.call_args_list[1], ReferenceSet, 'create', data, required_webhooks)
 
             self.assertEqual(len(required_webhooks), 0)
 
@@ -211,8 +212,8 @@ class WebhooksTest(TestCase):
             required_webhooks = [self.all_webhook, self.reference_set_webhook]
 
             data = ReferenceSetSerializer(reference_set).data
-            self._check_webhook_submission(send_mock.call_args_list[0], 'edit', data, required_webhooks)
-            self._check_webhook_submission(send_mock.call_args_list[1], 'edit', data, required_webhooks)
+            self._check_webhook_submission(send_mock.call_args_list[0], ReferenceSet, 'edit', data, required_webhooks)
+            self._check_webhook_submission(send_mock.call_args_list[1], ReferenceSet, 'edit', data, required_webhooks)
 
             self.assertEqual(len(required_webhooks), 0)
 
@@ -224,8 +225,8 @@ class WebhooksTest(TestCase):
 
             required_webhooks = [self.all_webhook, self.reference_set_webhook]
 
-            self._check_webhook_submission(send_mock.call_args_list[0], 'delete', data, required_webhooks)
-            self._check_webhook_submission(send_mock.call_args_list[1], 'delete', data, required_webhooks)
+            self._check_webhook_submission(send_mock.call_args_list[0], ReferenceSet, 'delete', data, required_webhooks)
+            self._check_webhook_submission(send_mock.call_args_list[1], ReferenceSet, 'delete', data, required_webhooks)
 
             self.assertEqual(len(required_webhooks), 0)
 
@@ -252,8 +253,8 @@ class WebhooksTest(TestCase):
             required_webhooks = [self.all_webhook, self.test_reference_webhook]
 
             data = TestReferenceSerializer(test_reference).data
-            self._check_webhook_submission(send_mock.call_args_list[0], 'create', data, required_webhooks)
-            self._check_webhook_submission(send_mock.call_args_list[1], 'create', data, required_webhooks)
+            self._check_webhook_submission(send_mock.call_args_list[0], TestReference, 'create', data, required_webhooks)
+            self._check_webhook_submission(send_mock.call_args_list[1], TestReference, 'create', data, required_webhooks)
 
             self.assertEqual(len(required_webhooks), 0)
 
@@ -266,8 +267,8 @@ class WebhooksTest(TestCase):
             required_webhooks = [self.all_webhook, self.test_reference_webhook]
 
             data = TestReferenceSerializer(test_reference).data
-            self._check_webhook_submission(send_mock.call_args_list[0], 'edit', data, required_webhooks)
-            self._check_webhook_submission(send_mock.call_args_list[1], 'edit', data, required_webhooks)
+            self._check_webhook_submission(send_mock.call_args_list[0], TestReference, 'edit', data, required_webhooks)
+            self._check_webhook_submission(send_mock.call_args_list[1], TestReference, 'edit', data, required_webhooks)
 
             self.assertEqual(len(required_webhooks), 0)
 
@@ -279,7 +280,7 @@ class WebhooksTest(TestCase):
 
             required_webhooks = [self.all_webhook, self.test_reference_webhook]
 
-            self._check_webhook_submission(send_mock.call_args_list[0], 'delete', data, required_webhooks)
-            self._check_webhook_submission(send_mock.call_args_list[1], 'delete', data, required_webhooks)
+            self._check_webhook_submission(send_mock.call_args_list[0], TestReference, 'delete', data, required_webhooks)
+            self._check_webhook_submission(send_mock.call_args_list[1], TestReference, 'delete', data, required_webhooks)
 
             self.assertEqual(len(required_webhooks), 0)
