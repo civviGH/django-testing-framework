@@ -247,3 +247,19 @@ class Webhook(models.Model):
 
     class Meta:
         app_label = 'dtf'
+
+class WebhookLogEntry(models.Model):
+    webhook = models.ForeignKey(Webhook, on_delete=models.CASCADE, null=False, related_name="logs")
+
+    created = models.DateTimeField(default=timezone.now, editable=False, blank=True)
+
+    request_url      = models.URLField(null=False, blank=False)
+    request_data     = models.JSONField(null=False, blank=False)
+    request_headers  = models.JSONField(null=False, blank=False)
+
+    response_status  = models.IntegerField(null=False, blank=False)
+    response_data    = models.TextField(null=False, blank=False)
+    response_headers = models.JSONField(null=False, blank=False)
+
+    class Meta:
+        app_label = 'dtf'
