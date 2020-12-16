@@ -10,7 +10,7 @@ from rest_framework import serializers
 from dtf.functions import reference_structure_is_valid
 from dtf.functions import get_project_from_data
 
-from dtf.models import Project, TestResult, ReferenceSet, TestReference, Submission, ProjectSubmissionProperty, Webhook
+from dtf.models import Project, TestResult, ReferenceSet, TestReference, Submission, ProjectSubmissionProperty, Webhook, WebhookLogEntry
 from dtf.functions import check_result_structure
 
 from django.core.exceptions import ObjectDoesNotExist
@@ -308,3 +308,11 @@ class SubmissionSerializer(serializers.Serializer):
         instance.info = validated_data.get('info', instance.info)
         instance.save()
         return instance
+
+class WebhookLogEntrySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = WebhookLogEntry
+        fields = ['webhook',
+            'created',
+            'request_url', 'request_data', 'request_headers',
+            'response_status', 'response_data', 'response_headers']
