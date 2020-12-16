@@ -31,7 +31,7 @@ class WebhookExecutionPool(concurrent.futures.ThreadPoolExecutor):
 if settings.DTF_WEBHOOK_THREADPOOL:
     webhook_execution_pool = WebhookExecutionPool(max_workers=4)
 
-def _submit_webhook_request(request, webhook_id):
+def _submit_webhook_request(request, webhook_id, sender):
     prepared_request = request.prepare()
 
     with requests.Session() as session:
@@ -39,6 +39,7 @@ def _submit_webhook_request(request, webhook_id):
             response = session.send(prepared_request)
         except requests.RequestException as exception:
             webhook_log = WebhookLogEntry(webhook_id=webhook_id,
+                                          trigger=sender.__name__,
                                           request_url=request.url,
                                           request_data=request.json,
                                           request_headers=dict(prepared_request.headers),
@@ -47,6 +48,7 @@ def _submit_webhook_request(request, webhook_id):
                                           response_headers=dict())
         else:
             webhook_log = WebhookLogEntry(webhook_id=webhook_id,
+                                          trigger=sender.__name__,
                                           request_url=request.url,
                                           request_data=request.json,
                                           request_headers=dict(prepared_request.headers),
@@ -61,7 +63,7 @@ def _submit_webhook_request(request, webhook_id):
     log_ids = WebhookLogEntry.objects.filter(webhook_id=webhook_id).order_by('-created')[max_logs_to_keep:].values_list("id", flat=True)
     WebhookLogEntry.objects.filter(pk__in=log_ids).delete()
 
-def trigger_webhook(webhook, data):
+def trigger_webhook(webhook, data, sender):
     headers = {
         "X-DTF-Token": webhook.secret_token,
     }
@@ -69,9 +71,9 @@ def trigger_webhook(webhook, data):
     request = requests.Request('POST', webhook.url, json=data, headers=headers)
 
     if settings.DTF_WEBHOOK_THREADPOOL:
-        webhook_execution_pool.submit(_submit_webhook_request, request, webhook.id)
+        webhook_execution_pool.submit(_submit_webhook_request, request, webhook.id, sender)
     else:
-        _submit_webhook_request(request, webhook.id)
+        _submit_webhook_request(request, webhook.id, sender)
 
 def _get_webhooks(instance):
     if isinstance(instance, Submission):
@@ -93,19 +95,19 @@ def _serialize(instance):
     elif isinstance(instance, TestReference):
         return TestReferenceSerializer(instance).data
 
-def trigger_webhooks(event, instance):
+def trigger_webhooks(event, instance, sender):
     data = {
         'event' : event,
         'data' : _serialize(instance)
     }
     for webhook in _get_webhooks(instance):
-        trigger_webhook(webhook, data)
+        trigger_webhook(webhook, data, sender)
 
 def _on_model_save(sender, instance, created, **kwargs):
-    trigger_webhooks('create' if created else 'edit', instance)
+    trigger_webhooks('create' if created else 'edit', instance, sender)
 
 def _on_model_delete(sender, instance, **kwargs):
-    trigger_webhooks('delete', instance)
+    trigger_webhooks('delete', instance, sender)
 
 def connect_webhook_signals():
     webhook_models = [Submission, TestResult, ReferenceSet, TestReference]

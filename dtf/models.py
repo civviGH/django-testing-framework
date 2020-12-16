@@ -259,6 +259,15 @@ class WebhookLogEntry(models.Model):
 
     created = models.DateTimeField(default=timezone.now, editable=False, blank=True)
 
+    POSSIBLE_TRIGGERS = [
+        (Submission.__name__, Submission.__name__),
+        (TestResult.__name__, TestResult.__name__),
+        (ReferenceSet.__name__, ReferenceSet.__name__),
+        (TestReference.__name__, TestReference.__name__),
+    ]
+
+    trigger = models.CharField(choices=POSSIBLE_TRIGGERS, null=False, blank=False, max_length=20)
+
     request_url      = models.URLField(null=False, blank=False)
     request_data     = models.JSONField(null=False, blank=False)
     request_headers  = models.JSONField(null=False, blank=False)
