@@ -7,7 +7,7 @@ from unittest.mock import Mock, patch
 from django.test import TestCase, override_settings
 
 from dtf.models import Project, TestResult, ReferenceSet, TestReference, Submission, Webhook, WebhookLogEntry
-from dtf.serializers import SubmissionSerializer, TestResultSerializer, ReferenceSetSerializer, TestReferenceSerializer
+from dtf.serializers import ProjectSerializer, SubmissionSerializer, TestResultSerializer, ReferenceSetSerializer, TestReferenceSerializer
 
 @override_settings(DTF_WEBHOOK_THREADPOOL=False)
 class WebhooksTest(TestCase):
@@ -69,7 +69,9 @@ class WebhooksTest(TestCase):
         request_data = json.loads(prepared_request.body.decode('utf-8'))
 
         self.assertEqual(request_data['event'], event_type)
-        self.assertEqual(request_data['data'], data)
+        self.assertEqual(request_data['source'], sender.__name__.lower())
+        self.assertEqual(request_data['project'], ProjectSerializer(self.project).data)
+        self.assertEqual(request_data['object'], data)
 
         found_webhook = False
         for index in range(len(required_webhooks)):

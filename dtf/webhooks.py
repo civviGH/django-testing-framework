@@ -8,7 +8,7 @@ from django.conf import settings
 from django.db.models import signals
 
 from dtf.models import Submission, TestResult, ReferenceSet, TestReference, WebhookLogEntry
-from dtf.serializers import SubmissionSerializer, TestResultSerializer, ReferenceSetSerializer, TestReferenceSerializer
+from dtf.serializers import ProjectSerializer, SubmissionSerializer, TestResultSerializer, ReferenceSetSerializer, TestReferenceSerializer
 
 class WebhookExecutionPool(concurrent.futures.ThreadPoolExecutor):
 
@@ -85,6 +85,16 @@ def _get_webhooks(instance):
     elif isinstance(instance, TestReference):
         return instance.reference_set.project.webhooks.filter(on_test_reference=True)
 
+def _serialize_project(instance):
+    if isinstance(instance, Submission):
+        return ProjectSerializer(instance.project).data
+    elif isinstance(instance, TestResult):
+        return ProjectSerializer(instance.submission.project).data
+    elif isinstance(instance, ReferenceSet):
+        return ProjectSerializer(instance.project).data
+    elif isinstance(instance, TestReference):
+        return ProjectSerializer(instance.reference_set.project).data
+
 def _serialize(instance):
     if isinstance(instance, Submission):
         return SubmissionSerializer(instance).data
@@ -98,7 +108,9 @@ def _serialize(instance):
 def trigger_webhooks(event, instance, sender):
     data = {
         'event' : event,
-        'data' : _serialize(instance)
+        'source' : sender.__name__.lower(),
+        'project' : _serialize_project(instance),
+        'object' : _serialize(instance)
     }
     for webhook in _get_webhooks(instance):
         trigger_webhook(webhook, data, sender)
