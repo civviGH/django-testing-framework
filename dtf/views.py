@@ -543,6 +543,7 @@ def project_reference_test(request, project_id, reference_id, test_id):
         return Response(serializer.data)
 
     elif request.method == 'PUT':
+        request.data['reference_set_id'] = reference_set.id
         serializer = TestReferenceSerializer(test_references, data=request.data)
         if serializer.is_valid():
             serializer.save()
