@@ -1,5 +1,8 @@
 from django.shortcuts import render, get_object_or_404
 from django.db import IntegrityError
+from django.http import HttpResponseRedirect, JsonResponse, HttpResponse
+from django.urls import reverse
+from django.forms import inlineformset_factory
 
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -7,50 +10,168 @@ from rest_framework import status
 
 from dtf.serializers import ProjectSerializer
 from dtf.serializers import TestResultSerializer
+from dtf.serializers import ReferenceSetSerializer
 from dtf.serializers import TestReferenceSerializer
 from dtf.serializers import SubmissionSerializer
-from dtf.models import TestResult, Project, TestReference, Submission
-from dtf.functions import create_view_data_from_test_references
+from dtf.serializers import ProjectSubmissionPropertySerializer
+from dtf.serializers import WebhookSerializer
+from dtf.serializers import WebhookLogEntrySerializer
 
+from dtf.models import TestResult, Project, ReferenceSet, TestReference, Submission, ProjectSubmissionProperty, Webhook
+from dtf.functions import create_view_data_from_test_references, get_project_by_id_or_slug, create_reference_query
+from dtf.forms import NewProjectForm, ProjectSettingsForm, ProjectSubmissionPropertyForm, WebhookForm
 
 """
 User views
 """
 
 def frontpage(request):
-    results = TestResult.objects.order_by('-first_submitted')[:5]
+    results = TestResult.objects.order_by('-created')[:5]
     return render(request, 'dtf/index.html', {'data':results})
 
 def view_projects(request):
     projects = Project.objects.order_by('-name')
     return render(request, 'dtf/view_projects.html', {'projects':projects})
 
-def view_project_details(request, project_name):
-    project = get_object_or_404(Project, name=project_name)
+def view_new_project(request):
+    if request.method == 'POST':
+        form = NewProjectForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return HttpResponseRedirect(reverse('projects'))
+    else:
+        form = NewProjectForm()
+    return render(request, 'dtf/new_project.html', {
+        'form': form}
+    )
+
+def view_project_settings(request, project_slug):
+    project = get_object_or_404(Project, slug=project_slug)
+    properties = project.properties.all()
+    webhooks = project.webhooks.all()
+
+    if request.method == 'POST':
+        if request.POST.get('scope') == 'project':
+            project_form = ProjectSettingsForm(request.POST, instance=project)
+
+            if project_form.is_valid():
+                project_form.save()
+                serializer = ProjectSerializer(project_form.instance)
+                return JsonResponse({'result' : 'valid', 'property' : serializer.data})
+            else:
+                data = project_form.errors.get_json_data()
+                return JsonResponse({'result' : 'invalid', 'errors' : project_form.errors.get_json_data()})
+
+        if request.POST.get('scope') == 'property':
+            if request.POST.get('action') == 'add':
+                property_form = ProjectSubmissionPropertyForm(request.POST, initial={'project': project,})
+            elif request.POST.get('action') == 'edit':
+                try:
+                    prop = ProjectSubmissionProperty.objects.get(pk=request.POST.get('id', None))
+                except ProjectSubmissionProperty.DoesNotExist:
+                    return HttpResponse(status=status.HTTP_404_NOT_FOUND)
+                property_form = ProjectSubmissionPropertyForm(request.POST, initial={'project': project,}, instance=prop)
+            else:
+                return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
+
+            if property_form.is_valid():
+                property_form.save()
+                serializer = ProjectSubmissionPropertySerializer(property_form.instance)
+                return JsonResponse({'result' : 'valid', 'property' : serializer.data})
+            else:
+                data = property_form.errors.get_json_data()
+                return JsonResponse({'result' : 'invalid', 'errors' : property_form.errors.get_json_data()})
+
+        if request.POST.get('scope') == 'webhook':
+            if request.POST.get('action') == 'add':
+                webhook_form = WebhookForm(request.POST, initial={'project': project,})
+            elif request.POST.get('action') == 'edit':
+                try:
+                    webhook = Webhook.objects.get(pk=request.POST.get('id', None))
+                except Webhook.DoesNotExist:
+                    return HttpResponse(status=status.HTTP_404_NOT_FOUND)
+                webhook_form = WebhookForm(request.POST, initial={'project': project,}, instance=webhook)
+            else:
+                return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
+
+            if webhook_form.is_valid():
+                webhook_form.save()
+                serializer = WebhookSerializer(webhook_form.instance)
+                return JsonResponse({'result' : 'valid', 'webhook' : serializer.data})
+            else:
+                data = webhook_form.errors.get_json_data()
+                return JsonResponse({'result' : 'invalid', 'errors' : webhook_form.errors.get_json_data()})
+
+    # Not any valid POST request: return the site
+    project_form = ProjectSettingsForm(instance=project)
+    property_form = ProjectSubmissionPropertyForm(initial={'project': project})
+    webhook_form = WebhookForm(initial={'project': project,})
+    return render(request, 'dtf/project_settings.html', {
+        'project': project,
+        'project_form': project_form,
+        'properties' : properties,
+        'property_form': property_form,
+        'webhooks' : webhooks,
+        'webhook_form': webhook_form
+    })
+
+
+def view_webhook_log(request, project_slug, webhook_id):
+    project = get_object_or_404(Project, slug=project_slug)
+    webhook = project.webhooks.get(id=webhook_id)
+    return render(request, 'dtf/webhook_log.html', {
+        'webhook': webhook,
+    })
+
+def view_project_details(request, project_slug):
+    project = get_object_or_404(Project, slug=project_slug)
+    properties = ProjectSubmissionProperty.objects.filter(project=project)
     submissions = Submission.objects.filter(project=project)
     return render(request, 'dtf/project_details.html', {
         'project':project,
+        'properties':properties,
         'submissions':submissions
     })
 
 def view_test_result_details(request, test_id):
     test_result = get_object_or_404(TestResult, pk=test_id)
-    project = test_result.submission.project
-    # we did try except at this point. with our current method, there is no way that
-    # a test result object exists without a corresponding reference object
-    # worst case the references are empty, but the object still exists
-    references_object = TestReference.objects.get(
-        test_name=test_result.name,
-        project=project)
-    # this can fail if a submission gets assigned another project by hand
-    references = references_object.references
+    submission = test_result.submission
+    project = submission.project
+
+    queries = create_reference_query(project, submission.info)
+
+    reference_set = None
+    property_values = None
+    test_reference = None
+    try:
+        reference_set = project.reference_sets.get(**queries)
+        if reference_set.test_references.exists():
+            try:
+                test_reference = reference_set.test_references.get(test_name=test_result.name)
+            except TestReference.DoesNotExist:
+                test_reference = None
+    except ReferenceSet.DoesNotExist:
+        property_values = {}
+        for prop in project.properties.all():
+            if prop.influence_reference:
+                prop_value = submission.info.get(prop.name, None)
+                if not prop_value is None:
+                    property_values[prop.name] = prop_value
+
+    if test_reference is not None:
+        references = test_reference.references
+    else:
+        references = {}
+
     data = create_view_data_from_test_references(
         test_result.results, references)
     nav_data = project.get_nav_data(test_result.name, test_result.submission.id)
     return render(request, 'dtf/test_result_details.html', {
         'project':project,
-        'test_name':test_result.name,
+        'reference_set':reference_set,
+        'test_reference':test_reference,
         'test_result':test_result,
+        'property_values':str(property_values),
         'data':data,
         'nav_data':nav_data
     })
@@ -62,124 +183,386 @@ def view_submission_details(request, submission_id):
     })
 
 """
-GET API endpoints
+Project API endpoints
 """
 
-@api_view(["GET"])
-def get_submission_by_id(request, submission_id):
-    """
-    Returns a list of test results assigned to the submission with the given id
-    """
-    submission = get_object_or_404(Submission, pk=submission_id)
-    data = submission.tests.all()
-    serializer = TestResultSerializer(data, many=True)
-    return Response(serializer.data, status.HTTP_200_OK)
+@api_view(["GET", "POST"])
+def projects(request):
+    if request.method == 'GET':
+        projects = Project.objects.order_by('-pk')
+        serializer = ProjectSerializer(projects, many=True)
+        return Response(serializer.data, status.HTTP_200_OK)
 
-@api_view(["GET"])
-def get_projects(request):
-    """
-    Returns a list with all current projects in the database
-    """
-    projects = Project.objects.order_by('-pk')
-    serializer = ProjectSerializer(projects, many=True)
-    return Response(serializer.data, status.HTTP_200_OK)
+    elif request.method == 'POST':
+        serializer = ProjectSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status.HTTP_400_BAD_REQUEST)
 
-@api_view(["GET"])
-def get_reference(request, project_name, test_name):
-    """
-    Return the references of a test matching the given project and test name
-    """
-    data = TestReference.objects.filter(
-        test_name=test_name,
-        project__name=project_name
-    )
-    serializer = TestReferenceSerializer(data, many=True)
-    return Response(serializer.data, status.HTTP_200_OK)
+@api_view(["GET", "PUT", "DELETE"])
+def project(request, id):
+    project = get_project_by_id_or_slug(id)
+    if project is None:
+        return Response(status=status.HTTP_404_NOT_FOUND)
 
-@api_view(["GET"])
-def get_reference_by_test_id(request, test_id):
-    """
-    Return the references for the test with the given test_id
-    """
+    if request.method == 'GET':
+        serializer = ProjectSerializer(project)
+        return Response(serializer.data)
+
+    elif request.method == 'PUT':
+        serializer = ProjectSerializer(project, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    elif request.method == 'DELETE':
+        project.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+"""
+Project Submission Properties API endpoints
+"""
+
+@api_view(["GET", "POST"])
+def project_submission_properties(request, project_id):
+    project = get_project_by_id_or_slug(project_id)
+    if project is None:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+
+    if request.method == 'GET':
+        properties = ProjectSubmissionProperty.objects.filter(project=project).order_by('-pk')
+        serializer = ProjectSubmissionPropertySerializer(properties, many=True)
+        return Response(serializer.data, status.HTTP_200_OK)
+
+    elif request.method == 'POST':
+        request.data['project_id'] = project.id
+        serializer = ProjectSubmissionPropertySerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status.HTTP_400_BAD_REQUEST)
+
+@api_view(["GET", "PUT", "DELETE"])
+def project_submission_property(request, project_id, property_id):
+    project = get_project_by_id_or_slug(project_id)
+    if project is None:
+        return Response(status=status.HTTP_404_NOT_FOUND)
     try:
-        test_result = TestResult.objects.get(id=test_id)
+        prop = ProjectSubmissionProperty.objects.get(project=project, pk=property_id)
+    except ProjectSubmissionProperty.DoesNotExist:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+
+    if request.method == 'GET':
+        serializer = ProjectSubmissionPropertySerializer(prop)
+        return Response(serializer.data)
+
+    elif request.method == 'PUT':
+        serializer = ProjectSubmissionPropertySerializer(prop, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    elif request.method == 'DELETE':
+        prop.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+"""
+Project Webhook API endpoints
+"""
+
+@api_view(["GET", "POST"])
+def project_webhooks(request, project_id):
+    project = get_project_by_id_or_slug(project_id)
+    if project is None:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+
+    if request.method == 'GET':
+        webhooks = Webhook.objects.filter(project=project).order_by('-pk')
+        serializer = WebhookSerializer(webhooks, many=True)
+        return Response(serializer.data, status.HTTP_200_OK)
+
+    elif request.method == 'POST':
+        request.data['project_id'] = project.id
+        serializer = WebhookSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status.HTTP_400_BAD_REQUEST)
+
+@api_view(["GET", "PUT", "DELETE"])
+def project_webhook(request, project_id, webhook_id):
+    project = get_project_by_id_or_slug(project_id)
+    if project is None:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+    try:
+        webhook = Webhook.objects.get(project=project, pk=webhook_id)
+    except Webhook.DoesNotExist:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+
+    if request.method == 'GET':
+        serializer = WebhookSerializer(webhook)
+        return Response(serializer.data)
+
+    elif request.method == 'PUT':
+        serializer = WebhookSerializer(webhook, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    elif request.method == 'DELETE':
+        webhook.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+@api_view(["GET"])
+def project_webhook_logs(request, project_id, webhook_id):
+    project = get_project_by_id_or_slug(project_id)
+    if project is None:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+    try:
+        webhook = Webhook.objects.get(project=project, pk=webhook_id)
+    except Webhook.DoesNotExist:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+
+    if request.method == 'GET':
+        serializer = WebhookLogEntrySerializer(webhook.logs, many=True)
+        return Response(serializer.data, status.HTTP_200_OK)
+
+"""
+Project Submission API endpoints
+"""
+
+@api_view(["GET", "POST"])
+def project_submissions(request, project_id):
+    project = get_project_by_id_or_slug(project_id)
+    if project is None:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+
+    if request.method == 'GET':
+        submissions = Submission.objects.filter(project=project).order_by('-pk')
+        serializer = SubmissionSerializer(submissions, many=True)
+        return Response(serializer.data, status.HTTP_200_OK)
+
+    elif request.method == 'POST':
+        request.data['project_id'] = project.id
+        serializer = SubmissionSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status.HTTP_400_BAD_REQUEST)
+
+@api_view(["GET", "PUT", "DELETE"])
+def project_submission(request, project_id, submission_id):
+    project = get_project_by_id_or_slug(project_id)
+    if project is None:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+    try:
+        submission = Submission.objects.get(project=project, pk=submission_id)
+    except Submission.DoesNotExist:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+
+    if request.method == 'GET':
+        serializer = SubmissionSerializer(submission)
+        return Response(serializer.data)
+
+    elif request.method == 'PUT':
+        serializer = SubmissionSerializer(submission, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    elif request.method == 'DELETE':
+        submission.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+"""
+Project Submission Test API endpoints
+"""
+
+@api_view(["GET", "POST"])
+def project_submission_tests(request, project_id, submission_id):
+    project = get_project_by_id_or_slug(project_id)
+    if project is None:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+    try:
+        submission = Submission.objects.get(project=project, pk=submission_id)
+    except Submission.DoesNotExist:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+
+    if request.method == 'GET':
+        tests = TestResult.objects.filter(submission=submission).order_by('-pk')
+        serializer = TestResultSerializer(tests, many=True)
+        return Response(serializer.data, status.HTTP_200_OK)
+
+    elif request.method == 'POST':
+        request.data['submission_id'] = submission.id
+        serializer = TestResultSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status.HTTP_400_BAD_REQUEST)
+
+@api_view(["GET", "PUT", "DELETE"])
+def project_submission_test(request, project_id, submission_id, test_id):
+    project = get_project_by_id_or_slug(project_id)
+    if project is None:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+    try:
+        submission = Submission.objects.get(project=project, pk=submission_id)
+    except Submission.DoesNotExist:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+    try:
+        test = TestResult.objects.get(submission=submission, pk=test_id)
     except TestResult.DoesNotExist:
-        return Response({"error":"No test_result with given id found"}, status.HTTP_400_BAD_REQUEST)
-    data = TestReference.objects.filter(
-        test_name=test_result.name,
-        project=test_result.submission.project
-    )
-    serializer = TestReferenceSerializer(data, many=True)
-    return Response(serializer.data, status.HTTP_200_OK)
+        return Response(status=status.HTTP_404_NOT_FOUND)
+
+    if request.method == 'GET':
+        serializer = TestResultSerializer(test)
+        return Response(serializer.data)
+
+    elif request.method == 'PUT':
+        serializer = TestResultSerializer(test, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    elif request.method == 'DELETE':
+        test.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 """
-POST API endpoints
+Project Reference API endpoints
 """
 
-@api_view(["POST"])
-def submit_test_results(request):
-    serializer = TestResultSerializer(data=request.data)
-    if serializer.is_valid():
-        # we just get or create the reference object here
-        test_reference, _ = TestReference.objects.get_or_create(
-            project=serializer.validated_data['submission'].project,
-            test_name=serializer.validated_data['name']
-        )
-        # we do NOT automatically set the posted test as a reference
-        # no matter if the reference is set yet or not. just save it
-        test_reference.save()
+@api_view(["GET", "POST"])
+def project_references(request, project_id):
+    project = get_project_by_id_or_slug(project_id)
+    if project is None:
+        return Response(status=status.HTTP_404_NOT_FOUND)
 
-        created_test_result = serializer.save()
-        return Response({'test_result_id':created_test_result.pk}, status.HTTP_200_OK)
-    return Response(serializer.errors, status.HTTP_400_BAD_REQUEST)
+    queries = create_reference_query(project, request.query_params)
 
-@api_view(["POST"])
-def create_project(request):
-    """Looks for a 'name' field in the sent data. If a valid name is found, creates a \
-        new project and returns the id of the project
+    if request.method == 'GET':
+        reference_sets = project.reference_sets.filter(**queries).order_by('-pk')
+        serializer = ReferenceSetSerializer(reference_sets, many=True)
+        return Response(serializer.data, status.HTTP_200_OK)
 
-    :param request: The request object that is sent to the view
+    elif request.method == 'POST':
+        request.data['project_id'] = project.id
+        serializer = ReferenceSetSerializer(data=request.data)
+        if serializer.is_valid():
+            try:
+                serializer.save()
+            except IntegrityError as error:
+                return Response(str(error), status.HTTP_400_BAD_REQUEST)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status.HTTP_400_BAD_REQUEST)
 
-    :raises [HTTP_400_BAD_REQUEST]: When no 'name' field is found in the post data
+@api_view(["GET", "PUT", "DELETE"])
+def project_reference(request, project_id, reference_id):
+    project = get_project_by_id_or_slug(project_id)
+    if project is None:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+    try:
+        reference_set = project.reference_sets.get(pk=reference_id)
+    except ReferenceSet.DoesNotExist:
+        return Response(status=status.HTTP_404_NOT_FOUND)
 
-    :return: Returns a json object containing the id of the created project
-        If the project id is 'None' the project name was not unique.
-        No project was created.
-    """
-    serializer = ProjectSerializer(data=request.data)
-    if serializer.is_valid():
+    if request.method == 'GET':
+        serializer = ReferenceSetSerializer(reference_set)
+        return Response(serializer.data)
+
+    elif request.method == 'PUT':
+        serializer = ReferenceSetSerializer(reference_set, data=request.data)
+        if serializer.is_valid():
+            try:
+                serializer.save()
+            except IntegrityError as error:
+                return Response(str(error), status.HTTP_400_BAD_REQUEST)
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    elif request.method == 'DELETE':
+        reference_set.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+"""
+Reference Tests API endpoints
+"""
+
+@api_view(["GET", "POST"])
+def project_reference_tests(request, project_id, reference_id):
+    project = get_project_by_id_or_slug(project_id)
+    if project is None:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+    try:
+        reference_set = project.reference_sets.get(pk=reference_id)
+    except ReferenceSet.DoesNotExist:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+
+    if request.method == 'GET':
+        query = {}
+        for key, value in request.query_params.items():
+            query[key] = value#.replace('%20', " ")
+        test_references = reference_set.test_references.filter(**query).order_by("-pk")
+        serializer = TestReferenceSerializer(test_references, many=True)
+        return Response(serializer.data, status.HTTP_200_OK)
+
+    elif request.method == 'POST':
+        request.data['reference_set_id'] = reference_set.id
+        serializer = TestReferenceSerializer(data=request.data)
+        if serializer.is_valid():
+            try:
+                serializer.save()
+            except IntegrityError as error:
+                return Response(str(error), status.HTTP_400_BAD_REQUEST)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status.HTTP_400_BAD_REQUEST)
+
+@api_view(["GET", "PUT", "PATCH", "DELETE"])
+def project_reference_test(request, project_id, reference_id, test_id):
+    project = get_project_by_id_or_slug(project_id)
+    if project is None:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+    try:
+        reference_set = project.reference_sets.get(pk=reference_id)
+    except ReferenceSet.DoesNotExist:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+    try:
+        test_references = reference_set.test_references.get(pk=test_id)
+    except TestReference.DoesNotExist:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+
+    if request.method == 'GET':
+        serializer = TestReferenceSerializer(test_references)
+        return Response(serializer.data)
+
+    elif request.method == 'PUT':
+        serializer = TestReferenceSerializer(test_references, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    elif request.method == 'PATCH':
+        # TODO: should we introduce a special serializer here?
+        test_references.update_references(
+            request.data['references'],
+            request.data['test_id'])
         try:
-            created_project = serializer.save()
-        except IntegrityError:
-            # the UNIQUE contraint has failed, a project with this name already exists
-            return Response({'project_id':None}, status.HTTP_200_OK)
-        return Response({'project_id':created_project.id}, status.HTTP_200_OK)
-    return Response(serializer.errors, status.HTTP_400_BAD_REQUEST)
+            test_references.save()
+            return Response({}, status=status.HTTP_200_OK)
+        except Exception as err:
+            return Response(str(err), status=status.HTTP_400_BAD_REQUEST)
 
-@api_view(["POST"])
-def create_submission(request):
-    """
-    Creates a new submission with incrementing IDs
-
-    Requires a project_id oder project_name to assign the submission to a project
-    """
-    serializer = SubmissionSerializer(data=request.data)
-    if serializer.is_valid():
-        submission = serializer.save()
-        return Response({'id':submission.pk}, status.HTTP_200_OK)
-    return Response(serializer.errors, status.HTTP_400_BAD_REQUEST)
-
-"""
-PUT API endpoints
-"""
-
-@api_view(["PUT"])
-def update_references(request):
-    serializer = TestReferenceSerializer(data=request.data)
-    if serializer.is_valid():
-        serializer.save()
-        return Response({}, status.HTTP_200_OK)
-    return Response(serializer.errors, status.HTTP_400_BAD_REQUEST)
+    elif request.method == 'DELETE':
+        test_references.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 """
 DEBUGGING
@@ -187,6 +570,6 @@ DEBUGGING
 
 @api_view(["GET"])
 def WIPE_DATABASE(request):
-    for model in [Project, Submission, TestResult, TestReference]:
+    for model in [Project, ProjectSubmissionProperty, Submission, TestResult, ReferenceSet, TestReference]:
         model.objects.all().delete()
     return Response({}, status.HTTP_200_OK)

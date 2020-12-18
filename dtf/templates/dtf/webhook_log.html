@@ -1,0 +1,99 @@
+{% extends 'dtf/base.html' %}
+
+{% load static %}
+
+{% load dtf.custom_filters %}
+
+{% block body %}
+
+<div class="bg-white pt-3 pb-1">
+
+  <nav>
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item" aria-current="page">
+        <a href="{% url 'projects' %}">Project List</a>
+      </li>
+      <li class="breadcrumb-item" aria-current="page">
+        <a href="{% url 'project_details' webhook.project.slug %}">{{ webhook.project.name }}</a>
+      </li>
+      <li class="breadcrumb-item" aria-current="page">
+        <a href="{% url 'project_settings' webhook.project.slug %}">Settings</a>
+      </li>
+      <li class="breadcrumb-item active" aria-current="page">{{ webhook.name }}</li>
+    </ol>
+  </nav>
+
+  <div class="page-header">
+    <div class="w-100">
+      <h1>Log for {{ webhook.name }}</h1>
+    </div>
+    Showing the 10 most recent requests.
+  </div>
+</div>
+
+<div class="content">
+
+<table class="table table-hover table-sm">
+    <thead>
+    <tr>
+        <th scope="col">
+            Status
+        </th>
+        <th scope="col">
+            Trigger
+        </th>
+        <th scope="col">
+            URL
+        </th>
+        <th scope="col">
+            Date
+        </th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for log_entry in webhook.logs.all %}
+    <tr data-toggle="collapse" data-target="#entry_{{log_entry.id}}" class="collapsed" aria-expanded="false">
+        <td>
+            {% if log_entry.response_status >= 200 and log_entry.response_status < 300 %}
+                <span class="badge badge-success">{{ log_entry.response_status }}</span>
+            {% elif log_entry.response_status >= 300 and log_entry.response_status < 500 %}
+                <span class="badge badge-danger">{{ log_entry.response_status }}</span>
+            {% else %}
+                <span class="badge badge-warning">{{ log_entry.response_status }}</span>
+            {% endif %}
+        </td>
+        <td>
+            {{ log_entry.trigger }}
+        </td>
+        <td>
+            {{ log_entry.request_url }}
+        </td>
+        <td>
+            {{ log_entry.created }}
+        </td>
+    </tr>
+    <tr id="entry_{{log_entry.id}}" class="no-hover collapse">
+        <td colspan="4">
+            <h5>Request Header:</h5>
+            <div class="highlight rounded">
+                <pre>{{ log_entry.request_headers|format_json }}</pre>
+            </div>
+            <h5>Request Body:</h5>
+            <div class="highlight rounded">
+                <pre>{{ log_entry.request_data|format_json }}</pre>
+            </div>
+            <h5>Response Header:</h5>
+            <div class="highlight rounded">
+                <pre>{{ log_entry.response_headers|format_json }}</pre>
+            </div>
+            <h5>Response Body:</h5>
+            <div class="highlight rounded">
+                <pre>{{ log_entry|print_webhook_log_response }}</pre>
+            </div>
+        </td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</div>
+
+{% endblock %}
