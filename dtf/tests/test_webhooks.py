@@ -61,7 +61,7 @@ class WebhooksTest(TestCase):
         self._mock_response.headers = {"X-Some-Header" : "value"}
 
     def _check_webhook_submission(self, call_args, sender, event_type, data, required_webhooks):
-        (prepared_request,) = call_args.args
+        (prepared_request,) = call_args[0]
 
         self.assertEqual(prepared_request.method, "POST")
 
