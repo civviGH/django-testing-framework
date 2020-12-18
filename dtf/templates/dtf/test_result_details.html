@@ -113,36 +113,36 @@ function toggleAllBoxes(){
 </nav>
 
 
-<div class="page-header">
+<div class="page-header mb-5">
     {# <h1 class="my-auto float-left">{{ test_result.name }} [{{ test_result.submission.pk }}]</h1> #}
 
     {% if nav_data.previous.exists %}
-    <a href="{% url 'test_result_details' nav_data.previous.id %}" class="btn btn-primary active mr-1 float-left p-2">Previous</a> 
+    <a href="{% url 'test_result_details' nav_data.previous.id %}" class="btn btn-sm btn-primary active mr-1 float-left">Previous</a> 
     {% else %}
-    <a href="#" class="btn btn-secondary mr-1 float-left p-2 disabled">Previous</a> 
+    <a href="#" class="btn btn-sm btn-secondary mr-1 float-left disabled">Previous</a> 
     {% endif %}
 
     {% if nav_data.next.exists %}
-    <a href="{% url 'test_result_details' nav_data.next.id %}" class="btn btn-primary active mr-1 float-left p-2">Next</a>
+    <a href="{% url 'test_result_details' nav_data.next.id %}" class="btn btn-sm btn-primary active mr-1 float-left">Next</a>
     {% else %}
-    <a href="#" class="btn btn-secondary mr-1 float-left p-2 disabled">Next</a>  
+    <a href="#" class="btn btn-sm btn-secondary mr-1 float-left disabled">Next</a>  
     {% endif %}
 
     {% if nav_data.most_recent.id == test_result.id %}
-    <a href="#" class="btn btn-secondary mr-1 float-left p-2 disabled">>></a>  
+    <a href="#" class="btn btn-sm btn-secondary mr-1 float-left disabled">>></a>  
     {% else %}
-    <a href="{% url 'test_result_details' nav_data.most_recent.id %}" class="btn btn-primary active mr-1 float-left p-2">>></a>
+    <a href="{% url 'test_result_details' nav_data.most_recent.id %}" class="btn btn-sm btn-primary active mr-1 float-left">>></a>
     {% endif %}
 
     {% with not_successful=test_result.get_next_not_successful_test_id %}
     {% if not_successful is None %}
-    <a href="#" class="ml-4 btn btn-secondary mr-1 float-left p-2 disabled">Next not successful</a>  
+    <a href="#" class="ml-4 btn btn-sm btn-secondary mr-1 float-left disabled">Next not successful</a>  
     {% else %}
-    <a href="{% url 'test_result_details' not_successful %}" class="ml-4 btn btn-info active mr-1 float-left p-2">Next not successful</a>
+    <a href="{% url 'test_result_details' not_successful %}" class="ml-4 btn btn-sm btn-info active mr-1 float-left">Next not successful</a>
     {% endif %}
     {% endwith %}
 
-    <button class="btn btn-primary btn-lg active float-right" onclick="updateReferences()">Update selected references</button>
+    <button class="btn btn-sm btn-primary btn-lg active float-right" onclick="updateReferences()">Update selected references</button>
 </div>
 
 {% include 'dtf/filter-box.html' %}
