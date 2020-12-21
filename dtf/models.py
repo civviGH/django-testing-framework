@@ -96,6 +96,14 @@ class Submission(models.Model):
     last_updated = models.DateTimeField(auto_now=True)
     info = models.JSONField(null=False, default=dict)
 
+    def status(self):
+        status = "successful"
+        for test in self.tests.all():
+            test_status = test.status
+            if TestResult.status_order[test_status] > TestResult.status_order[status]:
+                status = test_status
+        return status
+
     class Meta:
         app_label = 'dtf'
 
