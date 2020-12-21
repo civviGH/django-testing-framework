@@ -103,11 +103,11 @@ function toggleAllBoxes(){
     </li>
     <li class="breadcrumb-item" aria-current="page">
         <a href="{% url 'submission_details' test_result.submission.pk %}">
-        Submission {{test_result.submission.id}}
+        Submission {{test_result.submission.id}} | {{test_result.submission.created}}
         </a>
     </li>
     <li class="breadcrumb-item active" aria-current="page">
-        {{ test_result.name }} | {{test_result.last_updated}}
+        {{ test_result.name }}
     </li>
   </ol>
 </nav>
