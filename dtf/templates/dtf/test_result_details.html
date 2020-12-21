@@ -176,7 +176,7 @@ function toggleAllBoxes(){
     {% for parameter in data %}
         <tr>
             <td>
-                {{ parameter.status|color_status_text }}
+                {{ parameter.status|status_badge }}
             </td>
             <td>
                 {{ parameter.name }}
