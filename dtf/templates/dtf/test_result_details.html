@@ -114,7 +114,7 @@ function toggleAllBoxes(){
 
 
 <div class="page-header mb-5">
-    {# <h1 class="my-auto float-left">{{ test_result.name }} [{{ test_result.submission.pk }}]</h1> #}
+    {# <h2 class="my-auto float-left">{{ test_result.name }} [{{ test_result.submission.pk }}]</h2> #}
 
     {% if nav_data.previous.exists %}
     <a href="{% url 'test_result_details' nav_data.previous.id %}" class="btn btn-sm btn-primary active mr-1 float-left">Previous</a> 
