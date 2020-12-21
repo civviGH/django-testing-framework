@@ -28,13 +28,13 @@
     <thead>
     <tr>
         <th class="noselect">
-            Created on
-        </th>
-        <th class="noselect">
-            Last updated on
+            Status
         </th>
         <th class="noselect">
             ID
+        </th>
+        <th class="noselect">
+            Created on
         </th>
         {% for property in properties %}
             {% if property.display %}
@@ -49,13 +49,13 @@
     {% for submission in submissions|dictsortreversed:"id" %}
     <tr onclick="window.location='{% url 'submission_details' submission.pk %}';" style="cursor:pointer">
         <td>
-            {{ submission.created }}
-        </td>
-        <td>
-            {{ submission.last_updated }}
+            {{ submission.status|color_status_text }}
         </td>
         <td>
             {{ submission.pk }}
+        </td>
+        <td>
+            {{ submission.created }}
         </td>
         {% for property in properties %}
             {% if property.display %}
