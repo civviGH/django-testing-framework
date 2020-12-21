@@ -17,6 +17,31 @@ def color_status_text(text):
     return mark_safe(safe_text)
 
 @register.filter
+def status_badge(text):
+    status_to_badge_class = {
+        "successful" : "text-success border-success",
+        "unstable" :   "text-warning border-warning",
+        "failed" :     "text-danger border-danger",
+        "broken" :     "text-danger border-danger",
+        "unknown" :    "text-secondary border-secondary",
+        "skip" :       "text-info border-info"
+    }
+    status_to_icon_class = {
+        "successful" : "bi-check-circle",
+        "unstable" :   "bi-exclamation-circle",
+        "failed" :     "bi-x-circle",
+        "broken" :     "bi-dash-circle",
+        "unknown" :    "bi-question-circle",
+        "skip" :       "bi-slash-circle"
+    }
+
+    badge_class = status_to_badge_class.get(text, "text-secondary border-secondary")
+    icon_class = status_to_icon_class.get(text, "bi-info-circle")
+
+    safe_text = f'<span class="badge border {badge_class}"><i class="bi {icon_class}"></i> {text}</span>'
+    return mark_safe(safe_text)
+
+@register.filter
 def create_html_representation(text, valuetype):
     if text is None:
         return "None"
