@@ -167,8 +167,8 @@ function toggleAllBoxes(){
         <th class="noselect">
             Global reference
         </th>
-        <th class="noselect">
-            <input id="allBox" type="checkbox" onclick="toggleAllBoxes()" autocomplete="off"/>
+        <th class="noselect fit">
+            <input class="ml-2 mr-2" id="allBox" type="checkbox" onclick="toggleAllBoxes()" autocomplete="off"/>
         </th>
     </tr>
     </thead>
@@ -195,7 +195,7 @@ function toggleAllBoxes(){
                 {% endif %}
             </td>
             <td>
-                <input id="{{ parameter.name }}" class="parameterBox" type="checkbox" pname="{{ parameter.name }}" pvalue="{{ parameter.test }}" autocomplete="off"/>
+                <input id="{{ parameter.name }}" class="ml-2 mr-2 parameterBox" type="checkbox" pname="{{ parameter.name }}" pvalue="{{ parameter.test }}" autocomplete="off"/>
             </td>
         </tr>
     {% endfor %}
