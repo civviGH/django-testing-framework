@@ -27,12 +27,12 @@ def status_badge(text):
         "skip" :       "text-info border-info"
     }
     status_to_icon_class = {
-        "successful" : "bi-check-circle",
-        "unstable" :   "bi-exclamation-circle",
-        "failed" :     "bi-x-circle",
-        "broken" :     "bi-dash-circle",
-        "unknown" :    "bi-question-circle",
-        "skip" :       "bi-slash-circle"
+        "successful" : "bi-check-circle-fill",
+        "unstable" :   "bi-exclamation-circle-fill",
+        "failed" :     "bi-x-circle-fill",
+        "broken" :     "bi-dash-circle-fill",
+        "unknown" :    "bi-question-circle-fill",
+        "skip" :       "bi-slash-circle-fill"
     }
 
     badge_class = status_to_badge_class.get(text, "text-secondary border-secondary")
