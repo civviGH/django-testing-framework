@@ -4,7 +4,7 @@ $(document).ready(function() {
         var status_type = this.value;
         var checked = this.checked;
         $('table > tbody > tr > td > span').each(function(index, elem) {
-            if (elem.textContent != status_type){
+            if (elem.textContent.trim() != status_type){
                 return;
             }
             if (checked) {
