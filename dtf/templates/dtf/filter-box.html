@@ -22,10 +22,12 @@
         <label class="form-check-label mb-1" for="filter_skip">{{ "skip"|status_badge }}</label>
     </div>
 
+    {% if show_broken %}
     <div class="form-check form-check-inline">
         <input class="form-check-input" type="checkbox" id="filter_broken" name="filter_status" value="broken" autocomplete="off" checked>
         <label class="form-check-label mb-1" for="filter_broken">{{ "broken"|status_badge }}</label>
     </div>
+    {% endif %}
 
     <div class="form-check form-check-inline">
         <input class="form-check-input" type="checkbox" id="filter_unknown" name="filter_status" value="unknown" autocomplete="off" checked>
