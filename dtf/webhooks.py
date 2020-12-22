@@ -106,14 +106,16 @@ def _serialize(instance):
         return TestReferenceSerializer(instance).data
 
 def trigger_webhooks(event, instance, sender):
-    data = {
-        'event' : event,
-        'source' : sender.__name__.lower(),
-        'project' : _serialize_project(instance),
-        'object' : _serialize(instance)
-    }
-    for webhook in _get_webhooks(instance):
-        trigger_webhook(webhook, data, sender)
+    webhooks = _get_webhooks(instance)
+    if webhooks.exists():
+        data = {
+            'event' : event,
+            'source' : sender.__name__.lower(),
+            'project' : _serialize_project(instance),
+            'object' : _serialize(instance)
+        }
+        for webhook in webhooks:
+            trigger_webhook(webhook, data, sender)
 
 def _on_model_save(sender, instance, created, **kwargs):
     trigger_webhooks('create' if created else 'edit', instance, sender)
