@@ -121,7 +121,8 @@ def _on_model_save(sender, instance, created, **kwargs):
     trigger_webhooks('create' if created else 'edit', instance, sender)
 
 def _on_model_delete(sender, instance, **kwargs):
-    trigger_webhooks('delete', instance, sender)
+    # trigger_webhooks('delete', instance, sender)
+    pass
 
 def connect_webhook_signals():
     webhook_models = [Submission, TestResult, ReferenceSet, TestReference]
