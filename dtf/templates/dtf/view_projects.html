@@ -29,7 +29,7 @@
     </thead>
     <tbody>
     {% for project in projects %}
-    <tr onclick="window.location='{% url 'project_details' project.name %}';" style="cursor:pointer">
+    <tr onclick="window.location='{% url 'project_details' project.slug %}';" style="cursor:pointer">
         <td>
             {{ project.name }}
         </td>

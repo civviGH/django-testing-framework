@@ -25,8 +25,8 @@ def view_projects(request):
     projects = Project.objects.order_by('-name')
     return render(request, 'dtf/view_projects.html', {'projects':projects})
 
-def view_project_details(request, project_name):
-    project = get_object_or_404(Project, name=project_name)
+def view_project_details(request, project_slug):
+    project = get_object_or_404(Project, slug=project_slug)
     submissions = Submission.objects.filter(project=project)
     return render(request, 'dtf/project_details.html', {
         'project':project,
@@ -85,13 +85,13 @@ def get_projects(request):
     return Response(serializer.data, status.HTTP_200_OK)
 
 @api_view(["GET"])
-def get_reference(request, project_name, test_name):
+def get_reference(request, project_slug, test_name):
     """
-    Return the references of a test matching the given project and test name
+    Return the references of a test matching the given project slug and test name
     """
     data = TestReference.objects.filter(
         test_name=test_name,
-        project__name=project_name
+        project__slug=project_slug
     )
     serializer = TestReferenceSerializer(data, many=True)
     return Response(serializer.data, status.HTTP_200_OK)
@@ -135,15 +135,15 @@ def submit_test_results(request):
 
 @api_view(["POST"])
 def create_project(request):
-    """Looks for a 'name' field in the sent data. If a valid name is found, creates a \
+    """Looks for a 'name' and 'slug' fields in the sent data. If both are valid, creates a \
         new project and returns the id of the project
 
     :param request: The request object that is sent to the view
 
-    :raises [HTTP_400_BAD_REQUEST]: When no 'name' field is found in the post data
+    :raises [HTTP_400_BAD_REQUEST]: When no 'name' or 'slug' field is found in the post data
 
     :return: Returns a json object containing the id of the created project
-        If the project id is 'None' the project name was not unique.
+        If the project id is 'None' the project slug was invalid or not not unique.
         No project was created.
     """
     serializer = ProjectSerializer(data=request.data)

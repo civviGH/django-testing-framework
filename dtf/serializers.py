@@ -22,6 +22,7 @@ class ProjectSerializer(serializers.Serializer):
     """
     id = serializers.IntegerField(required=False)
     name = serializers.CharField(max_length=100, required=True)
+    slug = serializers.SlugField(max_length=40, required=True)
 
     def create(self, validated_data):
         return Project.objects.create(**validated_data)
@@ -39,6 +40,7 @@ class TestReferenceSerializer(serializers.Serializer):
 
     # these are not saved, but rather used to make sure they are existent and valid
     project_id = serializers.IntegerField(required=False)
+    project_slug = serializers.SlugField(required=False)
     project_name = serializers.CharField(required=False)
 
     def validate(self, data):
@@ -47,7 +49,7 @@ class TestReferenceSerializer(serializers.Serializer):
 
         It should be a dictionary, where the parameter name is the key, and the value contains another dictionary with value and valuetype
 
-        We also need a project_id or project_name to create the model
+        We also need a project_id, project_slug or unique project_name to create the model
         """
         if not "test_id" in data:
             raise serializers.ValidationError(\
@@ -61,7 +63,7 @@ class TestReferenceSerializer(serializers.Serializer):
         project = get_project_from_data(data)
         if not project:
             raise serializers.ValidationError(\
-                "Could not get a corresponding project. Did you provide a project_id or a project_name?")
+                "Could not get a corresponding project. Did you provide a project_id, project_slug or a unique project_name?")
         data['project'] = project
 
         reference_data_errors = ["Format in 'references' is not valid:"]
@@ -141,6 +143,7 @@ class TestResultSerializer(serializers.Serializer):
 class SubmissionSerializer(serializers.Serializer):
 
     project_id = serializers.IntegerField(required=False)
+    project_slug = serializers.SlugField(required=False)
     project_name = serializers.CharField(required=False)
     info = serializers.JSONField(required=False)
 
@@ -148,7 +151,7 @@ class SubmissionSerializer(serializers.Serializer):
         project = get_project_from_data(data)
         if not project:
             raise serializers.ValidationError(\
-                "Could not get a corresponding project. Did you provide a project_id or a project_name?")
+                "Could not get a corresponding project. Did you provide a project_id, project_slug or a unique project_name?")
         data['project'] = project
         return data
     
