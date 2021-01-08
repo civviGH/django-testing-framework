@@ -4,9 +4,12 @@ define the URLs for the project
 
 from rest_framework.urlpatterns import format_suffix_patterns
 from django.urls import path
+from django.contrib import admin
 from dtf import views
 
 urlpatterns = [
+    path('admin/', admin.site.urls),
+
     path('', views.frontpage),
     path('projects/', views.view_projects, name='projects'),
     path('<str:project_slug>', views.view_project_details, name='project_details'),
