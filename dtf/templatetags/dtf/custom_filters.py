@@ -1,5 +1,8 @@
 from django import template
+from django.template import Context
+from django.template.loader import get_template
 from django.utils.safestring import mark_safe
+from django import forms
 
 from dtf.settings import STATUS_TEXT_COLORS
 
@@ -49,3 +52,27 @@ def parse_json_table(text):
         out+="</tr>"
     out+="</table>"
     return mark_safe(out)
+
+@register.filter
+def as_bootstrap_field(field):
+    if not isinstance(field, forms.BoundField):
+        return field
+    attributes = {'field': field}
+    template = get_template("dtf/bootstrap/field.html")
+    context = Context(attributes).flatten()
+    return template.render(context)
+
+@register.filter
+def add_bootstrap_class(field, add_class=""):
+    if not isinstance(field, forms.BoundField):
+        return field
+
+    bootstrap_classes_per_widget = {
+        "text": "form-control",
+        "checkbox" : "form-check-input",
+    }
+
+    current_class = field.field.widget.attrs.get('class', None)
+    bootstrap_class = bootstrap_classes_per_widget.get(field.widget_type, None)
+    new_class = ' '.join(filter(None, [current_class, bootstrap_class, add_class]))
+    return field.as_widget(attrs={'class' : new_class})
