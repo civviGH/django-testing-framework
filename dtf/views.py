@@ -1,3 +1,5 @@
+
+from django.core.paginator import Paginator
 from django.shortcuts import render, get_object_or_404
 from django.db import IntegrityError
 from django.http import HttpResponseRedirect, JsonResponse, HttpResponse
@@ -126,7 +128,12 @@ def view_webhook_log(request, project_slug, webhook_id):
 def view_project_details(request, project_slug):
     project = get_object_or_404(Project, slug=project_slug)
     properties = ProjectSubmissionProperty.objects.filter(project=project)
-    submissions = Submission.objects.filter(project=project)
+
+    paginator = Paginator(project.submissions.order_by('-pk'), per_page=20)
+
+    page_number = request.GET.get('page')
+    submissions = paginator.get_page(page_number)
+
     return render(request, 'dtf/project_details.html', {
         'project':project,
         'properties':properties,
