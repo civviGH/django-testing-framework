@@ -2,8 +2,8 @@ name: Upload Docs to gh-pages branch
 
 on:
   push:
-    branches:    
-      - master
+    branches:
+      - main
 
 jobs:
   build:
@@ -25,7 +25,7 @@ jobs:
     # ===============================
     - name: Commit documentation changes
       run: |
-        git clone https://github.com/civviGH/django-testing-framework.git --branch gh-pages --single-branch gh-pages
+        git clone https://github.com/albertziegenhagel/django-testing-framework.git --branch gh-pages --single-branch gh-pages
         cp -r docs/_build/html/* gh-pages/
         cd gh-pages
         git config --local user.email "action@github.com"
