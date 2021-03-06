@@ -62,7 +62,7 @@ def submission_property(prop, submission):
         return ""
 
     if len(prop.display_replace) > 0:
-        replaced_value = prop.display_replace.replace("{VALUE}", value)
+        replaced_value = prop.display_replace.replace("{VALUE}", str(value))
     else:
         replaced_value = value
 
