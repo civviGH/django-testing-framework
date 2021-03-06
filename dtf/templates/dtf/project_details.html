@@ -36,9 +36,13 @@
         <th class="noselect">
             ID
         </th>
-        <th>
-            Additional Information
-        </th>
+        {% for property in properties %}
+            {% if property.display %}
+                <th class="noselect">
+                    {{ property.name }}
+                </th>
+            {% endif %}
+        {% endfor %}
     </tr>
     </thead>
     <tbody>
@@ -53,11 +57,13 @@
         <td>
             {{ submission.pk }}
         </td>
-        <td>
-            <div>
-                {{ submission.info|parse_json }}
-            </div>
-        </td>
+        {% for property in properties %}
+            {% if property.display %}
+                <td>
+                    {{ property|submission_property:submission }}
+                </td>
+            {% endif %}
+        {% endfor %}
     </tr>
     {% endfor %}
     </tbody>

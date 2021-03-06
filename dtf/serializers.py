@@ -8,10 +8,24 @@ from rest_framework import serializers
 from dtf.functions import reference_structure_is_valid
 from dtf.functions import get_project_from_data
 
-from dtf.models import Project, TestResult, TestReference, Submission
+from dtf.models import Project, TestResult, TestReference, Submission, ProjectSubmissionProperty
 from dtf.functions import check_result_structure
 
 from django.core.exceptions import ObjectDoesNotExist
+
+def _validate_project_reference(data):
+    project = get_project_from_data(data)
+    if not project:
+        raise serializers.ValidationError(
+            "Could not get a corresponding project. Did you provide a project_id, project_slug or a unique project_name?")
+
+    data['project'] = project
+
+    if 'project_id' in data: del data['project_id']
+    if 'project_slug' in data: del data['project_slug']
+    if 'project_name' in data: del data['project_name']
+
+    return project
 
 class ProjectSerializer(serializers.Serializer):
     """
@@ -26,6 +40,45 @@ class ProjectSerializer(serializers.Serializer):
 
     def create(self, validated_data):
         return Project.objects.create(**validated_data)
+
+    def update(self, instance, validated_data):
+        instance.name = validated_data.get('name', instance.name)
+        instance.slug = validated_data.get('slug', instance.slug)
+        instance.save()
+        return instance
+
+class ProjectSubmissionPropertySerializer(serializers.Serializer):
+
+    project_id = serializers.IntegerField(required=False)
+    project_slug = serializers.SlugField(required=False)
+    project_name = serializers.CharField(required=False)
+
+    id = serializers.IntegerField(required=False)
+
+    name = serializers.CharField(max_length=100, required=True)
+    required = serializers.BooleanField(default=False)
+    display = serializers.BooleanField(default=True)
+    display_replace = serializers.CharField(max_length=100, required=False, allow_blank=True)
+    display_as_link = serializers.BooleanField(default=False)
+    influence_reference = serializers.BooleanField(default=False)
+
+    def validate(self, data):
+        _validate_project_reference(data)
+        return data
+
+    def create(self, validated_data):
+        obj = ProjectSubmissionProperty.objects.create(**validated_data)
+        return obj
+
+    def update(self, instance, validated_data):
+        instance.name = validated_data.get('name', instance.name)
+        instance.required = validated_data.get('required', instance.required)
+        instance.display = validated_data.get('display', instance.display)
+        instance.display_replace = validated_data.get('display_replace', instance.display_replace)
+        instance.display_as_link = validated_data.get('display_as_link', instance.display_as_link)
+        instance.influence_reference = validated_data.get('influence_reference', instance.influence_reference)
+        instance.save()
+        return instance
 
 class TestReferenceSerializer(serializers.Serializer):
     """
@@ -140,21 +193,43 @@ class TestResultSerializer(serializers.Serializer):
         obj = TestResult.objects.create(**validated_data)
         return obj
 
+    def update(self, instance, validated_data):
+        instance.name = validated_data.get('name', instance.name)
+        instance.results = validated_data.get('results', instance.results)
+        instance.save()
+        return instance
+
 class SubmissionSerializer(serializers.Serializer):
 
     project_id = serializers.IntegerField(required=False)
     project_slug = serializers.SlugField(required=False)
     project_name = serializers.CharField(required=False)
+
+    id = serializers.IntegerField(required=False)
+
     info = serializers.JSONField(required=False)
 
     def validate(self, data):
-        project = get_project_from_data(data)
-        if not project:
-            raise serializers.ValidationError(\
-                "Could not get a corresponding project. Did you provide a project_id, project_slug or a unique project_name?")
-        data['project'] = project
+        project = _validate_project_reference(data)
+
+        info = data.get('info', None)
+        project_properties = ProjectSubmissionProperty.objects.filter(project=project, required=True)
+        missing_property_names = []
+        for prop in project_properties:
+            if not info or not prop.name in info:
+                missing_property_names.append(prop.name)
+
+        if len(missing_property_names) > 0:
+            missing_properties_str = ', '.join(missing_property_names)
+            raise serializers.ValidationError(f"Missing required properties '{missing_properties_str}' in submission info")
+
         return data
-    
+
     def create(self, validated_data):
-        obj = Submission.objects.create(project=validated_data['project'])
+        obj = Submission.objects.create(**validated_data)
         return obj
+
+    def update(self, instance, validated_data):
+        instance.info = validated_data.get('info', instance.info)
+        instance.save()
+        return instance

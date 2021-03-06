@@ -54,6 +54,22 @@ def parse_json_table(text):
     return mark_safe(out)
 
 @register.filter
+def submission_property(prop, submission):
+    value = submission.info.get(prop.name, None)
+    if value is None:
+        return ""
+
+    if len(prop.display_replace) > 0:
+        replaced_value = prop.display_replace.replace("{VALUE}", value)
+    else:
+        replaced_value = value
+
+    if prop.display_as_link:
+        return mark_safe(f'<a href="{replaced_value}">{value}</a>')
+    else:
+        return replaced_value
+
+@register.filter
 def as_bootstrap_field(field):
     if not isinstance(field, forms.BoundField):
         return field
