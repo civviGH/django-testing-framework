@@ -124,3 +124,6 @@ DATA_UPLOAD_MAX_NUMBER_FIELDS = 10000
 # The default time zone to present dates/times in the front end
 # when no user is logged in.
 DTF_DEFAULT_DISPLAY_TIME_ZONE = "UTC"
+
+# Whether to use a thread pool to handle webhooks.
+DTF_WEBHOOK_THREADPOOL = False

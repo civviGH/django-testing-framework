@@ -19,13 +19,14 @@ from django.urls import reverse
 from django.utils.text import slugify
 from django.db import transaction
 
-from dtf.models import Project, TestResult, ReferenceSet, TestReference, Submission, ProjectSubmissionProperty
+from dtf.models import Project, TestResult, ReferenceSet, TestReference, Submission, ProjectSubmissionProperty, Webhook
 from dtf.serializers import ProjectSerializer
 from dtf.serializers import TestResultSerializer
 from dtf.serializers import ProjectSubmissionPropertySerializer
 from dtf.serializers import SubmissionSerializer
 from dtf.serializers import ReferenceSetSerializer
 from dtf.serializers import TestReferenceSerializer
+from dtf.serializers import WebhookSerializer
 
 client = Client()
 
@@ -898,3 +899,107 @@ class  TestReferenceApiTest(ApiTestCase):
         response = client.delete(self.url_1)
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertEqual(TestReference.objects.count(), 1)
+
+class WebhooksApiTest(ApiTestCase):
+    def setUp(self):
+        _, data = self.create_project("Test Project 1", "test-project-1")
+        self.project_1_id = data['id']
+        self.project_1 = Project.objects.get(id=self.project_1_id)
+        self.url_1 = reverse('api_project_webhooks', kwargs={'project_id' : self.project_1_id})
+
+        _, data = self.create_project("Test Project 2", "test-project-2")
+        self.project_2_id = data['id']
+        self.project_2 = Project.objects.get(id=self.project_2_id)
+        self.url_2 = reverse('api_project_webhooks', kwargs={'project_id' : self.project_2_id})
+
+    def test_create(self):
+        response, data = self.post(self.url_1, {'name' : "Hook 1", 'url' : 'http://example.com/webhook', 'secret_token' : 'token' })
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(Webhook.objects.count(), 1)
+        self.assertEqual(self.project_1.webhooks.count(), 1)
+
+        response, data = self.post(self.url_2, {'name' : "Hook 2", 'url' : 'http://example.com/webhook', 'secret_token' : 'token' })
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(Webhook.objects.count(), 2)
+        self.assertEqual(self.project_2.webhooks.count(), 1)
+
+    def test_create_invalid(self):
+        response, data = self.post(self.url_1, {'name' : "Hook 1", 'url' : 'Not A Valid URL', 'secret_token' : 'token' })
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(Webhook.objects.count(), 0)
+        self.assertEqual(self.project_1.webhooks.count(), 0)
+
+    def test_get(self):
+        self.post(self.url_1, {'name' : "Hook 1", 'url' : 'http://example.com/webhook/1', 'secret_token' : 'token' })
+        self.post(self.url_1, {'name' : "Hook 2", 'url' : 'http://example.com/webhook/2', 'secret_token' : 'token' })
+        self.post(self.url_2, {'name' : "Hook 1", 'url' : 'http://example.com/webhook/3', 'secret_token' : 'token' })
+        response = client.get(self.url_1)
+        webhooks = self.project_1.webhooks.order_by('-pk')
+        serializer = WebhookSerializer(webhooks, many=True)
+        self.assertEqual(response.data, serializer.data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        response = client.get(self.url_2)
+        webhooks = self.project_2.webhooks.order_by('-pk')
+        serializer = WebhookSerializer(webhooks, many=True)
+        self.assertEqual(response.data, serializer.data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+class WebhookApiTest(ApiTestCase):
+    def setUp(self):
+        _, data = self.create_project("Test Project 1", "test-project-1")
+        self.project_id = data['id']
+        create_url = reverse('api_project_webhooks', kwargs={'project_id' : self.project_id})
+
+        response, data = self.post(create_url, {'name' : "Hook 1", 'url' : 'http://example.com/webhook/1', 'secret_token' : 'token1' })
+        self.webhook_1_id = data['id']
+        self.url_1 = reverse('api_project_webhook', kwargs={'project_id' : self.project_id, 'webhook_id' : self.webhook_1_id})
+        self.webhook_1 = Webhook.objects.get(id=self.webhook_1_id)
+
+        response, data = self.post(create_url, {'name' : "Hook 2", 'url' : 'http://example.com/webhook/2', 'secret_token' : 'token2' })
+        self.webhook_2_id = data['id']
+        self.url_2 = reverse('api_project_webhook', kwargs={'project_id' : self.project_id, 'webhook_id' : self.webhook_2_id})
+        self.webhook_2 = Webhook.objects.get(id=self.webhook_2_id)
+
+    def test_get(self):
+        response = client.get(self.url_1)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        serializer = WebhookSerializer(self.webhook_1)
+        self.assertEqual(response.data, serializer.data)
+
+        response = client.get(self.url_2)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        serializer = WebhookSerializer(self.webhook_2)
+        self.assertEqual(response.data, serializer.data)
+
+    def test_get_invalid(self):
+        response = client.get(reverse('api_project_webhook', kwargs={'project_id' : "invalid", 'webhook_id' : self.webhook_1_id}))
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+        response = client.get(reverse('api_project_webhook', kwargs={'project_id' : self.project_id, 'webhook_id' : 123}))
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_modify(self):
+        response = client.get(self.url_1)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        new_name = "New Hook"
+        response.data['name'] = new_name
+        response, data = self.put(self.url_1, response.data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        webhook = Webhook.objects.get(id=self.webhook_1_id)
+        self.assertEqual(webhook.name, new_name)
+
+    def test_modify_invalid_url(self):
+        response = client.get(self.url_2)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        response.data['url'] = "Not a valid URL"
+        response, data = self.put(self.url_2, response.data)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_delete(self):
+        response = client.delete(self.url_1)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(Webhook.objects.count(), 1)

@@ -15,6 +15,7 @@ urlpatterns = [
     path('projects/new', views.view_new_project, name='new_project'),
     path('<str:project_slug>', views.view_project_details, name='project_details'),
     path('<str:project_slug>/settings', views.view_project_settings, name='project_settings'),
+    path('<str:project_slug>/webhook/<int:webhook_id>/log', views.view_webhook_log, name='webhook_log'),
     path('submission_details/<int:submission_id>', views.view_submission_details, name='submission_details'),
     path('test_details/<int:test_id>', views.view_test_result_details, name='test_result_details'),
 
@@ -23,6 +24,11 @@ urlpatterns = [
 
     path('api/projects/<str:project_id>/properties', views.project_submission_properties, name='api_project_submission_properties'),
     path('api/projects/<str:project_id>/properties/<str:property_id>', views.project_submission_property, name='api_project_submission_property'),
+
+    path('api/projects/<str:project_id>/webhooks', views.project_webhooks, name='api_project_webhooks'),
+    path('api/projects/<str:project_id>/webhooks/<str:webhook_id>', views.project_webhook, name='api_project_webhook'),
+
+    path('api/projects/<str:project_id>/webhooks/<str:webhook_id>/logs', views.project_webhook_logs, name='api_project_webhook_logs'),
 
     path('api/projects/<str:project_id>/submissions', views.project_submissions, name='api_project_submissions'),
     path('api/projects/<str:project_id>/submissions/<str:submission_id>', views.project_submission, name='api_project_submission'),

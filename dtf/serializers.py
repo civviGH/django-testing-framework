@@ -10,7 +10,7 @@ from rest_framework import serializers
 from dtf.functions import reference_structure_is_valid
 from dtf.functions import get_project_from_data
 
-from dtf.models import Project, TestResult, ReferenceSet, TestReference, Submission, ProjectSubmissionProperty
+from dtf.models import Project, TestResult, ReferenceSet, TestReference, Submission, ProjectSubmissionProperty, Webhook, WebhookLogEntry
 from dtf.functions import check_result_structure
 
 from django.core.exceptions import ObjectDoesNotExist
@@ -82,6 +82,43 @@ class ProjectSubmissionPropertySerializer(serializers.Serializer):
         instance.display_replace = validated_data.get('display_replace', instance.display_replace)
         instance.display_as_link = validated_data.get('display_as_link', instance.display_as_link)
         instance.influence_reference = validated_data.get('influence_reference', instance.influence_reference)
+        instance.save()
+        return instance
+
+class WebhookSerializer(serializers.Serializer):
+
+    project_id = serializers.IntegerField(required=False)
+    project_slug = serializers.SlugField(required=False)
+    project_name = serializers.CharField(required=False)
+
+    id = serializers.IntegerField(required=False)
+
+    name = serializers.CharField(max_length=100, required=True)
+    url = serializers.URLField(required=True)
+    secret_token = serializers.CharField(max_length=200, required=True)
+
+    on_submission     = serializers.BooleanField(default=True)
+    on_test_result    = serializers.BooleanField(default=True)
+    on_reference_set  = serializers.BooleanField(default=True)
+    on_test_reference = serializers.BooleanField(default=True)
+
+    def validate(self, data):
+        _validate_project_reference(data)
+        return data
+
+    def create(self, validated_data):
+        obj = Webhook.objects.create(**validated_data)
+        return obj
+
+    def update(self, instance, validated_data):
+        instance.name = validated_data.get('name', instance.name)
+        instance.url = validated_data.get('url', instance.url)
+        instance.secret_token = validated_data.get('secret_token', instance.secret_token)
+
+        instance.on_submission = validated_data.get('on_submission', instance.on_submission)
+        instance.on_test_result = validated_data.get('on_test_result', instance.on_test_result)
+        instance.on_reference_set = validated_data.get('on_reference_set', instance.on_reference_set)
+        instance.on_test_reference = validated_data.get('on_test_reference', instance.on_test_reference)
         instance.save()
         return instance
 
@@ -271,3 +308,11 @@ class SubmissionSerializer(serializers.Serializer):
         instance.info = validated_data.get('info', instance.info)
         instance.save()
         return instance
+
+class WebhookLogEntrySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = WebhookLogEntry
+        fields = ['webhook',
+            'created',
+            'request_url', 'request_data', 'request_headers',
+            'response_status', 'response_data', 'response_headers']

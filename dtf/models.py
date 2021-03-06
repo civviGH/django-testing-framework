@@ -232,3 +232,49 @@ class TestReference(models.Model):
                 name='unique_test_reference_property'
             )
         ]
+
+class Webhook(models.Model):
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, null=False, related_name="webhooks")
+
+    name = models.CharField(max_length=100, blank=False)
+    url = models.URLField(null=False, blank=False)
+    secret_token = models.CharField(max_length=200, null=False, blank=False)
+
+    on_submission     = models.BooleanField(default=True)
+    on_test_result    = models.BooleanField(default=True)
+    on_reference_set  = models.BooleanField(default=True)
+    on_test_reference = models.BooleanField(default=True)
+
+    def most_recent_status(self):
+        recent_log = WebhookLogEntry.objects.filter(webhook=self).order_by('-created').first()
+        if recent_log is None:
+            return None
+        return recent_log.response_status
+
+    class Meta:
+        app_label = 'dtf'
+
+class WebhookLogEntry(models.Model):
+    webhook = models.ForeignKey(Webhook, on_delete=models.CASCADE, null=False, related_name="logs")
+
+    created = models.DateTimeField(default=timezone.now, editable=False, blank=True)
+
+    POSSIBLE_TRIGGERS = [
+        (Submission.__name__, Submission.__name__),
+        (TestResult.__name__, TestResult.__name__),
+        (ReferenceSet.__name__, ReferenceSet.__name__),
+        (TestReference.__name__, TestReference.__name__),
+    ]
+
+    trigger = models.CharField(choices=POSSIBLE_TRIGGERS, null=False, blank=False, max_length=20)
+
+    request_url      = models.URLField(null=False, blank=False)
+    request_data     = models.JSONField(null=False, blank=False)
+    request_headers  = models.JSONField(null=False, blank=False)
+
+    response_status  = models.IntegerField(null=False, blank=False)
+    response_data    = models.TextField(null=False, blank=False)
+    response_headers = models.JSONField(null=False, blank=False)
+
+    class Meta:
+        app_label = 'dtf'
