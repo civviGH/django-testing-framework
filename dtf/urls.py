@@ -30,13 +30,11 @@ urlpatterns = [
     path('api/projects/<str:project_id>/submissions/<str:submission_id>/tests', views.project_submission_tests, name='api_project_submission_tests'),
     path('api/projects/<str:project_id>/submissions/<str:submission_id>/tests/<str:test_id>', views.project_submission_test, name='api_project_submission_test'),
 
-    path('api/get_reference/<str:project_slug>/<str:test_name>',
-     views.get_reference,
-     name='get_reference'),
-    path('api/get_reference_by_test_id/<int:test_id>',
-     views.get_reference_by_test_id,
-     name='get_reference_by_test_id'),
-    path('api/update_references', views.update_references, name='update_references'),
+    path('api/projects/<str:project_id>/references', views.project_references, name='api_project_references'),
+    path('api/projects/<str:project_id>/references/<str:reference_id>', views.project_reference, name='api_project_reference'),
+
+    path('api/projects/<str:project_id>/references/<str:reference_id>/tests', views.project_reference_tests, name='api_project_reference_tests'),
+    path('api/projects/<str:project_id>/references/<str:reference_id>/tests/<str:test_id>', views.project_reference_test, name='api_project_reference_test'),
 
     path('api/WIPE_DATABASE', views.WIPE_DATABASE),
 ]

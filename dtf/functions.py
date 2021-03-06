@@ -19,22 +19,37 @@ def get_default_margin(valuetype):
         return 0
     return None
 
+def create_reference_query(project, query_params):
+    queries = {}
+    for prop in project.properties.all():
+        if prop.influence_reference:
+            prop_value = query_params.get(prop.name, None)
+            if not prop_value is None:
+                queries['property_values__' + prop.name] = prop_value
+    return queries
+
 def check_result_structure(results, test_name, submission):
     errors = ["Format in 'results' is not valid:"]
     if not isinstance(results, list):
         errors.append("'results' field is not a list")
         return None, errors
 
-    current_reference, _ = TestReference.objects.get_or_create(
-            project=submission.project,
-            test_name=test_name
-        )
-    
+    reference_query = create_reference_query(submission.project, submission.info)
+    reference_set = submission.project.reference_sets.filter(**reference_query).first()
+
+    if reference_set is not None:
+        current_reference = reference_set.test_references.filter(test_name=test_name).first()
+    else:
+        current_reference = None
+
     for r in results:
         if not result_structure_is_valid(r):
             errors.append(f"field {r} does not match wanted format")
         if not 'reference' in r:
-            r['reference'] = current_reference.get_reference_or_none(r['name'])
+            if current_reference is not None:
+                r['reference'] = current_reference.get_reference_or_none(r['name'])
+            else:
+                r['reference'] = None
         if not 'margin' in r:
             r['margin'] = get_default_margin(r['valuetype'])
         r['status'] = check_status_of_test_parameter(r.get('status'))

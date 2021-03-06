@@ -5,15 +5,15 @@
 
 <script>
 
-function updateReferences(){
+function postReferenceUpdate(reference_set_id){
     parameterBoxes = document.getElementsByClassName("parameterBox");
     var data = {
-        "project_name":"{{ project.name }}",
-        "test_name":"{{ test_name }}",
+        "test_name":"{{ test_result.name }}",
         "test_id":{{ test_result.id }},
         "references":{
         }
     }
+
     for (var i = 0; i < parameterBoxes.length; i++) {
         box = parameterBoxes[i];
         if (parameterBoxes[i].checked) {
@@ -22,13 +22,22 @@ function updateReferences(){
             };
         }
     }
+
+    {% if test_reference %}
+    var url = `/api/projects/{{ project.id }}/references/${reference_set_id}/tests/{{ test_reference.id }}`
+    var method = "PATCH"
+    {% else %}
+    var url = `/api/projects/{{ project.id }}/references/${reference_set_id}/tests`
+    var method = "POST"
+    {% endif %}
+
     $.ajax({
         beforeSend: function(xhr, settings) {
             xhr.setRequestHeader("X-CSRFToken", "{{ csrf_token }}");
         },
-        type: "PUT",
+        type: method,
         contentType: "application/json; charset=utf-8",
-        url: "/api/update_references",
+        url: url,
         data: JSON.stringify(data),
         success: function(result) {
             location.reload();
@@ -38,6 +47,35 @@ function updateReferences(){
             console.log(result);
         }
     });
+}
+
+function updateReferences(){
+    {% if reference_set %}
+    // there is a reference set already
+    postReferenceUpdate({{ reference_set.id }})
+    {% else %}
+    // there is no reference set yet so we try to create one
+    var data = {
+        "property_values" : {{ property_values|safe }}
+    }
+    var reference_set_id = null
+    $.ajax({
+        beforeSend: function(xhr, settings) {
+            xhr.setRequestHeader("X-CSRFToken", "{{ csrf_token }}");
+        },
+        type: 'POST',
+        contentType: "application/json; charset=utf-8",
+        url: "/api/projects/{{ project.id }}/references",
+        data: JSON.stringify(data),
+        success: function(result) {
+            postReferenceUpdate(result.id)
+        },
+        error: function(result) {
+            alert('error. log in console');
+            console.log(result);
+        }
+    });
+    {% endif %}
 }
 
 function toggleAllBoxes(){
@@ -69,14 +107,14 @@ function toggleAllBoxes(){
         </a>
     </li>
     <li class="breadcrumb-item active" aria-current="page">
-        {{test_name}} | {{test_result.last_updated}}
+        {{ test_result.name }} | {{test_result.last_updated}}
     </li>
   </ol>
 </nav>
 
 
 <div class="page-header">
-    {# <h1 class="my-auto float-left">{{ test_name }} [{{ test_result.submission.pk }}]</h1> #}
+    {# <h1 class="my-auto float-left">{{ test_result.name }} [{{ test_result.submission.pk }}]</h1> #}
 
     {% if nav_data.previous.exists %}
     <a href="{% url 'test_result_details' nav_data.previous.id %}" class="btn btn-primary active mr-1 float-left p-2">Previous</a> 
