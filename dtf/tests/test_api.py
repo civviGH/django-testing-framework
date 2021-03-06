@@ -748,11 +748,17 @@ class TestReferencesApiTest(ApiTestCase):
 
         create_test_url = reverse('api_project_submission_tests', kwargs={'project_id' : self.project_id, 'submission_id' : self.submission_id})
         _, data = self.post(create_test_url, {'name' : 'Test 1', 'results' : [{'name' : 'Result1', 'value' : 1, 'valuetype' : 'integer'}]})
-        self.test_1_id = data['id']
-        self.test_1 = TestResult.objects.get(id=self.test_1_id)
+        self.test_1_1_id = data['id']
+        self.test_1_1 = TestResult.objects.get(id=self.test_1_1_id)
+        _, data = self.post(create_test_url, {'name' : 'Test 1', 'results' : [{'name' : 'Result1', 'value' : 2, 'valuetype' : 'integer'}]})
+        self.test_1_2_id = data['id']
+        self.test_1_2 = TestResult.objects.get(id=self.test_1_2_id)
         _, data = self.post(create_test_url, {'name' : 'Test 2', 'results' : [{'name' : 'Result1', 'value' : 1, 'valuetype' : 'integer'}, {'name' : 'Result2', 'value' : 1.0, 'valuetype' : 'float'}]})
-        self.test_2_id = data['id']
-        self.test_2 = TestResult.objects.get(id=self.test_2_id)
+        self.test_2_1_id = data['id']
+        self.test_2_1 = TestResult.objects.get(id=self.test_2_1_id)
+        _, data = self.post(create_test_url, {'name' : 'Test 2', 'results' : [{'name' : 'Result1', 'value' : 2, 'valuetype' : 'integer'}, {'name' : 'Result2', 'value' : 2.0, 'valuetype' : 'float'}]})
+        self.test_2_2_id = data['id']
+        self.test_2_2 = TestResult.objects.get(id=self.test_2_2_id)
 
         create_reference_set_url = reverse('api_project_references', kwargs={'project_id' : self.project_id})
         _, data = self.post(create_reference_set_url, {'property_values' : {}})
@@ -762,25 +768,53 @@ class TestReferencesApiTest(ApiTestCase):
         self.url = reverse('api_project_reference_tests', kwargs={'project_id' : self.project_id, 'reference_id' : self.reference_set_1_id})
 
     def test_create_empty(self):
-        response, data = self.post(self.url, {'test_name' : 'Test 1', 'test_id' : self.test_1_id, 'references' : {}})
+        response, data = self.post(self.url, {'test_name' : 'Test 1', 'test_id' : self.test_1_1_id, 'references' : {}})
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(TestReference.objects.count(), 1)
         self.assertEqual(self.reference_set_1.test_references.count(), 1)
 
     def test_create_non_empty(self):
-        response, data = self.post(self.url, {'test_name' : "Test 1", 'test_id' : self.test_1_id, 'references' : {'Result1' : {'value' : 2}}})
+        response, data = self.post(self.url, {'test_name' : "Test 1", 'test_id' : self.test_1_1_id, 'references' : {'Result1' : {'value' : 2}}})
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(TestReference.objects.count(), 1)
         self.assertEqual(self.reference_set_1.test_references.count(), 1)
+        self.assertEqual(self.reference_set_1.test_references.first().references, {'Result1' : {'value' : 2, 'ref_id' : self.test_1_1_id}})
+
+    def test_create_explicit_test_id(self):
+        response, data = self.post(self.url, {'test_name' : "Test 2", 'test_id' : self.test_2_1_id, 'references' : {'Result1' : {'value' : 2, 'ref_id' : self.test_2_2_id}, 'Result2' : {'value' : 3.0, 'ref_id' : self.test_2_1_id}}})
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(TestReference.objects.count(), 1)
+        self.assertEqual(self.reference_set_1.test_references.count(), 1)
+        self.assertEqual(self.reference_set_1.test_references.first().references, {'Result1' : {'value' : 2, 'ref_id' : self.test_2_2_id}, 'Result2' : {'value' : 3.0, 'ref_id' : self.test_2_1_id}})
+
+    def test_create_only_explicit_test_id(self):
+        response, data = self.post(self.url, {'test_name' : "Test 2", 'references' : {'Result1' : {'value' : 2, 'ref_id' : self.test_2_2_id}, 'Result2' : {'value' : 3.0, 'ref_id' : self.test_2_1_id}}})
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(TestReference.objects.count(), 1)
+        self.assertEqual(self.reference_set_1.test_references.count(), 1)
+        self.assertEqual(self.reference_set_1.test_references.first().references, {'Result1' : {'value' : 2, 'ref_id' : self.test_2_2_id}, 'Result2' : {'value' : 3.0, 'ref_id' : self.test_2_1_id}})
+
+    def test_create_default_and_explicit_test_id(self):
+        response, data = self.post(self.url, {'test_name' : "Test 2", 'test_id' : self.test_2_1_id, 'references' : {'Result1' : {'value' : 2, 'ref_id' : self.test_2_2_id}, 'Result2' : {'value' : 3.0 }}})
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(TestReference.objects.count(), 1)
+        self.assertEqual(self.reference_set_1.test_references.count(), 1)
+        self.assertEqual(self.reference_set_1.test_references.first().references, {'Result1' : {'value' : 2, 'ref_id' : self.test_2_2_id}, 'Result2' : {'value' : 3.0, 'ref_id' : self.test_2_1_id}})
+
+    def test_create_missing_test_id(self):
+        response, data = self.post(self.url, {'test_name' : "Test 2", 'references' : {'Result1' : {'value' : 2, 'ref_id' : self.test_2_2_id}, 'Result2' : {'value' : 3.0 }}})
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(TestReference.objects.count(), 0)
+        self.assertEqual(self.reference_set_1.test_references.count(), 0)
 
     def test_create_non_unique(self):
-        response, data = self.post(self.url, {'test_name' : "Test 1", 'test_id' : self.test_1_id, 'references' : {}})
+        response, data = self.post(self.url, {'test_name' : "Test 1", 'test_id' : self.test_1_1_id, 'references' : {}})
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(TestReference.objects.count(), 1)
         self.assertEqual(self.reference_set_1.test_references.count(), 1)
 
         with transaction.atomic():
-            response, data = self.post(self.url, {'test_name' : "Test 1", 'test_id' : self.test_1_id, 'references' : {}})
+            response, data = self.post(self.url, {'test_name' : "Test 1", 'test_id' : self.test_1_1_id, 'references' : {}})
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(TestReference.objects.count(), 1)
         self.assertEqual(self.reference_set_1.test_references.count(), 1)
@@ -789,7 +823,7 @@ class TestReferencesApiTest(ApiTestCase):
         created = datetime.datetime(year=2020, month=11, day=17, hour=14, minute=44, tzinfo=datetime.timezone(+datetime.timedelta(hours=1)))
         payload = {
             'test_name' : "Test 1",
-            'test_id' : self.test_1_id,
+            'test_id' : self.test_1_1_id,
             'references' : {},
             'created': created.isoformat()
         }
@@ -800,15 +834,15 @@ class TestReferencesApiTest(ApiTestCase):
         self.assertEqual(test_reference.created, created)
 
     def test_get(self):
-        self.post(self.url, {'test_name' : "Test 1", 'test_id' : self.test_1_id, 'references' : {'Result1' : {'value' : 2}}})
-        self.post(self.url, {'test_name' : "Test 2", 'test_id' : self.test_2_id, 'references' : {'Result1' : {'value' : 2}, 'Result2' : {'value' : 3.0}}})
+        self.post(self.url, {'test_name' : "Test 1", 'test_id' : self.test_1_1_id, 'references' : {'Result1' : {'value' : 2}}})
+        self.post(self.url, {'test_name' : "Test 2", 'test_id' : self.test_2_1_id, 'references' : {'Result1' : {'value' : 2}, 'Result2' : {'value' : 3.0}}})
         response = client.get(self.url)
         test_references = self.reference_set_1.test_references.order_by('-pk')
         serializer = TestReferenceSerializer(test_references, many=True)
         self.assertEqual(response.data, serializer.data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-class  TestReferenceApiTest(ApiTestCase):
+class TestReferenceApiTest(ApiTestCase):
     def setUp(self):
         _, data = self.create_project("Test Project 1", "test-project-1")
         self.project_id = data['id']

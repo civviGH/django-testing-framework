@@ -174,14 +174,16 @@ class TestReferenceSerializer(serializers.Serializer):
 
         We also need a reference_set_id to create the model
         """
-        if not "test_id" in data:
-            raise serializers.ValidationError(\
-                "No test_id submitted. Need a valid test_id to properly set the reference")
-        try:
-            _ = TestResult.objects.get(id=data['test_id'])
-        except TestResult.DoesNotExist:
-            raise serializers.ValidationError(\
-                "No test found with the given test_id. Need a valid test_id to properly set the reference")
+        if "test_id" in data:
+            try:
+                _ = TestResult.objects.get(id=data['test_id'])
+            except TestResult.DoesNotExist:
+                raise serializers.ValidationError(\
+                    "No test found with the given test_id. Need a valid test_id to properly set the reference")
+            default_ref_id = data['test_id']
+            del data['test_id']
+        else:
+            default_ref_id = None
 
         if not 'reference_set' in data:
             try:
@@ -202,11 +204,13 @@ class TestReferenceSerializer(serializers.Serializer):
                 if not reference_structure_is_valid(parameter_values):
                     reference_data_errors.append(f"field {parameter_name}  in references does not match reference format")
                     raise serializers.ValidationError()
-                parameter_values['ref_id'] = data['test_id']
+                if not 'ref_id' in parameter_values:
+                    if default_ref_id is None:
+                        raise serializers.ValidationError(\
+                            "No test found with the given test_id. Need a valid test_id to properly set the reference")
+                    parameter_values['ref_id'] = default_ref_id
         except:
             raise serializers.ValidationError(reference_data_errors)
-
-        del data['test_id']
 
         return data
 
