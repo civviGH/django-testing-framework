@@ -10,7 +10,7 @@
     <h6>Date: {{ test_result.last_updated}}</h6>
     <div class="page-header">
         <div class="float-left">
-            <h1>{{ test_result.name }}</h1>
+            <h2>{{ test_result.name }}</h2>
         </div>
         <h4 class="float-right">Project: {{test_result.project.name}}</h4><br>
     </div>
@@ -32,7 +32,7 @@
             {% for result in test_result.results %}
             <tr>
                 <td>
-                    {{ result.status|color_status_text }}
+                    {{ result.status|status_badge }}
                 </td>
                 <td>
                     {{ result.name }}

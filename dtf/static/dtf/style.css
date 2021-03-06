@@ -1,7 +1,3 @@
-input[type=checkbox] {
-    transform: scale(1.2);
-}
-
 .ref_link {
     display: block;
     width: 100%;
@@ -44,7 +40,7 @@ img {
 
 .section-header .section-toggle:before {
     font-family: 'bootstrap-icons';
-    content: "\f273";
+    content: "\f285";
     float: left;
     margin-right: 0.5rem;
     transition: all 0.5s ease;

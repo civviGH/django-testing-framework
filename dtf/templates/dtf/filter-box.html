@@ -1,19 +1,37 @@
+
+{% load dtf.custom_filters %}
+
 <div class="d-flex w-100">
-    <input id="filter_successful" type="checkbox" name="filter_status" value="successful" autocomplete="off" checked/>
-    <label class="pl-1 pr-3 my-auto" for="filter_successful">successful</label>
+    <div class="form-check form-check-inline">
+        <input class="form-check-input" type="checkbox" id="filter_successful" name="filter_status" value="successful" autocomplete="off" checked>
+        <label class="form-check-label mb-1" for="filter_successful">{{ "successful"|status_badge }}</label>
+    </div>
 
-    <input id="filter_unstable" type="checkbox" name="filter_status" value="unstable" autocomplete="off" checked/>
-    <label class="pl-1 pr-3 my-auto" for="filter_unstable">unstable</label>
+    <div class="form-check form-check-inline">
+        <input class="form-check-input" type="checkbox" id="filter_unstable" name="filter_status" value="unstable" autocomplete="off" checked>
+        <label class="form-check-label mb-1" for="filter_unstable">{{ "unstable"|status_badge }}</label>
+    </div>
 
-    <input id="filter_unknown" type="checkbox" name="filter_status" value="unknown" autocomplete="off" checked/>
-    <label class="pl-1 pr-3 my-auto" for="filter_unknown">unknown</label>
+    <div class="form-check form-check-inline">
+        <input class="form-check-input" type="checkbox" id="filter_failed" name="filter_status" value="failed" autocomplete="off" checked>
+        <label class="form-check-label mb-1" for="filter_failed">{{ "failed"|status_badge }}</label>
+    </div>
 
-    <input id="filter_failed" type="checkbox" name="filter_status" value="failed" autocomplete="off" checked/>
-    <label class="pl-1 pr-3 my-auto" for="filter_failed">failed</label>
+    <div class="form-check form-check-inline">
+        <input class="form-check-input" type="checkbox" id="filter_skip" name="filter_status" value="skip" autocomplete="off" checked>
+        <label class="form-check-label mb-1" for="filter_skip">{{ "skip"|status_badge }}</label>
+    </div>
 
-    <input id="filter_broken" type="checkbox" name="filter_status" value="broken" autocomplete="off" checked/>
-    <label class="pl-1 pr-3 my-auto" for="filter_broken">broken</label>
+    {% if show_broken %}
+    <div class="form-check form-check-inline">
+        <input class="form-check-input" type="checkbox" id="filter_broken" name="filter_status" value="broken" autocomplete="off" checked>
+        <label class="form-check-label mb-1" for="filter_broken">{{ "broken"|status_badge }}</label>
+    </div>
+    {% endif %}
 
-    <input id="filter_skip" type="checkbox" name="filter_status" value="skip" autocomplete="off" checked/>
-    <label class="pl-1 pr-3 my-auto" for="filter_skip">skip</label>
+    <div class="form-check form-check-inline">
+        <input class="form-check-input" type="checkbox" id="filter_unknown" name="filter_status" value="unknown" autocomplete="off" checked>
+        <label class="form-check-label mb-1" for="filter_unknown">{{ "unknown"|status_badge }}</label>
+    </div>
+
 </div>

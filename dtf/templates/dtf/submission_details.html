@@ -14,24 +14,24 @@
     <li class="breadcrumb-item" aria-current="page">
         <a href="{% url 'project_details' submission.project.slug %}">{{submission.project.name}}</a>
     </li>
-    <li class="breadcrumb-item active" aria-current="page">{{submission.id}}</li>
+    <li class="breadcrumb-item active" aria-current="page">Submission {{submission.id}} | {{submission.created}}</li>
   </ol>
 </nav>
 
 <div class="page-header">
     <div class="w-100">
-        <h1>Submission {{ submission.pk }} in {{ submission.project.name}}</h1>
+        <h2>Tests</h2>
     </div>
 </div>
 
-{% include 'dtf/filter-box.html' %}
+{% include 'dtf/filter-box.html' with show_broken=True %}
 
 </div>
 
-<table class="table table-striped table-hover table-sm tablesorter">
+<table class="table table-hover tablesorter">
     <thead>
     <tr>
-        <th class="noselect">
+        <th class="noselect fit">
             Test Status
         </th>
         <th class="noselect">
@@ -46,7 +46,7 @@
     {% for test in submission.tests.all %}
     <tr onclick="window.location='{% url 'test_result_details' test.pk %}'" style="cursor:pointer">
         <td>
-            {{ test.status|color_status_text }}
+            {{ test.status|status_badge }}
         </td>
         <td>
             {{ test.name }}
