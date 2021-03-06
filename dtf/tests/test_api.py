@@ -10,6 +10,7 @@ update_references
 
 import json
 import copy
+import datetime
 
 from rest_framework import status
 
@@ -78,7 +79,7 @@ class ProjectsApiTest(ApiTestCase):
             'not_a_name':'no name given'
         }
 
-    def test_create_project(self):
+    def test_create(self):
         # Test success
         response, data = self.create_project("Test Project", "test-project")
         self.assertEqual(Project.objects.count(), 1)
@@ -102,7 +103,20 @@ class ProjectsApiTest(ApiTestCase):
         self.assertEqual(Project.objects.count(), 2)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
-    def test_get_projects(self):
+    def test_create_force_create_date(self):
+        created = datetime.datetime(year=2020, month=11, day=17, hour=14, minute=44, tzinfo=datetime.timezone(+datetime.timedelta(hours=1)))
+        payload = {
+            'name': "Test Project",
+            'slug': "test-project",
+            'created': created.isoformat()
+        }
+        response, data = self.post(reverse('api_projects'), payload)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(Project.objects.count(), 1)
+        project = Project.objects.first()
+        self.assertEqual(project.created, created)
+
+    def test_get(self):
         _ = self.create_project('Test Project 1')
         _ = self.create_project('Test Project 2')
         _ = self.create_project('Test/Project#?3')
@@ -324,6 +338,17 @@ class SubmissionsApiTest(ApiTestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(Submission.objects.count(), 2)
 
+    def test_create_force_create_date(self):
+        created = datetime.datetime(year=2020, month=11, day=17, hour=14, minute=44, tzinfo=datetime.timezone(+datetime.timedelta(hours=1)))
+        payload = {
+            'created': created.isoformat()
+        }
+        response, data = self.post(reverse('api_project_submissions', kwargs={'project_id' : self.project_id}), payload)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(Submission.objects.count(), 1)
+        submission = Submission.objects.first()
+        self.assertEqual(submission.created, created)
+
     def test_get(self):
         self.create_submission(project_id=self.project_id, info={"Key": "Value"})
         self.create_submission(project_id=self.project_id, info={"Key": "Value"})
@@ -426,6 +451,16 @@ class TestResultsApiTest(ApiTestCase):
         response, data = self.post(self.url, self.missing_name_payload)
         self.assertEqual(TestResult.objects.count(), 0)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_create_force_create_date(self):
+        created = datetime.datetime(year=2020, month=11, day=17, hour=14, minute=44, tzinfo=datetime.timezone(+datetime.timedelta(hours=1)))
+        payload = copy.deepcopy(self.valid_payload)
+        payload['created'] = created.isoformat()
+        response, data = self.post(self.url, payload)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(TestResult.objects.count(), 1)
+        test_result = TestResult.objects.first()
+        self.assertEqual(test_result.created, created)
 
     def test_get(self):
         response, data = self.post(self.url, self.valid_payload)
@@ -564,6 +599,18 @@ class ReferenceSetsApiTest(ApiTestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(ReferenceSet.objects.count(), 1)
         self.assertEqual(self.project_1.reference_sets.count(), 1)
+
+    def test_create_force_create_date(self):
+        created = datetime.datetime(year=2020, month=11, day=17, hour=14, minute=44, tzinfo=datetime.timezone(+datetime.timedelta(hours=1)))
+        payload = {
+            'created': created.isoformat(),
+            'property_values' : {}
+        }
+        response, data = self.post(self.url_1, payload)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(self.project_1.reference_sets.count(), 1)
+        reference_set = self.project_1.reference_sets.first()
+        self.assertEqual(reference_set.created, created)
 
     def test_get(self):
         self.post(self.url_1, {'property_values' : {}})
@@ -736,6 +783,20 @@ class TestReferencesApiTest(ApiTestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(TestReference.objects.count(), 1)
         self.assertEqual(self.reference_set_1.test_references.count(), 1)
+
+    def test_create_force_create_date(self):
+        created = datetime.datetime(year=2020, month=11, day=17, hour=14, minute=44, tzinfo=datetime.timezone(+datetime.timedelta(hours=1)))
+        payload = {
+            'test_name' : "Test 1",
+            'test_id' : self.test_1_id,
+            'references' : {},
+            'created': created.isoformat()
+        }
+        response, data = self.post(self.url, payload)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(self.reference_set_1.test_references.count(), 1)
+        test_reference = self.reference_set_1.test_references.first()
+        self.assertEqual(test_reference.created, created)
 
     def test_get(self):
         self.post(self.url, {'test_name' : "Test 1", 'test_id' : self.test_1_id, 'references' : {'Result1' : {'value' : 2}}})

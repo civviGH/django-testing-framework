@@ -5,6 +5,7 @@ import collections
 import json
 
 from django.db import models
+from django.utils import timezone
 
 # Create your models here.
 class Project(models.Model):
@@ -15,6 +16,9 @@ class Project(models.Model):
     """
     name = models.CharField(max_length=100, blank=False)
     slug = models.SlugField(max_length=40, blank=False, unique=True)
+
+    created = models.DateTimeField(default=timezone.now, editable=False, blank=True)
+    last_updated = models.DateTimeField(auto_now=True)
 
     def get_nav_data(self, test_name, submission_id):
         nav_data = {
@@ -88,8 +92,8 @@ class Submission(models.Model):
     Basically a submission is a run of a whole test suite. Every test and parameter of that suit gets assigned to this submission
     """
     project = models.ForeignKey(Project, on_delete=models.CASCADE, null=True, related_name="submissions")
-    created = models.DateTimeField(auto_now_add=True)
-    updated = models.DateTimeField(auto_now=True)
+    created = models.DateTimeField(default=timezone.now, editable=False, blank=True)
+    last_updated = models.DateTimeField(auto_now=True)
     info = models.JSONField(null=False, default=dict)
 
     class Meta:
@@ -101,7 +105,7 @@ class TestResult(models.Model):
     """
     name = models.CharField(max_length=100, blank=False, db_index=True)
     submission = models.ForeignKey(Submission, on_delete=models.CASCADE, null=True, default=None, related_name="tests")
-    first_submitted = models.DateTimeField(auto_now_add=True)
+    created = models.DateTimeField(default=timezone.now, editable=False, blank=True)
     last_updated = models.DateTimeField(auto_now=True)
     results = models.JSONField(null=True)
 
@@ -139,8 +143,8 @@ class TestResult(models.Model):
     def get_next_not_successful_test_id(self):
         same_submission_tests = self.submission.tests.all()
         not_successful = same_submission_tests.filter(
-            first_submitted__gt=self.first_submitted
-        ).exclude(status = "successful").order_by("first_submitted").values("id").first()
+            created__gt=self.created
+        ).exclude(status = "successful").order_by("created").values("id").first()
         
         if not_successful:
             return not_successful["id"]
@@ -158,6 +162,9 @@ class TestResult(models.Model):
 class ReferenceSet(models.Model):
 
     project = models.ForeignKey(Project, on_delete=models.CASCADE, null=True, related_name="reference_sets")
+
+    created = models.DateTimeField(default=timezone.now, editable=False, blank=True)
+    last_updated = models.DateTimeField(auto_now=True)
 
     # We do use a special JSON decoder, that creates `OrderedDict` instead of `dict`
     # objects. This will allow us to sort the properties by their keys, so that the
@@ -193,6 +200,10 @@ class TestReference(models.Model):
     """
     reference_set = models.ForeignKey(ReferenceSet, on_delete=models.CASCADE, null=True, related_name="test_references")
     test_name = models.CharField(max_length=100, blank=False)
+
+    created = models.DateTimeField(default=timezone.now, editable=False, blank=True)
+    last_updated = models.DateTimeField(auto_now=True)
+
     # maybe this should just have a testresult as a foreign key?
     references = models.JSONField(null=False, default=dict)
 
