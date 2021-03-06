@@ -2,8 +2,8 @@ name: Upload Docs to gh-pages branch
 
 on:
   push:
-    branches:    
-      - master
+    branches:
+      - main
 
 jobs:
   build:
