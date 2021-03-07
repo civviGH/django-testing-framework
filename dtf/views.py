@@ -244,7 +244,7 @@ def project_submission_properties(request, project_id):
         return Response(serializer.data, status.HTTP_200_OK)
 
     elif request.method == 'POST':
-        request.data['project_id'] = project.id
+        request.data['project'] = project.id
         serializer = ProjectSubmissionPropertySerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
@@ -292,7 +292,7 @@ def project_webhooks(request, project_id):
         return Response(serializer.data, status.HTTP_200_OK)
 
     elif request.method == 'POST':
-        request.data['project_id'] = project.id
+        request.data['project'] = project.id
         serializer = WebhookSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
@@ -354,7 +354,7 @@ def project_submissions(request, project_id):
         return Response(serializer.data, status.HTTP_200_OK)
 
     elif request.method == 'POST':
-        request.data['project_id'] = project.id
+        request.data['project'] = project.id
         serializer = SubmissionSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
@@ -406,7 +406,7 @@ def project_submission_tests(request, project_id, submission_id):
         return Response(serializer.data, status.HTTP_200_OK)
 
     elif request.method == 'POST':
-        request.data['submission_id'] = submission.id
+        request.data['submission'] = submission.id
         serializer = TestResultSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
@@ -460,7 +460,7 @@ def project_references(request, project_id):
         return Response(serializer.data, status.HTTP_200_OK)
 
     elif request.method == 'POST':
-        request.data['project_id'] = project.id
+        request.data['project'] = project.id
         serializer = ReferenceSetSerializer(data=request.data)
         if serializer.is_valid():
             try:
@@ -521,7 +521,7 @@ def project_reference_tests(request, project_id, reference_id):
         return Response(serializer.data, status.HTTP_200_OK)
 
     elif request.method == 'POST':
-        request.data['reference_set_id'] = reference_set.id
+        request.data['reference_set'] = reference_set.id
         serializer = TestReferenceSerializer(data=request.data)
         if serializer.is_valid():
             try:
@@ -550,7 +550,7 @@ def project_reference_test(request, project_id, reference_id, test_id):
         return Response(serializer.data)
 
     elif request.method == 'PUT':
-        request.data['reference_set_id'] = reference_set.id
+        request.data['reference_set'] = reference_set.id
         serializer = TestReferenceSerializer(test_references, data=request.data)
         if serializer.is_valid():
             serializer.save()
