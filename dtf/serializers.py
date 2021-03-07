@@ -8,7 +8,6 @@ import collections
 from rest_framework import serializers
 
 from dtf.functions import reference_structure_is_valid
-from dtf.functions import get_project_from_data
 
 from dtf.models import Project, TestResult, ReferenceSet, TestReference, Submission, ProjectSubmissionProperty, Webhook, WebhookLogEntry
 from dtf.functions import check_result_structure

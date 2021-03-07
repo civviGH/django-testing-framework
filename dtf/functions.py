@@ -132,15 +132,3 @@ def get_project_by_id_or_slug(id):
         project = get_project_by_slug(id)
 
     return project
-
-def get_project_from_data(data):
-    """
-    Get a project from json data posted to the API
-    """
-    if 'project_id' in data:
-        return get_project_by_id(data['project_id'])
-    if 'project_slug' in data:
-        return get_project_by_slug(data['project_slug'])
-    if 'project_name' in data:
-        return get_project_by_name(data['project_name'])
-    return None
