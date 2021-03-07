@@ -1,4 +1,4 @@
-django==3.1b1
+django>=3.1
 djangorestframework
 Pillow
 sphinx
