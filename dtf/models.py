@@ -7,6 +7,8 @@ import json
 from django.db import models
 from django.utils import timezone
 
+from dtf.validators import JSONSchemaValidator
+
 # Create your models here.
 class Project(models.Model):
     """
@@ -91,10 +93,16 @@ class Submission(models.Model):
 
     Basically a submission is a run of a whole test suite. Every test and parameter of that suit gets assigned to this submission
     """
+    _info_json_schema = {
+        'schema': 'http://json-schema.org/draft-07/schema#',
+        'type': 'object',
+        "additionalProperties": { "type": "string" }
+    }
+
     project = models.ForeignKey(Project, on_delete=models.CASCADE, null=False, related_name="submissions")
     created = models.DateTimeField(default=timezone.now, editable=False, blank=True)
     last_updated = models.DateTimeField(auto_now=True)
-    info = models.JSONField(null=False, default=dict)
+    info = models.JSONField(null=False, default=dict, validators=[JSONSchemaValidator(schema=_info_json_schema)])
 
     def status(self):
         status = "successful"
@@ -111,11 +119,114 @@ class TestResult(models.Model):
     """
     Model to store test results and metadata
     """
+    _results_json_schema = {
+        'schema': 'http://json-schema.org/draft-07/schema#',
+        'type': 'array',
+        "items": {
+            "type": "object",
+            "properties": {
+                "name":  {
+                    "type": "string"
+                },
+                "value" : {},
+                "valuetype": {
+                    "type": "string",
+                    "enum": [
+                        "integer",
+                        "float",
+                        "string",
+                        "list",
+                        "image"
+                    ]
+                },
+                "status": {
+                    "type": "string",
+                    "enum": [
+                        "skip",
+                        "successful",
+                        "unstable",
+                        "unknown",
+                        "failed",
+                        "broken"
+                    ]
+                },
+                "reference": {
+                    "oneOf": [
+                        {"type": "object",
+                         "properties": {
+                             "value": {
+                                 "oneOf": [
+                                     {"type": "string"},
+                                     {"type": "number"}
+                                 ]
+                             },
+                             "ref_id": {"type": "integer"},
+                         },
+                         "required": ["value"]},
+                        {"type": "null"}
+                    ]
+                },
+                "margin": {
+                    "oneOf": [
+                        {"type": "number"},
+                        {"type": "null"}
+                    ]
+                }
+            },
+            "allOf": [
+                {
+                    "if": {
+                        "properties": {"valuetype": {"const": "integer"}}
+                    },
+                    "then": {
+                        "properties": {"value": {"type": "integer"}}
+                    }
+                },
+                {
+                    "if": {
+                        "properties": {"valuetype": {"const": "float"}}
+                    },
+                    "then": {
+                        "properties": {"value": {"type": "number"}}
+                    }
+                },
+                {
+                    "if": {
+                        "properties": {"valuetype": {"const": "string"}}
+                    },
+                    "then": {
+                        "properties": {"value": {"type": "string"}}
+                    }
+                },
+                {
+                    "if": {
+                        "properties": {"valuetype": {"const": "list"}}
+                    },
+                    "then": {
+                        "properties": {"value": {"type": "string"}} # TODO: This should probably be restricted by a regex
+                    }
+                },
+                {
+                    "if": {
+                        "properties": {"valuetype": {"const": "image"}}
+                    },
+                    "then": {
+                        "properties": {"value": {"type": "string",
+                                                 "contentEncoding": "base64",
+                                                 "contentMediaType": "image/png"}}
+                    }
+                },
+            ],
+            "required": ["name", "value", "valuetype"],
+            "additionalProperties": False
+        }
+    }
+
     name = models.CharField(max_length=100, blank=False, db_index=True)
     submission = models.ForeignKey(Submission, on_delete=models.CASCADE, null=False, related_name="tests")
     created = models.DateTimeField(default=timezone.now, editable=False, blank=True)
     last_updated = models.DateTimeField(auto_now=True)
-    results = models.JSONField(null=True)
+    results = models.JSONField(null=True, validators=[JSONSchemaValidator(schema=_results_json_schema)])
 
     POSSIBLE_STATUS = [
         ("skip", "skip"),
@@ -169,6 +280,12 @@ class TestResult(models.Model):
 
 class ReferenceSet(models.Model):
 
+    _properties_json_schema = {
+        'schema': 'http://json-schema.org/draft-07/schema#',
+        'type': 'object',
+        "additionalProperties": { "type": "string" }
+    }
+
     project = models.ForeignKey(Project, on_delete=models.CASCADE, null=False, related_name="reference_sets")
 
     created = models.DateTimeField(default=timezone.now, editable=False, blank=True)
@@ -181,7 +298,7 @@ class ReferenceSet(models.Model):
         def __init__(self, *args, **kwargs):
             kwargs['object_pairs_hook']=collections.OrderedDict
             super().__init__(*args, **kwargs)
-    property_values = models.JSONField(decoder=OrderedDictJSONDecoder, null=False, default=collections.OrderedDict)
+    property_values = models.JSONField(decoder=OrderedDictJSONDecoder, null=False, default=collections.OrderedDict, validators=[JSONSchemaValidator(schema=_properties_json_schema)])
 
     def save(self, *args, **kwargs):
         if not isinstance(self.property_values, collections.OrderedDict):
@@ -206,6 +323,24 @@ class TestReference(models.Model):
     The test_name is not, since the references can be from different test result \
         objects. The test name will be the same though. The test_name must not be UNIQUE constraint though, in order to allow equally named tests from multiple projects to be saved
     """
+    _references_json_schema = {
+        'schema': 'http://json-schema.org/draft-07/schema#',
+        'type': 'object',
+        "additionalProperties": {
+            "type": "object",
+            "properties": {
+                "value": {
+                    "oneOf": [
+                        {"type": "string"},
+                        {"type": "number"}
+                    ]
+                },
+                "ref_id": {"type": "integer"},
+            },
+            "required": ["value"]
+        }
+    }
+
     reference_set = models.ForeignKey(ReferenceSet, on_delete=models.CASCADE, null=False, related_name="test_references")
     test_name = models.CharField(max_length=100, blank=False)
 
@@ -213,7 +348,7 @@ class TestReference(models.Model):
     last_updated = models.DateTimeField(auto_now=True)
 
     # maybe this should just have a testresult as a foreign key?
-    references = models.JSONField(null=False, default=dict)
+    references = models.JSONField(null=False, default=dict, validators=[JSONSchemaValidator(schema=_references_json_schema)])
 
     def update_references(self, references, test_id):
         # should not be necessary anymore since we have a default value for the references field

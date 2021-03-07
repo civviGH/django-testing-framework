@@ -7,10 +7,8 @@ import collections
 
 from rest_framework import serializers
 
-from dtf.functions import reference_structure_is_valid
-
 from dtf.models import Project, TestResult, ReferenceSet, TestReference, Submission, ProjectSubmissionProperty, Webhook, WebhookLogEntry
-from dtf.functions import check_result_structure
+from dtf.functions import fill_result_default_values
 
 from django.core.exceptions import ObjectDoesNotExist
 
@@ -77,24 +75,14 @@ class TestReferenceSerializer(serializers.ModelSerializer):
         else:
             default_ref_id = None
 
-        reference_data_errors = ["Format in 'references' is not valid:"]
-        try:
-            reference_data = data['references']
-            if not isinstance(reference_data, dict):
-                reference_data_errors.append("'references' field is not a dict")
-                raise serializers.ValidationError()
+        reference_data = data['references']
 
-            for parameter_name, parameter_values in reference_data.items():
-                if not reference_structure_is_valid(parameter_values):
-                    reference_data_errors.append(f"field {parameter_name}  in references does not match reference format")
-                    raise serializers.ValidationError()
-                if not 'ref_id' in parameter_values:
-                    if default_ref_id is None:
-                        raise serializers.ValidationError(\
-                            "No test found with the given test_id. Need a valid test_id to properly set the reference")
-                    parameter_values['ref_id'] = default_ref_id
-        except:
-            raise serializers.ValidationError(reference_data_errors)
+        for parameter_name, parameter_values in reference_data.items():
+            if not 'ref_id' in parameter_values:
+                if default_ref_id is None:
+                    raise serializers.ValidationError(\
+                        "No test found with the given test_id. Need a valid test_id to properly set the reference")
+                parameter_values['ref_id'] = default_ref_id
 
         return data
 
@@ -110,12 +98,10 @@ class TestResultSerializer(serializers.ModelSerializer):
         extra_kwargs = {'created': {'read_only': False, 'required':False}}
 
     def validate(self, data):
-        data['results'], errors = check_result_structure(
+        data['results'] = fill_result_default_values(
             data['results'],
             data['name'],
             data['submission'])
-        if not data['results']:
-            raise serializers.ValidationError(errors)
         return data
 
 class SubmissionSerializer(serializers.ModelSerializer):
