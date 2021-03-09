@@ -5,3 +5,4 @@ sphinx
 sphinx_hand_theme
 Requests
 pylint-django
+jsonschema

@@ -433,11 +433,6 @@ class TestResultsApiTest(ApiTestCase):
             ],
         }
 
-        self.missing_name_payload = {
-            "results":[
-            ]
-        }
-
     def test_create(self):
         response, data = self.post(self.url, self.valid_payload)
         self.assertEqual(TestResult.objects.count(), 1)
@@ -449,7 +444,47 @@ class TestResultsApiTest(ApiTestCase):
         self.assertEqual(data['results'][0]["valuetype"], self.valid_payload['results'][0]["valuetype"])
 
     def test_create_invalid(self):
-        response, data = self.post(self.url, self.missing_name_payload)
+        missing_name_payload = {
+            "results": []
+        }
+        response, data = self.post(self.url, missing_name_payload)
+        self.assertEqual(TestResult.objects.count(), 0)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        invalid_payload = {
+            "name": "UNIT_TEST",
+            "results": [
+                {
+                    "name": "parameter1",
+                }
+            ],
+        }
+
+        response, data = self.post(self.url, invalid_payload)
+        self.assertEqual(TestResult.objects.count(), 0)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        invalid_payload["results"][0]["value"] = 'not_a_number'
+        invalid_payload["results"][0]["valuetype"] = 'integer'
+        response, data = self.post(self.url, invalid_payload)
+        self.assertEqual(TestResult.objects.count(), 0)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        invalid_payload["results"][0]["value"] = 'not_a_number'
+        invalid_payload["results"][0]["valuetype"] = 'float'
+        response, data = self.post(self.url, invalid_payload)
+        self.assertEqual(TestResult.objects.count(), 0)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        invalid_payload["results"][0]["value"] = 1.0
+        invalid_payload["results"][0]["valuetype"] = 'float'
+        invalid_payload["results"][0]["status"] = 'invalid_status'
+        response, data = self.post(self.url, invalid_payload)
+        self.assertEqual(TestResult.objects.count(), 0)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        invalid_payload["results"] = {}
+        response, data = self.post(self.url, invalid_payload)
         self.assertEqual(TestResult.objects.count(), 0)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
@@ -803,6 +838,17 @@ class TestReferencesApiTest(ApiTestCase):
 
     def test_create_missing_test_id(self):
         response, data = self.post(self.url, {'test_name' : "Test 2", 'references' : {'Result1' : {'value' : 2, 'ref_id' : self.test_2_2_id}, 'Result2' : {'value' : 3.0 }}})
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(TestReference.objects.count(), 0)
+        self.assertEqual(self.reference_set_1.test_references.count(), 0)
+
+    def test_create_invalid(self):
+        response, data = self.post(self.url, {'test_name' : "Test 2", 'references' : []})
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(TestReference.objects.count(), 0)
+        self.assertEqual(self.reference_set_1.test_references.count(), 0)
+
+        response, data = self.post(self.url, {'test_name' : "Test 2", 'references' : {'Result1' : {'ref_id' : self.test_2_2_id}}})
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(TestReference.objects.count(), 0)
         self.assertEqual(self.reference_set_1.test_references.count(), 0)
