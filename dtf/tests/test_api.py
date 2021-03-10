@@ -977,6 +977,17 @@ class TestReferenceApiTest(ApiTestCase):
         test_reference_1 = TestReference.objects.get(id=self.test_reference_1_id)
         self.assertEqual(test_reference_1.references["Result1"], {'value' : { 'data' : 3, 'type' : 'integer'}, 'source' : self.test_1_id})
 
+    def test_update_remove(self):
+        data = {}
+        data['default_source'] = self.test_2_id
+        data['references'] = {'Result1' : None}
+        response, data = self.patch(self.url_2, data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        test_reference_2 = TestReference.objects.get(id=self.test_reference_2_id)
+        self.assertFalse("Result1" in test_reference_2.references)
+        self.assertEqual(test_reference_2.references["Result2"], {'value' : { 'data' : 3.0, 'type' : 'float'}, 'source' : self.test_2_id})
+
     def test_delete(self):
         response = client.delete(self.url_1)
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
