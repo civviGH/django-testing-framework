@@ -119,106 +119,106 @@ class TestResult(models.Model):
     """
     Model to store test results and metadata
     """
+    _value_json_schema = {
+        'type': 'object',
+        'properties': {
+            'data' : {},
+            'type': {
+                'type': 'string',
+                'enum': [
+                    'integer',
+                    'float',
+                    'string',
+                    'list',
+                    'image'
+                ]
+            },
+        },
+        'allOf': [
+            {
+                'if': {
+                    'properties': {'type': {'const': 'integer'}}
+                },
+                'then': {
+                    'properties': {'data': {'type': 'integer'}}
+                }
+            },
+            {
+                'if': {
+                    'properties': {'type': {'const': 'float'}}
+                },
+                'then': {
+                    'properties': {'data': {'type': 'number'}}
+                }
+            },
+            {
+                'if': {
+                    'properties': {'type': {'const': 'string'}}
+                },
+                'then': {
+                    'properties': {'data': {'type': 'string'}}
+                }
+            },
+            {
+                'if': {
+                    'properties': {'type': {'const': 'list'}}
+                },
+                'then': {
+                    'properties': {'data': {'type': 'string'}} # TODO: This should probably be restricted by a regex
+                }
+            },
+            {
+                'if': {
+                    'properties': {'type': {'const': 'image'}}
+                },
+                'then': {
+                    'properties': {'data': {'type': 'string',
+                                            'contentEncoding': 'base64',
+                                            'contentMediaType': 'image/png'}}
+                }
+            },
+        ],
+        'required': ['data', 'type'],
+        'additionalProperties': False
+    }
+
     _results_json_schema = {
         'schema': 'http://json-schema.org/draft-07/schema#',
         'type': 'array',
-        "items": {
-            "type": "object",
-            "properties": {
-                "name":  {
-                    "type": "string"
+        'items': {
+            'type': 'object',
+            'properties': {
+                'name':  {
+                    'type': 'string'
                 },
-                "value" : {},
-                "valuetype": {
-                    "type": "string",
-                    "enum": [
-                        "integer",
-                        "float",
-                        "string",
-                        "list",
-                        "image"
+                'value' : {
+                    'oneOf': [
+                        _value_json_schema,
+                        {'type': 'null'}
                     ]
                 },
-                "status": {
-                    "type": "string",
-                    "enum": [
-                        "skip",
-                        "successful",
-                        "unstable",
-                        "unknown",
-                        "failed",
-                        "broken"
+                'reference': {
+                    'oneOf': [
+                        _value_json_schema,
+                        {'type': 'null'}
                     ]
                 },
-                "reference": {
-                    "oneOf": [
-                        {"type": "object",
-                         "properties": {
-                             "value": {
-                                 "oneOf": [
-                                     {"type": "string"},
-                                     {"type": "number"}
-                                 ]
-                             },
-                             "ref_id": {"type": "integer"},
-                         },
-                         "required": ["value"]},
-                        {"type": "null"}
-                    ]
-                },
-                "margin": {
-                    "oneOf": [
-                        {"type": "number"},
-                        {"type": "null"}
-                    ]
+                'reference_source': {'type': 'integer'},
+                'status': {
+                    'type': 'string',
+                    'enum': [
+                        'skip',
+                        'successful',
+                        'unstable',
+                        'unknown',
+                        'failed',
+                        'broken'
+                    ],
+                    'default' : 'unknown'
                 }
             },
-            "allOf": [
-                {
-                    "if": {
-                        "properties": {"valuetype": {"const": "integer"}}
-                    },
-                    "then": {
-                        "properties": {"value": {"type": "integer"}}
-                    }
-                },
-                {
-                    "if": {
-                        "properties": {"valuetype": {"const": "float"}}
-                    },
-                    "then": {
-                        "properties": {"value": {"type": "number"}}
-                    }
-                },
-                {
-                    "if": {
-                        "properties": {"valuetype": {"const": "string"}}
-                    },
-                    "then": {
-                        "properties": {"value": {"type": "string"}}
-                    }
-                },
-                {
-                    "if": {
-                        "properties": {"valuetype": {"const": "list"}}
-                    },
-                    "then": {
-                        "properties": {"value": {"type": "string"}} # TODO: This should probably be restricted by a regex
-                    }
-                },
-                {
-                    "if": {
-                        "properties": {"valuetype": {"const": "image"}}
-                    },
-                    "then": {
-                        "properties": {"value": {"type": "string",
-                                                 "contentEncoding": "base64",
-                                                 "contentMediaType": "image/png"}}
-                    }
-                },
-            ],
-            "required": ["name", "value", "valuetype"],
-            "additionalProperties": False
+            'additionalProperties': False,
+            'required' : ['name', 'value']
         }
     }
 
@@ -326,18 +326,14 @@ class TestReference(models.Model):
     _references_json_schema = {
         'schema': 'http://json-schema.org/draft-07/schema#',
         'type': 'object',
-        "additionalProperties": {
-            "type": "object",
-            "properties": {
-                "value": {
-                    "oneOf": [
-                        {"type": "string"},
-                        {"type": "number"}
-                    ]
-                },
-                "ref_id": {"type": "integer"},
+        'additionalProperties': {
+            'type': 'object',
+            'properties': {
+                'value': TestResult._value_json_schema,
+                'source': {'type': 'integer'},
             },
-            "required": ["value"]
+            'required': ['value'],
+            'additionalProperties' : False
         }
     }
 
@@ -350,14 +346,15 @@ class TestReference(models.Model):
     # maybe this should just have a testresult as a foreign key?
     references = models.JSONField(null=False, default=dict, validators=[JSONSchemaValidator(schema=_references_json_schema)])
 
-    def update_references(self, references, test_id):
-        # should not be necessary anymore since we have a default value for the references field
-        # if not self.references:
-        #     self.references = dict
-        #     return
-        for k, v in references.items():
-            self.references[k] = v
-            self.references[k]['ref_id'] = test_id
+    def update_references(self, new_references, default_source):
+        for name, data in new_references.items():
+            if data is not None:
+                self.references[name] = {
+                    'value': data['value'],
+                    'source': default_source
+                } 
+            elif name in self.references:
+                del self.references[name]
 
     def get_reference_or_none(self, value_name):
         return self.references.get(value_name, None)

@@ -5,21 +5,28 @@
 
 <script>
 
+var all_data = {{ data | to_js_dict }};
+
 function postReferenceUpdate(reference_set_id){
-    parameterBoxes = document.getElementsByClassName("parameterBox");
     var data = {
         "test_name":"{{ test_result.name }}",
-        "test_id":{{ test_result.id }},
+        "default_source":{{ test_result.id }},
         "references":{
         }
     }
 
+    parameterBoxes = document.getElementsByClassName("parameterBox");
     for (var i = 0; i < parameterBoxes.length; i++) {
         box = parameterBoxes[i];
         if (parameterBoxes[i].checked) {
-            data["references"][box.getAttribute("pname")] = {
-                "value": box.getAttribute("pvalue")
-            };
+            if (box.getAttribute("pindex") === "") {
+                data["references"][box.getAttribute("id")] = null;
+            }
+            else {
+                data["references"][box.getAttribute("id")] = {
+                    "value": all_data[box.getAttribute("pindex")]["test"]
+                };
+            }
         }
     }
 
@@ -182,20 +189,40 @@ function toggleAllBoxes(){
                 {{ parameter.name }}
             </td>
             <td>
-                {{ parameter.test|create_html_representation:parameter.valuetype }}
-            </td>
-            <td>
-                {{ parameter.reference_on_submission|create_html_representation:parameter.valuetype }}
-            </td>
-            <td>
-                {% if parameter.ref_id %}
-                <a class="ref_link" target="_blank" href="{% url 'test_result_details' parameter.ref_id %}">{{ parameter.reference|create_html_representation:parameter.valuetype }}</a>
+                {% if parameter.test %}
+                    {{ parameter.test.data|create_html_representation:parameter.test.type }}
                 {% else %}
-                None
+                    N/A
                 {% endif %}
             </td>
             <td>
-                <input id="{{ parameter.name }}" class="ml-2 mr-2 parameterBox" type="checkbox" pname="{{ parameter.name }}" pvalue="{{ parameter.test }}" autocomplete="off"/>
+                {% if parameter.reference_on_submission %}
+                    {% if parameter.reference_on_submission_source %}
+                        <a class="ref_link" target="_blank" href="{% url 'test_result_details' parameter.reference_on_submission_source %}">{{ parameter.reference_on_submission.data|create_html_representation:parameter.reference_on_submission.type }}</a>
+                    {% else %}
+                        {{ parameter.reference_on_submission.data|create_html_representation:parameter.reference_on_submission.type }}
+                    {% endif %}
+                {% else %}
+                    N/A
+                {% endif %}
+            </td>
+            <td>
+                {% if parameter.reference %}
+                    {% if parameter.reference_source %}
+                        <a class="ref_link" target="_blank" href="{% url 'test_result_details' parameter.reference_source %}">{{ parameter.reference.data|create_html_representation:parameter.reference.type }}</a>
+                    {% else %}
+                        {{ parameter.reference.data|create_html_representation:parameter.reference.type }}
+                    {% endif %}
+                {% else %}
+                    N/A
+                {% endif %}
+            </td>
+            <td>
+                {% if parameter.test %}
+                    <input id="{{ parameter.name }}" class="ml-2 mr-2 parameterBox" type="checkbox" pindex="{{ forloop.counter0 }}" autocomplete="off"/>
+                {% else %}
+                    <input id="{{ parameter.name }}" class="ml-2 mr-2 parameterBox" type="checkbox" pindex="" autocomplete="off"/>
+                {% endif %}
             </td>
         </tr>
     {% endfor %}

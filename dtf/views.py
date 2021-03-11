@@ -170,8 +170,7 @@ def view_test_result_details(request, test_id):
     else:
         references = {}
 
-    data = create_view_data_from_test_references(
-        test_result.results, references)
+    data = create_view_data_from_test_references(test_result.results, references)
     nav_data = project.get_nav_data(test_result.name, test_result.submission.id)
     return render(request, 'dtf/test_result_details.html', {
         'project':project,
@@ -561,7 +560,7 @@ def project_reference_test(request, project_id, reference_id, test_id):
         # TODO: should we introduce a special serializer here?
         test_references.update_references(
             request.data['references'],
-            request.data['test_id'])
+            request.data['default_source'])
         try:
             test_references.save()
             return Response({}, status=status.HTTP_200_OK)
