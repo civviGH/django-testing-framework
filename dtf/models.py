@@ -120,20 +120,21 @@ class TestResult(models.Model):
     Model to store test results and metadata
     """
     _value_json_schema = {
+        '$id' : '#value',
         'type': 'object',
-        'properties': {
-            'data' : {},
-            'type': {
-                'type': 'string',
-                'enum': [
-                    'integer',
-                    'float',
-                    'string',
-                    'list',
-                    'image'
-                ]
+            'properties': {
+                'data': {},
+                'type': {
+                    'type': 'string',
+                    'enum': [
+                        'integer',
+                        'float',
+                        'string',
+                        'ndarray',
+                        'image'
+                    ]
+                },
             },
-        },
         'allOf': [
             {
                 'if': {
@@ -161,10 +162,24 @@ class TestResult(models.Model):
             },
             {
                 'if': {
-                    'properties': {'type': {'const': 'list'}}
+                    'properties': {'type': {'const': 'ndarray'}}
                 },
                 'then': {
-                    'properties': {'data': {'type': 'string'}} # TODO: This should probably be restricted by a regex
+                    'properties': {'data': {
+                        'type': 'object',
+                        'properties': {
+                            'shape': {
+                                'type': 'array',
+                                'items': {'type': 'integer'}
+                            },
+                            'entries': {
+                                'type': 'array',
+                                'items': {'$ref': '#/definitions/value'}
+                            }
+                        },
+                        'required': ['shape', 'entries'],
+                        'additionalProperties': False
+                    }}
                 }
             },
             {
@@ -184,6 +199,9 @@ class TestResult(models.Model):
 
     _results_json_schema = {
         'schema': 'http://json-schema.org/draft-07/schema#',
+        'definitions': {
+            'value': _value_json_schema
+        },
         'type': 'array',
         'items': {
             'type': 'object',
@@ -191,15 +209,15 @@ class TestResult(models.Model):
                 'name':  {
                     'type': 'string'
                 },
-                'value' : {
+                'value': {
                     'oneOf': [
-                        _value_json_schema,
+                        {'$ref': '#/definitions/value'},
                         {'type': 'null'}
                     ]
                 },
                 'reference': {
                     'oneOf': [
-                        _value_json_schema,
+                        {'$ref': '#/definitions/value'},
                         {'type': 'null'}
                     ]
                 },
@@ -214,11 +232,11 @@ class TestResult(models.Model):
                         'failed',
                         'broken'
                     ],
-                    'default' : 'unknown'
+                    'default': 'unknown'
                 }
             },
             'additionalProperties': False,
-            'required' : ['name', 'value']
+            'required': ['name', 'value']
         }
     }
 
@@ -325,15 +343,18 @@ class TestReference(models.Model):
     """
     _references_json_schema = {
         'schema': 'http://json-schema.org/draft-07/schema#',
+        'definitions': {
+            'value': TestResult._value_json_schema
+        },
         'type': 'object',
         'additionalProperties': {
             'type': 'object',
             'properties': {
-                'value': TestResult._value_json_schema,
+                'value': {'$ref': '#/definitions/value'},
                 'source': {'type': 'integer'},
             },
             'required': ['value'],
-            'additionalProperties' : False
+            'additionalProperties': False
         }
     }
 
@@ -352,7 +373,7 @@ class TestReference(models.Model):
                 self.references[name] = {
                     'value': data['value'],
                     'source': default_source
-                } 
+                }
             elif name in self.references:
                 del self.references[name]
 

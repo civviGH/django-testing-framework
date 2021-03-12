@@ -1,3 +1,7 @@
+
+import operator
+import functools
+
 import json
 
 from django import template
@@ -42,18 +46,54 @@ def status_badge(text):
     return mark_safe(safe_text)
 
 @register.filter
-def create_html_representation(text, valuetype):
-    if text is None:
+def create_html_representation(data, valuetype):
+    if data is None:
         return "None"
-    if valuetype in ["integer", "float", "string"]:
-        return text
-    if valuetype == "list":
-        out = " <br> ".join(str(text).strip("[]").split(","))
+    if valuetype == "string":
+        return data
+    if valuetype == "integer":
+        return str(data)
+    if valuetype == "float":
+        return str(data)
+    if valuetype == "list": # backward-compatibility
+        out = " <br> ".join(str(data).strip("[]").split(","))
+        return mark_safe(out)
+    if valuetype == "ndarray":
+        shape = data['shape']
+        entries = [str(create_html_representation(entry['data'], entry['type'])) for entry in data['entries']]
+
+        tensor_order = len(shape)
+        total_count = functools.reduce(operator.mul, shape, 1)
+
+        inconsistent = total_count != len(entries)
+
+        if inconsistent or tensor_order > 3:
+            # Just print a 1D list of all available values
+            size_0 = len(entries)
+            size_1 = 1
+            size_2 = 1
+            out = f"Tensor-{tensor_order} {shape}:"
+        else:
+            size_0 = shape[0] if tensor_order >= 1 else 1
+            size_1 = shape[1] if tensor_order >= 2 else 1
+            size_2 = shape[2] if tensor_order >= 3 else 1
+            out = ""
+
+        for k in range(size_2):
+            out += '<table class="ndarray-value">'
+            for i in range(size_0):
+                out += "<tr>"
+                for j in range(size_1):
+                    index = k*(size_0*size_1)+i*size_1+j
+                    out += f"<td>{entries[index]}</td>"
+                out += "</tr>"
+            out += "</table>"
+
         return mark_safe(out)
     if valuetype == "image":
-        out = f"<img src='data:image/png;base64, {text}' />"
+        out = f"<img src='data:image/png;base64, {data}' />"
         return mark_safe(out)
-    return str(valuetype) + " I DO NOT KNOW THIS VALUETYPE!"
+    return str(data)
 
 @register.filter
 def parse_json(text):

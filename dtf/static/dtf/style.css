@@ -58,3 +58,8 @@ img {
 .highlight {
     background-color: #f6f6f6;
 }
+
+table.ndarray-value {
+    border: 1px solid #999;
+    background: #ffffff;
+}

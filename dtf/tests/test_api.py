@@ -422,7 +422,7 @@ class TestResultsApiTest(ApiTestCase):
 
         self.url = reverse('api_project_submission_tests', kwargs={'project_id' : self.project_id, 'submission_id' : self.submission_id})
 
-        self.valid_payload = {
+        self.small_valid_payload = {
             "name": "UNIT_TEST",
             "results":[
                 {
@@ -431,18 +431,98 @@ class TestResultsApiTest(ApiTestCase):
                         "data" : 5,
                         "type" : "integer"
                     },
-                }
+                },
+            ],
+        }
+
+        self.large_valid_payload = {
+            "name": "UNIT_TEST",
+            "results":[
+                {
+                    "name": "parameter1",
+                    "value" : {
+                        "data" : 1,
+                        "type" : "integer"
+                    },
+                },
+                {
+                    "name": "parameter2",
+                    "value" : {
+                        "data" : 2,
+                        "type" : "float"
+                    },
+                },
+                {
+                    "name": "parameter3",
+                    "value" : {
+                        "data" : 3.4,
+                        "type" : "float"
+                    },
+                },
+                {
+                    "name": "parameter4",
+                    "value" : {
+                        "data" : "some value",
+                        "type" : "string"
+                    },
+                },
+                {
+                    "name": "parameter5",
+                    "value" : {
+                        "data" : "iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAIAAAD91JpzAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAVSURBVBhXY2BQ+/+fAQj+//9V8B8AJIUGjCXQWGcAAAAASUVORK5CYII=",
+                        "type" : "image"
+                    },
+                },
+                {
+                    "name": "parameter6",
+                    "value" : {
+                        "data" : {
+                            "shape" : [ 2 ],
+                            "entries" : [
+                                { "data" : 1.0, "type" : "float" },
+                                { "data" : 2.0, "type" : "float" },
+                            ]
+                        },
+                        "type" : "ndarray"
+                    },
+                },
+                {
+                    "name": "parameter7",
+                    "value" : {
+                        "data" : {
+                            "shape" : [ 2, 3 ],
+                            "entries" : [
+                                { "data" : 1.0, "type" : "float" },
+                                { "data" : 2.0, "type" : "float" },
+                                { "data" : 3.0, "type" : "float" },
+                                { "data" : 4.0, "type" : "float" },
+                                { "data" : 5.0, "type" : "float" },
+                                { "data" : 6.0, "type" : "float" },
+                            ]
+                        },
+                        "type" : "ndarray"
+                    },
+                },
             ],
         }
 
     def test_create(self):
-        response, data = self.post(self.url, self.valid_payload)
+        response, data = self.post(self.url, self.small_valid_payload)
         self.assertEqual(TestResult.objects.count(), 1)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(data['id'], 1)
-        self.assertEqual(data['name'], self.valid_payload['name'])
-        self.assertEqual(data['results'][0]["name"], self.valid_payload['results'][0]["name"])
-        self.assertEqual(data['results'][0]["value"], self.valid_payload['results'][0]["value"])
+        self.assertEqual(data['name'], self.small_valid_payload['name'])
+        self.assertEqual(data['results'][0]["name"], self.small_valid_payload['results'][0]["name"])
+        self.assertEqual(data['results'][0]["value"], self.small_valid_payload['results'][0]["value"])
+
+        response, data = self.post(self.url, self.large_valid_payload)
+        self.assertEqual(TestResult.objects.count(), 2)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(data['id'], 2)
+        self.assertEqual(data['name'], self.large_valid_payload['name'])
+        for i in range(len(self.large_valid_payload['results'])):
+            self.assertEqual(data['results'][i]["name"], self.large_valid_payload['results'][i]["name"])
+            self.assertEqual(data['results'][i]["value"], self.large_valid_payload['results'][i]["value"])
 
     def test_create_invalid(self):
         missing_name_payload = {
@@ -493,7 +573,7 @@ class TestResultsApiTest(ApiTestCase):
 
     def test_create_force_create_date(self):
         created = datetime.datetime(year=2020, month=11, day=17, hour=14, minute=44, tzinfo=datetime.timezone(+datetime.timedelta(hours=1)))
-        payload = copy.deepcopy(self.valid_payload)
+        payload = copy.deepcopy(self.small_valid_payload)
         payload['created'] = created.isoformat()
         response, data = self.post(self.url, payload)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
@@ -502,7 +582,7 @@ class TestResultsApiTest(ApiTestCase):
         self.assertEqual(test_result.created, created)
 
     def test_get(self):
-        response, data = self.post(self.url, self.valid_payload)
+        response, data = self.post(self.url, self.small_valid_payload)
         response = client.get(self.url)
         tests = TestResult.objects.order_by('-pk')
         serializer = TestResultSerializer(tests, many=True)
