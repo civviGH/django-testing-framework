@@ -1,5 +1,8 @@
+
+import operator
+import functools
+
 import json
-import math
 
 from django import template
 from django.template import Context
@@ -60,7 +63,7 @@ def create_html_representation(data, valuetype):
         entries = [str(create_html_representation(entry['data'], entry['type'])) for entry in data['entries']]
 
         tensor_order = len(shape)
-        total_count = math.prod(shape)
+        total_count = functools.reduce(operator.mul, shape, 1)
 
         inconsistent = total_count != len(entries)
 
