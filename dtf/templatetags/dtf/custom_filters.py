@@ -11,15 +11,7 @@ from django.utils.safestring import mark_safe
 from django.utils.dateparse import parse_duration
 from django import forms
 
-from dtf.settings import STATUS_TEXT_COLORS
-
 register = template.Library()
-
-@register.filter
-def color_status_text(text):
-    color = STATUS_TEXT_COLORS.get(text)
-    safe_text = f'<span style="color:{color}">{text}</span>'
-    return mark_safe(safe_text)
 
 @register.filter
 def status_badge(text):
@@ -97,31 +89,6 @@ def create_html_representation(data, valuetype):
         out = f"<img src='data:image/png;base64, {data}' />"
         return mark_safe(out)
     return str(data)
-
-@register.filter
-def parse_json(text):
-    if len(text) == 0:
-        return ""
-    out = ""
-    sorted_text = {k:text[k] for k in sorted(text.keys())}
-    for k,v in sorted_text.items():
-        out += f"<span class='infospan'>{k}</span>"
-        out += f"<span class='infospan'>{v}</span>"
-    return mark_safe(out)
-
-@register.filter
-def parse_json_table(text):
-    if len(text) == 0:
-        return ""
-    out = '<table class="infotable">'
-    # out+='<tr><th>Key</th><th>Value</th></tr>'
-    for k,v in text.items():
-        out+="<tr>"
-        out+=f"<td>{k}</td>"
-        out+=f"<td>{v}</td>"
-        out+="</tr>"
-    out+="</table>"
-    return mark_safe(out)
 
 @register.filter
 def submission_property(prop, submission):

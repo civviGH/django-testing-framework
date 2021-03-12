@@ -6,6 +6,7 @@ from rest_framework.urlpatterns import format_suffix_patterns
 from django.urls import path
 from django.contrib import admin
 from dtf import views
+from dtf import api
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -19,30 +20,30 @@ urlpatterns = [
     path('submission_details/<int:submission_id>', views.view_submission_details, name='submission_details'),
     path('test_details/<int:test_id>', views.view_test_result_details, name='test_result_details'),
 
-    path('api/projects', views.projects, name='api_projects'),
-    path('api/projects/<str:id>', views.project, name='api_project'),
+    path('api/projects', api.projects, name='api_projects'),
+    path('api/projects/<str:id>', api.project, name='api_project'),
 
-    path('api/projects/<str:project_id>/properties', views.project_submission_properties, name='api_project_submission_properties'),
-    path('api/projects/<str:project_id>/properties/<str:property_id>', views.project_submission_property, name='api_project_submission_property'),
+    path('api/projects/<str:project_id>/properties', api.project_submission_properties, name='api_project_submission_properties'),
+    path('api/projects/<str:project_id>/properties/<str:property_id>', api.project_submission_property, name='api_project_submission_property'),
 
-    path('api/projects/<str:project_id>/webhooks', views.project_webhooks, name='api_project_webhooks'),
-    path('api/projects/<str:project_id>/webhooks/<str:webhook_id>', views.project_webhook, name='api_project_webhook'),
+    path('api/projects/<str:project_id>/webhooks', api.project_webhooks, name='api_project_webhooks'),
+    path('api/projects/<str:project_id>/webhooks/<str:webhook_id>', api.project_webhook, name='api_project_webhook'),
 
-    path('api/projects/<str:project_id>/webhooks/<str:webhook_id>/logs', views.project_webhook_logs, name='api_project_webhook_logs'),
+    path('api/projects/<str:project_id>/webhooks/<str:webhook_id>/logs', api.project_webhook_logs, name='api_project_webhook_logs'),
 
-    path('api/projects/<str:project_id>/submissions', views.project_submissions, name='api_project_submissions'),
-    path('api/projects/<str:project_id>/submissions/<str:submission_id>', views.project_submission, name='api_project_submission'),
+    path('api/projects/<str:project_id>/submissions', api.project_submissions, name='api_project_submissions'),
+    path('api/projects/<str:project_id>/submissions/<str:submission_id>', api.project_submission, name='api_project_submission'),
 
-    path('api/projects/<str:project_id>/submissions/<str:submission_id>/tests', views.project_submission_tests, name='api_project_submission_tests'),
-    path('api/projects/<str:project_id>/submissions/<str:submission_id>/tests/<str:test_id>', views.project_submission_test, name='api_project_submission_test'),
+    path('api/projects/<str:project_id>/submissions/<str:submission_id>/tests', api.project_submission_tests, name='api_project_submission_tests'),
+    path('api/projects/<str:project_id>/submissions/<str:submission_id>/tests/<str:test_id>', api.project_submission_test, name='api_project_submission_test'),
 
-    path('api/projects/<str:project_id>/references', views.project_references, name='api_project_references'),
-    path('api/projects/<str:project_id>/references/<str:reference_id>', views.project_reference, name='api_project_reference'),
+    path('api/projects/<str:project_id>/references', api.project_references, name='api_project_references'),
+    path('api/projects/<str:project_id>/references/<str:reference_id>', api.project_reference, name='api_project_reference'),
 
-    path('api/projects/<str:project_id>/references/<str:reference_id>/tests', views.project_reference_tests, name='api_project_reference_tests'),
-    path('api/projects/<str:project_id>/references/<str:reference_id>/tests/<str:test_id>', views.project_reference_test, name='api_project_reference_test'),
+    path('api/projects/<str:project_id>/references/<str:reference_id>/tests', api.project_reference_tests, name='api_project_reference_tests'),
+    path('api/projects/<str:project_id>/references/<str:reference_id>/tests/<str:test_id>', api.project_reference_test, name='api_project_reference_test'),
 
-    path('api/WIPE_DATABASE', views.WIPE_DATABASE),
+    path('api/WIPE_DATABASE', api.WIPE_DATABASE),
 ]
 
 urlpatterns = format_suffix_patterns(urlpatterns)

@@ -47,7 +47,7 @@ def create_view_data_from_test_references(test_results, global_references):
         if 'reference' in item and item['reference'] is not None:
             view_data_entry['reference_on_submission'] = item['reference']
         if 'reference_source' in item and item['reference_source'] is not None:
-            view_data_entry['reference_on_submission'] = item['reference_source']
+            view_data_entry['reference_on_submission_source'] = item['reference_source']
 
         global_reference = global_references.get(item['name'])
         if global_reference is not None:
