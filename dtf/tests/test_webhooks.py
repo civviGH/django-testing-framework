@@ -248,7 +248,7 @@ class WebhooksTest(TestCase):
         with patch('dtf.webhooks._submit_webhook_request'):
             reference_set.save()
 
-        test_reference = TestReference(reference_set=reference_set, test_name="Test 1", references={'Result1' : {'value' : 2, 'ref_id' : test_result.id}})
+        test_reference = TestReference(reference_set=reference_set, test_name="Test 1", references={'Result1' : {'value' : 2, 'source' : test_result.id}})
 
         # Create
         with patch('dtf.webhooks.requests.Session.send', return_value=self._mock_response) as send_mock:
@@ -264,7 +264,7 @@ class WebhooksTest(TestCase):
             self.assertEqual(len(required_webhooks), 0)
 
         # Edit
-        test_reference.references={'Result1' : {'value' : 1, 'ref_id' : test_result.id}}
+        test_reference.references={'Result1' : {'value' : 1, 'source' : test_result.id}}
         with patch('dtf.webhooks.requests.Session.send', return_value=self._mock_response) as send_mock:
             test_reference.save()
             self.assertEqual(send_mock.call_count, 2)

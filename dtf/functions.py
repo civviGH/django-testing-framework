@@ -1,10 +1,5 @@
 from dtf.models import Project, TestReference
 
-def get_default_margin(valuetype):
-    if valuetype == 'integer':
-        return 0
-    return None
-
 def create_reference_query(project, query_params):
     queries = {}
     for prop in project.properties.all():
@@ -29,29 +24,40 @@ def fill_result_default_values(results, test_name, submission):
                 result['reference'] = current_reference.get_reference_or_none(result['name'])
             else:
                 result['reference'] = None
-        if not 'margin' in result:
-            result['margin'] = get_default_margin(result['valuetype'])
         if not 'status' in result:
             result['status'] = 'unknown'
     return results
 
-def create_view_data_from_test_references(result, reference):
-    data = []
-    for parameter in result:
-        p_name = parameter['name']
-        ref = reference.get(p_name)
-        data.append(
-            {
-                'name':p_name,
-                'test':parameter['value'],
-                'reference_on_submission':parameter['reference'],
-                'reference':ref['value'] if ref else None,
-                'status':parameter['status'],
-                'ref_id':ref['ref_id'] if ref else None,
-                'valuetype':parameter['valuetype']
+def create_view_data_from_test_references(test_results, global_references):
+    view_data = []
+    for item in test_results:
+        view_data_entry = {
+                'name': item['name'],
+                'status': item['status'],
+                'test': None,
+                'reference_on_submission': None,
+                'reference_on_submission_source': None,
+                'reference': None,
+                'reference_source': None,
             }
-        )
-    return data
+
+        if 'value' in item and item['value'] is not None:
+            view_data_entry['test'] = item['value']
+
+        if 'reference' in item and item['reference'] is not None:
+            view_data_entry['reference_on_submission'] = item['reference']
+        if 'reference_source' in item and item['reference_source'] is not None:
+            view_data_entry['reference_on_submission'] = item['reference_source']
+
+        global_reference = global_references.get(item['name'])
+        if global_reference is not None:
+            view_data_entry['reference'] = global_reference['value']
+            if 'source' in global_reference:
+                view_data_entry['reference_source'] = global_reference['source']
+
+        view_data.append(view_data_entry)
+
+    return view_data
 
 def get_project_by_id(project_id):
     """

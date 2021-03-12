@@ -54,14 +54,13 @@ class ReferenceSetSerializer(serializers.ModelSerializer):
         extra_kwargs = {'created': {'read_only': False, 'required':False}}
 
 class TestReferenceSerializer(serializers.ModelSerializer):
-    # NOTE: should probably rather be named something like "default_reference_test"
-    test_id = serializers.PrimaryKeyRelatedField(queryset=TestResult.objects.all(), required=False)
+    default_source = serializers.PrimaryKeyRelatedField(queryset=TestResult.objects.all(), required=False)
 
     class Meta:
         model = TestReference
         fields = ['reference_set',
                   'test_name',
-                  'test_id',
+                  'default_source',
                   'id',
                   'created',
                   'last_updated',
@@ -69,20 +68,20 @@ class TestReferenceSerializer(serializers.ModelSerializer):
         extra_kwargs = {'created': {'read_only': False, 'required':False}}
 
     def validate(self, data):
-        if "test_id" in data:
-            default_ref_id = data['test_id'].id
-            del data['test_id']
+        if 'default_source' in data:
+            default_source = data['default_source'].id
+            del data['default_source']
         else:
-            default_ref_id = None
+            default_source = None
 
         reference_data = data['references']
 
         for parameter_name, parameter_values in reference_data.items():
-            if not 'ref_id' in parameter_values:
-                if default_ref_id is None:
+            if not 'source' in parameter_values:
+                if default_source is None:
                     raise serializers.ValidationError(\
-                        "No test found with the given test_id. Need a valid test_id to properly set the reference")
-                parameter_values['ref_id'] = default_ref_id
+                        "No test found with the given test id. Need a valid 'default_source' to properly set the reference")
+                parameter_values['source'] = default_source
 
         return data
 

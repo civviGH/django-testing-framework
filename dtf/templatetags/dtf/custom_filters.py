@@ -144,3 +144,7 @@ def print_webhook_log_response(log_entry):
         except:
             return log_entry.response_data
     return log_entry.response_data
+
+@register.filter(is_safe=True)
+def to_js_dict(data):
+    return mark_safe(json.dumps(data))
