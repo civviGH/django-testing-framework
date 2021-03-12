@@ -503,6 +503,13 @@ class TestResultsApiTest(ApiTestCase):
                         "type" : "ndarray"
                     },
                 },
+                {
+                    "name": "parameter8",
+                    "value" : {
+                        "data" : "P400DT3H5.5M",
+                        "type" : "duration"
+                    },
+                },
             ],
         }
 
@@ -556,6 +563,11 @@ class TestResultsApiTest(ApiTestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
         invalid_payload["results"][0]["value"] = { 'data' : 'not_a_number', 'type' : 'float' }
+        response, data = self.post(self.url, invalid_payload)
+        self.assertEqual(TestResult.objects.count(), 0)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        invalid_payload["results"][0]["value"] = { 'data' : 'not_a_timedelta', 'type' : 'duration' }
         response, data = self.post(self.url, invalid_payload)
         self.assertEqual(TestResult.objects.count(), 0)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)

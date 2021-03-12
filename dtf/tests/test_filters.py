@@ -36,6 +36,16 @@ class ValueHtmlRepresentationTestCase(TestCase):
         result = create_html_representation(image_base64, 'image')
         self.assertEqual(result, f"<img src='data:image/png;base64, {image_base64}' />")
 
+    def test_duration(self):
+        result = create_html_representation("P400DT3H5.5M", 'duration')
+        self.assertEqual(result, f"400 days, 3:05:30")
+
+        result = create_html_representation("PT1M1.23S", 'duration')
+        self.assertEqual(result, f"0:01:01.230000")
+
+        result = create_html_representation("PT0.4567S", 'duration')
+        self.assertEqual(result, f"0:00:00.456700")
+
     def test_ndarray_vector(self):
         data = {
             "shape" : [ 2 ],

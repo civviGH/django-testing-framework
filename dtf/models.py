@@ -130,6 +130,7 @@ class TestResult(models.Model):
                         'integer',
                         'float',
                         'string',
+                        'duration',
                         'ndarray',
                         'image'
                     ]
@@ -158,6 +159,20 @@ class TestResult(models.Model):
                 },
                 'then': {
                     'properties': {'data': {'type': 'string'}}
+                }
+            },
+            {
+                'if': {
+                    'properties': {'type': {'const': 'duration'}}
+                },
+                'then': {
+                    'properties': {
+                        'data': {
+                            'type': 'string',
+                            # ISO 8601 duration
+                            'pattern': R'^(?P<sign>[-+]?)P(?:(?P<days>\d+(\.\d+)?)D)?(?:T(?:(?P<hours>\d+(\.\d+)?)H)?(?:(?P<minutes>\d+(\.\d+)?)M)?(?:(?P<seconds>\d+(\.\d+)?)S)?)?$'
+                        }
+                    }
                 }
             },
             {

@@ -8,6 +8,7 @@ from django import template
 from django.template import Context
 from django.template.loader import get_template
 from django.utils.safestring import mark_safe
+from django.utils.dateparse import parse_duration
 from django import forms
 
 from dtf.settings import STATUS_TEXT_COLORS
@@ -58,6 +59,8 @@ def create_html_representation(data, valuetype):
     if valuetype == "list": # backward-compatibility
         out = " <br> ".join(str(data).strip("[]").split(","))
         return mark_safe(out)
+    if valuetype == "duration":
+        return str(parse_duration(data))
     if valuetype == "ndarray":
         shape = data['shape']
         entries = [str(create_html_representation(entry['data'], entry['type'])) for entry in data['entries']]
