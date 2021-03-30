@@ -273,12 +273,12 @@ class TestResult(models.Model):
     status = models.CharField(choices=POSSIBLE_STATUS, default="unknown", max_length=20)
 
     status_order = {
-        "skip":0,
-        "successful": 10,
-        "unstable": 20,
-        "failed": 30,
-        "unknown": 40,
-        "broken": 50
+        "skip": 0,
+        "successful": 1,
+        "unknown": 2,
+        "unstable": 3,
+        "failed": 4,
+        "broken": 5
     }
 
     def calculate_status(self):
