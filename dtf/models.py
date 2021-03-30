@@ -105,11 +105,13 @@ class Submission(models.Model):
     info = models.JSONField(null=False, default=dict, validators=[JSONSchemaValidator(schema=_info_json_schema)])
 
     def status(self):
-        status = "successful"
+        status = None
         for test in self.tests.all():
             test_status = test.status
-            if TestResult.status_order[test_status] > TestResult.status_order[status]:
+            if status is None or TestResult.status_order[test_status] > TestResult.status_order[status]:
                 status = test_status
+        if status is None:
+            return "unknown"
         return status
 
     class Meta:
@@ -282,11 +284,14 @@ class TestResult(models.Model):
     }
 
     def calculate_status(self):
-        status = "successful"
+        status = None
         for result in self.results:
-            if self.status_order[result['status']] > self.status_order[status]:
+            if status is None or self.status_order[result['status']] > self.status_order[status]:
                 status = result['status']
-        self.status = status
+        if status is None:
+            self.status = "unknown"
+        else:
+            self.status = status
 
     def save(self, *args, **kwargs):
         self.calculate_status()
