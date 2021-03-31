@@ -123,7 +123,7 @@ function toggleAllBoxes(){
 <div class="page-header mb-5">
     {# <h2 class="my-auto float-left">{{ test_result.name }} [{{ test_result.submission.pk }}]</h2> #}
 
-    {% if nav_data.previous.exists %}
+    {% comment %} {% if nav_data.previous.exists %}
     <a href="{% url 'test_result_details' nav_data.previous.id %}" class="btn btn-sm btn-primary active mr-1 float-left">Previous</a> 
     {% else %}
     <a href="#" class="btn btn-sm btn-secondary mr-1 float-left disabled">Previous</a> 
@@ -139,11 +139,11 @@ function toggleAllBoxes(){
     <a href="#" class="btn btn-sm btn-secondary mr-1 float-left disabled">>></a>  
     {% else %}
     <a href="{% url 'test_result_details' nav_data.most_recent.id %}" class="btn btn-sm btn-primary active mr-1 float-left">>></a>
-    {% endif %}
+    {% endif %} {% endcomment %}
 
     {% with not_successful=test_result.get_next_not_successful_test_id %}
     {% if not_successful is None %}
-    <a href="#" class="ml-4 btn btn-sm btn-secondary mr-1 float-left disabled">Next not successful</a>  
+    <a href="#" class="btn btn-sm btn-secondary mr-1 float-left disabled">Next not successful</a>  
     {% else %}
     <a href="{% url 'test_result_details' not_successful %}" class="ml-4 btn btn-sm btn-info active mr-1 float-left">Next not successful</a>
     {% endif %}
