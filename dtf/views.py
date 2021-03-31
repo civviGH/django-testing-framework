@@ -162,7 +162,7 @@ def view_test_result_details(request, test_id):
         references = {}
 
     data = create_view_data_from_test_references(test_result.results, references)
-    nav_data = project.get_nav_data(test_result.name, test_result.submission.id)
+    # nav_data = project.get_nav_data(test_result.name, test_result.submission.id)
     return render(request, 'dtf/test_result_details.html', {
         'project':project,
         'reference_set':reference_set,
@@ -170,7 +170,7 @@ def view_test_result_details(request, test_id):
         'test_result':test_result,
         'property_values':str(property_values),
         'data':data,
-        'nav_data':nav_data
+        # 'nav_data':nav_data
     })
 
 def view_submission_details(request, submission_id):
