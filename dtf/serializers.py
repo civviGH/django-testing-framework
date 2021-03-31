@@ -11,12 +11,25 @@ from dtf.models import Project, TestResult, ReferenceSet, TestReference, Submiss
 from dtf.functions import fill_result_default_values
 
 from django.core.exceptions import ObjectDoesNotExist
+from django.urls import reverse
+
+def _try_build_absolute_uri(serializer, url):
+    request = serializer.context.get('request')
+    if request is not None:
+        return request.build_absolute_uri(url)
+    return url
 
 class ProjectSerializer(serializers.ModelSerializer):
+    url = serializers.SerializerMethodField()
+
     class Meta:
         model = Project
-        fields = ['id', 'name', 'slug', 'created', 'last_updated']
-        extra_kwargs = {'created': {'read_only': False, 'required':False}}
+        fields = ['id', 'name', 'slug', 'created', 'last_updated', 'url']
+        extra_kwargs = {'created': {'read_only': False, 'required': False}}
+
+    def get_url(self, obj):
+        url = reverse('project_details', kwargs={'project_slug' : obj.slug})
+        return _try_build_absolute_uri(self, url)
 
 class ProjectSubmissionPropertySerializer(serializers.ModelSerializer):
     class Meta:
@@ -86,6 +99,8 @@ class TestReferenceSerializer(serializers.ModelSerializer):
         return data
 
 class TestResultSerializer(serializers.ModelSerializer):
+    url = serializers.SerializerMethodField()
+
     class Meta:
         model = TestResult
         fields = ['name',
@@ -93,7 +108,8 @@ class TestResultSerializer(serializers.ModelSerializer):
                   'results',
                   'created',
                   'last_updated',
-                  'submission']
+                  'submission',
+                  'url']
         extra_kwargs = {'created': {'read_only': False, 'required':False}}
 
     def validate(self, data):
@@ -103,14 +119,20 @@ class TestResultSerializer(serializers.ModelSerializer):
             data['submission'])
         return data
 
+    def get_url(self, obj):
+        url = reverse('test_result_details', kwargs={'project_slug' : obj.submission.project.slug, 'test_id' : obj.pk})
+        return _try_build_absolute_uri(self, url)
+
 class SubmissionSerializer(serializers.ModelSerializer):
+    url = serializers.SerializerMethodField()
     class Meta:
         model = Submission
         fields = ['project',
                   'id',
                   'created',
                   'last_updated',
-                  'info']
+                  'info',
+                  'url']
         extra_kwargs = {'created': {'read_only': False, 'required':False}}
 
     def validate(self, data):
@@ -126,6 +148,10 @@ class SubmissionSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(f"Missing required properties '{missing_properties_str}' in submission info")
 
         return data
+
+    def get_url(self, obj):
+        url = reverse('submission_details', kwargs={'project_slug' : obj.project.slug, 'submission_id' : obj.pk})
+        return _try_build_absolute_uri(self, url)
 
 class WebhookLogEntrySerializer(serializers.ModelSerializer):
     class Meta:
