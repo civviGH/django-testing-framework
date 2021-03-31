@@ -49,7 +49,7 @@ def view_project_settings(request, project_slug):
 
             if project_form.is_valid():
                 project_form.save()
-                serializer = ProjectSerializer(project_form.instance)
+                serializer = ProjectSerializer(project_form.instance, context={"request": request})
                 return JsonResponse({'result' : 'valid', 'property' : serializer.data})
             else:
                 data = project_form.errors.get_json_data()
