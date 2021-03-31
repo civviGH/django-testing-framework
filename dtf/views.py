@@ -1,7 +1,7 @@
 
 from django.core.paginator import Paginator
 from django.shortcuts import render, get_object_or_404
-from django.http import HttpResponseRedirect, JsonResponse, HttpResponse
+from django.http import HttpResponseRedirect, JsonResponse, HttpResponse, Http404
 from django.urls import reverse
 
 from rest_framework import status
@@ -131,10 +131,12 @@ def view_project_details(request, project_slug):
         'submissions':submissions
     })
 
-def view_test_result_details(request, test_id):
+def view_test_result_details(request, project_slug, test_id):
+    project = get_object_or_404(Project, slug=project_slug)
     test_result = get_object_or_404(TestResult, pk=test_id)
     submission = test_result.submission
-    project = submission.project
+    if submission.project != project:
+        raise Http404("The test does not belong to this project")
 
     queries = create_reference_query(project, submission.info)
 
@@ -173,8 +175,11 @@ def view_test_result_details(request, test_id):
         # 'nav_data':nav_data
     })
 
-def view_submission_details(request, submission_id):
+def view_submission_details(request, project_slug, submission_id):
+    project = get_object_or_404(Project, slug=project_slug)
     submission = get_object_or_404(Submission, pk=submission_id)
+    if submission.project != project:
+        raise Http404("The submission does not belong to this project")
     return render(request, 'dtf/submission_details.html', {
         'submission':submission
     })

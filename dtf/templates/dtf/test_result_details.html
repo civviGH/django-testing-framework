@@ -109,7 +109,7 @@ function toggleAllBoxes(){
         <a href="{% url 'project_details' test_result.submission.project.slug %}">{{ project.name }}</a>
     </li>
     <li class="breadcrumb-item" aria-current="page">
-        <a href="{% url 'submission_details' test_result.submission.pk %}">
+        <a href="{% url 'submission_details' test_result.submission.project.slug test_result.submission.pk %}">
         Submission {{test_result.submission.id}} | {{test_result.submission.created}}
         </a>
     </li>
@@ -124,13 +124,13 @@ function toggleAllBoxes(){
     {# <h2 class="my-auto float-left">{{ test_result.name }} [{{ test_result.submission.pk }}]</h2> #}
 
     {% comment %} {% if nav_data.previous.exists %}
-    <a href="{% url 'test_result_details' nav_data.previous.id %}" class="btn btn-sm btn-primary active mr-1 float-left">Previous</a> 
+    <a href="{% url 'test_result_details' test_result.submission.project.slug nav_data.previous.id %}" class="btn btn-sm btn-primary active mr-1 float-left">Previous</a> 
     {% else %}
     <a href="#" class="btn btn-sm btn-secondary mr-1 float-left disabled">Previous</a> 
     {% endif %}
 
     {% if nav_data.next.exists %}
-    <a href="{% url 'test_result_details' nav_data.next.id %}" class="btn btn-sm btn-primary active mr-1 float-left">Next</a>
+    <a href="{% url 'test_result_details' test_result.submission.project.slug nav_data.next.id %}" class="btn btn-sm btn-primary active mr-1 float-left">Next</a>
     {% else %}
     <a href="#" class="btn btn-sm btn-secondary mr-1 float-left disabled">Next</a>  
     {% endif %}
@@ -138,14 +138,14 @@ function toggleAllBoxes(){
     {% if nav_data.most_recent.id == test_result.id %}
     <a href="#" class="btn btn-sm btn-secondary mr-1 float-left disabled">>></a>  
     {% else %}
-    <a href="{% url 'test_result_details' nav_data.most_recent.id %}" class="btn btn-sm btn-primary active mr-1 float-left">>></a>
+    <a href="{% url 'test_result_details' test_result.submission.project.slug nav_data.most_recent.id %}" class="btn btn-sm btn-primary active mr-1 float-left">>></a>
     {% endif %} {% endcomment %}
 
     {% with not_successful=test_result.get_next_not_successful_test_id %}
     {% if not_successful is None %}
     <a href="#" class="btn btn-sm btn-secondary mr-1 float-left disabled">Next not successful</a>  
     {% else %}
-    <a href="{% url 'test_result_details' not_successful %}" class="ml-4 btn btn-sm btn-info active mr-1 float-left">Next not successful</a>
+    <a href="{% url 'test_result_details' test_result.submission.project.slug not_successful %}" class="ml-4 btn btn-sm btn-info active mr-1 float-left">Next not successful</a>
     {% endif %}
     {% endwith %}
 
@@ -198,7 +198,7 @@ function toggleAllBoxes(){
             <td>
                 {% if parameter.reference_on_submission %}
                     {% if parameter.reference_on_submission_source %}
-                        <a class="ref_link" target="_blank" href="{% url 'test_result_details' parameter.reference_on_submission_source %}">{{ parameter.reference_on_submission.data|create_html_representation:parameter.reference_on_submission.type }}</a>
+                        <a class="ref_link" target="_blank" href="{% url 'test_result_details' test_result.submission.project.slug parameter.reference_on_submission_source %}">{{ parameter.reference_on_submission.data|create_html_representation:parameter.reference_on_submission.type }}</a>
                     {% else %}
                         {{ parameter.reference_on_submission.data|create_html_representation:parameter.reference_on_submission.type }}
                     {% endif %}
@@ -209,7 +209,7 @@ function toggleAllBoxes(){
             <td>
                 {% if parameter.reference %}
                     {% if parameter.reference_source %}
-                        <a class="ref_link" target="_blank" href="{% url 'test_result_details' parameter.reference_source %}">{{ parameter.reference.data|create_html_representation:parameter.reference.type }}</a>
+                        <a class="ref_link" target="_blank" href="{% url 'test_result_details' test_result.submission.project.slug parameter.reference_source %}">{{ parameter.reference.data|create_html_representation:parameter.reference.type }}</a>
                     {% else %}
                         {{ parameter.reference.data|create_html_representation:parameter.reference.type }}
                     {% endif %}

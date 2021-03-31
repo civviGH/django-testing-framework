@@ -47,7 +47,7 @@
     </thead>
     <tbody>
     {% for submission in submissions|dictsortreversed:"id" %}
-    <tr onclick="window.location='{% url 'submission_details' submission.pk %}';" style="cursor:pointer">
+    <tr onclick="window.location='{% url 'submission_details' project.slug submission.pk %}';" style="cursor:pointer">
         <td>
             {{ submission.status|status_badge }}
         </td>
