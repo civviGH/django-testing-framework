@@ -25,11 +25,11 @@ from dtf.functions import get_project_by_id_or_slug, create_reference_query
 def projects(request):
     if request.method == 'GET':
         projects = Project.objects.order_by('-pk')
-        serializer = ProjectSerializer(projects, many=True)
+        serializer = ProjectSerializer(projects, many=True, context={"request": request})
         return Response(serializer.data, status.HTTP_200_OK)
 
     elif request.method == 'POST':
-        serializer = ProjectSerializer(data=request.data)
+        serializer = ProjectSerializer(data=request.data, context={"request": request})
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -42,11 +42,11 @@ def project(request, id):
         return Response(status=status.HTTP_404_NOT_FOUND)
 
     if request.method == 'GET':
-        serializer = ProjectSerializer(project)
+        serializer = ProjectSerializer(project, context={"request": request})
         return Response(serializer.data)
 
     elif request.method == 'PUT':
-        serializer = ProjectSerializer(project, data=request.data)
+        serializer = ProjectSerializer(project, data=request.data, context={"request": request})
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
@@ -178,12 +178,12 @@ def project_submissions(request, project_id):
 
     if request.method == 'GET':
         submissions = Submission.objects.filter(project=project).order_by('-pk')
-        serializer = SubmissionSerializer(submissions, many=True)
+        serializer = SubmissionSerializer(submissions, many=True, context={"request": request})
         return Response(serializer.data, status.HTTP_200_OK)
 
     elif request.method == 'POST':
         request.data['project'] = project.id
-        serializer = SubmissionSerializer(data=request.data)
+        serializer = SubmissionSerializer(data=request.data, context={"request": request})
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -200,11 +200,11 @@ def project_submission(request, project_id, submission_id):
         return Response(status=status.HTTP_404_NOT_FOUND)
 
     if request.method == 'GET':
-        serializer = SubmissionSerializer(submission)
+        serializer = SubmissionSerializer(submission, context={"request": request})
         return Response(serializer.data)
 
     elif request.method == 'PUT':
-        serializer = SubmissionSerializer(submission, data=request.data)
+        serializer = SubmissionSerializer(submission, data=request.data, context={"request": request})
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
@@ -230,12 +230,12 @@ def project_submission_tests(request, project_id, submission_id):
 
     if request.method == 'GET':
         tests = TestResult.objects.filter(submission=submission).order_by('-pk')
-        serializer = TestResultSerializer(tests, many=True)
+        serializer = TestResultSerializer(tests, many=True, context={"request": request})
         return Response(serializer.data, status.HTTP_200_OK)
 
     elif request.method == 'POST':
         request.data['submission'] = submission.id
-        serializer = TestResultSerializer(data=request.data)
+        serializer = TestResultSerializer(data=request.data, context={"request": request})
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -256,11 +256,11 @@ def project_submission_test(request, project_id, submission_id, test_id):
         return Response(status=status.HTTP_404_NOT_FOUND)
 
     if request.method == 'GET':
-        serializer = TestResultSerializer(test)
+        serializer = TestResultSerializer(test, context={"request": request})
         return Response(serializer.data)
 
     elif request.method == 'PUT':
-        serializer = TestResultSerializer(test, data=request.data)
+        serializer = TestResultSerializer(test, data=request.data, context={"request": request})
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)

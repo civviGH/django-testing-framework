@@ -44,7 +44,7 @@
     </thead>
     <tbody>
     {% for test in submission.tests.all %}
-    <tr onclick="window.location='{% url 'test_result_details' test.pk %}'" style="cursor:pointer">
+    <tr onclick="window.location='{% url 'test_result_details' submission.project.slug test.pk %}'" style="cursor:pointer">
         <td>
             {{ test.status|status_badge }}
         </td>
