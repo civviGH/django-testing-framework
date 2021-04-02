@@ -1,9 +1,11 @@
 
 from django.db import IntegrityError
+from django.http import Http404
 
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework import generics
 
 from dtf.serializers import ProjectSerializer
 from dtf.serializers import TestResultSerializer
@@ -17,44 +19,25 @@ from dtf.serializers import WebhookLogEntrySerializer
 from dtf.models import TestResult, Project, ReferenceSet, TestReference, Submission, ProjectSubmissionProperty, Webhook
 from dtf.functions import get_project_by_id_or_slug, create_reference_query
 
+def get_project_or_404(project_id):
+    project = get_project_by_id_or_slug(project_id)
+    if project is None:
+        raise Http404
+    return project
 #
 # Project API endpoints
 #
+class ProjectList(generics.ListCreateAPIView):
+    queryset = Project.objects.order_by('-pk')
+    serializer_class = ProjectSerializer
 
-@api_view(["GET", "POST"])
-def projects(request):
-    if request.method == 'GET':
-        projects = Project.objects.order_by('-pk')
-        serializer = ProjectSerializer(projects, many=True, context={"request": request})
-        return Response(serializer.data, status.HTTP_200_OK)
+class ProjectDetail(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Project.objects.all()
+    serializer_class = ProjectSerializer
+    lookup_url_kwarg = 'id'
 
-    elif request.method == 'POST':
-        serializer = ProjectSerializer(data=request.data, context={"request": request})
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status.HTTP_400_BAD_REQUEST)
-
-@api_view(["GET", "PUT", "DELETE"])
-def project(request, id):
-    project = get_project_by_id_or_slug(id)
-    if project is None:
-        return Response(status=status.HTTP_404_NOT_FOUND)
-
-    if request.method == 'GET':
-        serializer = ProjectSerializer(project, context={"request": request})
-        return Response(serializer.data)
-
-    elif request.method == 'PUT':
-        serializer = ProjectSerializer(project, data=request.data, context={"request": request})
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    elif request.method == 'DELETE':
-        project.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+    def get_object(self):
+        return get_project_or_404(self.kwargs['id'])
 
 #
 # Project Submission Properties API endpoints

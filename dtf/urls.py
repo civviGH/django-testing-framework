@@ -21,8 +21,8 @@ urlpatterns = [
     path('<str:project_slug>/submissions/<int:submission_id>', views.view_submission_details, name='submission_details'),
     path('<str:project_slug>/tests/<int:test_id>', views.view_test_result_details, name='test_result_details'),
 
-    path('api/projects', api.projects, name='api_projects'),
-    path('api/projects/<str:id>', api.project, name='api_project'),
+    path('api/projects', api.ProjectList.as_view(), name='api_projects'),
+    path('api/projects/<str:id>', api.ProjectDetail.as_view(), name='api_project'),
 
     path('api/projects/<str:project_id>/properties', api.project_submission_properties, name='api_project_submission_properties'),
     path('api/projects/<str:project_id>/properties/<str:property_id>', api.project_submission_property, name='api_project_submission_property'),
