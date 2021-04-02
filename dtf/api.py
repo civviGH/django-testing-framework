@@ -189,62 +189,40 @@ class ProjectReferenceSetDetail(generics.RetrieveUpdateDestroyAPIView):
 # Reference Tests API endpoints
 #
 
-@api_view(["GET", "POST"])
-def project_reference_tests(request, project_id, reference_id):
-    project = get_project_by_id_or_slug(project_id)
-    if project is None:
-        return Response(status=status.HTTP_404_NOT_FOUND)
-    try:
-        reference_set = project.reference_sets.get(pk=reference_id)
-    except ReferenceSet.DoesNotExist:
-        return Response(status=status.HTTP_404_NOT_FOUND)
+class ProjectReferenceSetTestReferenceList(generics.ListCreateAPIView):
+    serializer_class = TestReferenceSerializer
 
-    if request.method == 'GET':
-        query = {}
-        for key, value in request.query_params.items():
-            query[key] = value#.replace('%20', " ")
-        test_references = reference_set.test_references.filter(**query).order_by("-pk")
-        serializer = TestReferenceSerializer(test_references, many=True)
-        return Response(serializer.data, status.HTTP_200_OK)
+    def get_queryset(self):
+        project = get_project_or_404(self.kwargs['project_id'])
+        reference_set = get_child_or_404(project.reference_sets, pk=self.kwargs['reference_id'])
+        return reference_set.test_references.filter(**self.request.query_params).order_by('-pk')
 
-    elif request.method == 'POST':
-        request.data['reference_set'] = reference_set.id
-        serializer = TestReferenceSerializer(data=request.data)
-        if serializer.is_valid():
-            try:
-                serializer.save()
-            except IntegrityError as error:
-                return Response(str(error), status.HTTP_400_BAD_REQUEST)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status.HTTP_400_BAD_REQUEST)
+    def create(self, request, *args, **kwargs):
+        project = get_project_or_404(self.kwargs['project_id'])
+        request.data['reference_set'] = get_child_or_404(project.reference_sets, pk=self.kwargs['reference_id']).id
+        try:
+            return super().create(request, *args, **kwargs)
+        except IntegrityError as error:
+            return Response(str(error), status.HTTP_400_BAD_REQUEST)
 
-@api_view(["GET", "PUT", "PATCH", "DELETE"])
-def project_reference_test(request, project_id, reference_id, test_id):
-    project = get_project_by_id_or_slug(project_id)
-    if project is None:
-        return Response(status=status.HTTP_404_NOT_FOUND)
-    try:
-        reference_set = project.reference_sets.get(pk=reference_id)
-    except ReferenceSet.DoesNotExist:
-        return Response(status=status.HTTP_404_NOT_FOUND)
-    try:
-        test_references = reference_set.test_references.get(pk=test_id)
-    except TestReference.DoesNotExist:
-        return Response(status=status.HTTP_404_NOT_FOUND)
+class ProjectReferenceSetTestReferenceDetail(generics.RetrieveUpdateDestroyAPIView):
+    serializer_class = TestReferenceSerializer
+    lookup_url_kwarg = 'test_id'
 
-    if request.method == 'GET':
-        serializer = TestReferenceSerializer(test_references)
-        return Response(serializer.data)
+    def get_queryset(self):
+        project = get_project_or_404(self.kwargs['project_id'])
+        reference_set = get_child_or_404(project.reference_sets, pk=self.kwargs['reference_id'])
+        return reference_set.test_references.all()
 
-    elif request.method == 'PUT':
-        request.data['reference_set'] = reference_set.id
-        serializer = TestReferenceSerializer(test_references, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    def update(self, request, *args, **kwargs):
+        try:
+            return super().update(request, *args, **kwargs)
+        except IntegrityError as error:
+            return Response(str(error), status.HTTP_400_BAD_REQUEST)
 
-    elif request.method == 'PATCH':
+    def partial_update(self, request, *args, **kwargs):
+        test_references = self.get_object()
+
         # TODO: should we introduce a special serializer here?
         test_references.update_references(
             request.data['references'],
@@ -254,10 +232,6 @@ def project_reference_test(request, project_id, reference_id, test_id):
             return Response({}, status=status.HTTP_200_OK)
         except Exception as err:
             return Response(str(err), status=status.HTTP_400_BAD_REQUEST)
-
-    elif request.method == 'DELETE':
-        test_references.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
 
 #
 # DEBUGGING
