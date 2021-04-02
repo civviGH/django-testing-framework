@@ -1,6 +1,7 @@
 
 from django.db import IntegrityError
 from django.http import Http404
+from django.core.exceptions import ObjectDoesNotExist
 
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -24,6 +25,14 @@ def get_project_or_404(project_id):
     if project is None:
         raise Http404
     return project
+
+def get_child_or_404(objects, **kwargs):
+    try:
+        obj = objects.get(**kwargs)
+    except ObjectDoesNotExist:
+        raise Http404
+    return obj
+
 #
 # Project API endpoints
 #
@@ -66,63 +75,32 @@ class ProjectSubmissionPropertyDetail(generics.RetrieveUpdateDestroyAPIView):
 # Project Webhook API endpoints
 #
 
-@api_view(["GET", "POST"])
-def project_webhooks(request, project_id):
-    project = get_project_by_id_or_slug(project_id)
-    if project is None:
-        return Response(status=status.HTTP_404_NOT_FOUND)
+class ProjectWebhookList(generics.ListCreateAPIView):
+    serializer_class = WebhookSerializer
 
-    if request.method == 'GET':
-        webhooks = Webhook.objects.filter(project=project).order_by('-pk')
-        serializer = WebhookSerializer(webhooks, many=True)
-        return Response(serializer.data, status.HTTP_200_OK)
+    def get_queryset(self):
+        project = get_project_or_404(self.kwargs['project_id'])
+        return project.webhooks.order_by('-pk')
 
-    elif request.method == 'POST':
-        request.data['project'] = project.id
-        serializer = WebhookSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status.HTTP_400_BAD_REQUEST)
+    def create(self, request, *args, **kwargs):
+        request.data['project'] = get_project_or_404(self.kwargs['project_id']).id
+        return super().create(request, *args, **kwargs)
 
-@api_view(["GET", "PUT", "DELETE"])
-def project_webhook(request, project_id, webhook_id):
-    project = get_project_by_id_or_slug(project_id)
-    if project is None:
-        return Response(status=status.HTTP_404_NOT_FOUND)
-    try:
-        webhook = Webhook.objects.get(project=project, pk=webhook_id)
-    except Webhook.DoesNotExist:
-        return Response(status=status.HTTP_404_NOT_FOUND)
+class ProjectWebhookDetail(generics.RetrieveUpdateDestroyAPIView):
+    serializer_class = WebhookSerializer
+    lookup_url_kwarg = 'webhook_id'
 
-    if request.method == 'GET':
-        serializer = WebhookSerializer(webhook)
-        return Response(serializer.data)
+    def get_queryset(self):
+        project = get_project_or_404(self.kwargs['project_id'])
+        return project.webhooks.all()
 
-    elif request.method == 'PUT':
-        serializer = WebhookSerializer(webhook, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+class ProjectWebhookLogList(generics.ListAPIView):
+    serializer_class = WebhookLogEntrySerializer
 
-    elif request.method == 'DELETE':
-        webhook.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
-
-@api_view(["GET"])
-def project_webhook_logs(request, project_id, webhook_id):
-    project = get_project_by_id_or_slug(project_id)
-    if project is None:
-        return Response(status=status.HTTP_404_NOT_FOUND)
-    try:
-        webhook = Webhook.objects.get(project=project, pk=webhook_id)
-    except Webhook.DoesNotExist:
-        return Response(status=status.HTTP_404_NOT_FOUND)
-
-    if request.method == 'GET':
-        serializer = WebhookLogEntrySerializer(webhook.logs, many=True)
-        return Response(serializer.data, status.HTTP_200_OK)
+    def get_queryset(self):
+        project = get_project_or_404(self.kwargs['project_id'])
+        webhook = get_child_or_404(project.webhooks, pk=self.kwargs['webhook_id'])
+        return webhook.logs.all()
 
 #
 # Project Submission API endpoints

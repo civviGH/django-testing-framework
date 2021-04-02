@@ -27,10 +27,10 @@ urlpatterns = [
     path('api/projects/<str:project_id>/properties', api.ProjectSubmissionPropertyList.as_view(), name='api_project_submission_properties'),
     path('api/projects/<str:project_id>/properties/<str:property_id>', api.ProjectSubmissionPropertyDetail.as_view(), name='api_project_submission_property'),
 
-    path('api/projects/<str:project_id>/webhooks', api.project_webhooks, name='api_project_webhooks'),
-    path('api/projects/<str:project_id>/webhooks/<str:webhook_id>', api.project_webhook, name='api_project_webhook'),
+    path('api/projects/<str:project_id>/webhooks', api.ProjectWebhookList.as_view(), name='api_project_webhooks'),
+    path('api/projects/<str:project_id>/webhooks/<str:webhook_id>', api.ProjectWebhookDetail.as_view(), name='api_project_webhook'),
 
-    path('api/projects/<str:project_id>/webhooks/<str:webhook_id>/logs', api.project_webhook_logs, name='api_project_webhook_logs'),
+    path('api/projects/<str:project_id>/webhooks/<str:webhook_id>/logs', api.ProjectWebhookLogList.as_view(), name='api_project_webhook_logs'),
 
     path('api/projects/<str:project_id>/submissions', api.project_submissions, name='api_project_submissions'),
     path('api/projects/<str:project_id>/submissions/<str:submission_id>', api.project_submission, name='api_project_submission'),
