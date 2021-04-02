@@ -24,8 +24,8 @@ urlpatterns = [
     path('api/projects', api.ProjectList.as_view(), name='api_projects'),
     path('api/projects/<str:id>', api.ProjectDetail.as_view(), name='api_project'),
 
-    path('api/projects/<str:project_id>/properties', api.project_submission_properties, name='api_project_submission_properties'),
-    path('api/projects/<str:project_id>/properties/<str:property_id>', api.project_submission_property, name='api_project_submission_property'),
+    path('api/projects/<str:project_id>/properties', api.ProjectSubmissionPropertyList.as_view(), name='api_project_submission_properties'),
+    path('api/projects/<str:project_id>/properties/<str:property_id>', api.ProjectSubmissionPropertyDetail.as_view(), name='api_project_submission_property'),
 
     path('api/projects/<str:project_id>/webhooks', api.project_webhooks, name='api_project_webhooks'),
     path('api/projects/<str:project_id>/webhooks/<str:webhook_id>', api.project_webhook, name='api_project_webhook'),

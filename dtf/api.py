@@ -43,49 +43,24 @@ class ProjectDetail(generics.RetrieveUpdateDestroyAPIView):
 # Project Submission Properties API endpoints
 #
 
-@api_view(["GET", "POST"])
-def project_submission_properties(request, project_id):
-    project = get_project_by_id_or_slug(project_id)
-    if project is None:
-        return Response(status=status.HTTP_404_NOT_FOUND)
+class ProjectSubmissionPropertyList(generics.ListCreateAPIView):
+    serializer_class = ProjectSubmissionPropertySerializer
 
-    if request.method == 'GET':
-        properties = ProjectSubmissionProperty.objects.filter(project=project).order_by('-pk')
-        serializer = ProjectSubmissionPropertySerializer(properties, many=True)
-        return Response(serializer.data, status.HTTP_200_OK)
+    def get_queryset(self):
+        project = get_project_or_404(self.kwargs['project_id'])
+        return project.properties.order_by('-pk')
 
-    elif request.method == 'POST':
-        request.data['project'] = project.id
-        serializer = ProjectSubmissionPropertySerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status.HTTP_400_BAD_REQUEST)
+    def create(self, request, *args, **kwargs):
+        request.data['project'] = get_project_or_404(self.kwargs['project_id']).id
+        return super().create(request, *args, **kwargs)
 
-@api_view(["GET", "PUT", "DELETE"])
-def project_submission_property(request, project_id, property_id):
-    project = get_project_by_id_or_slug(project_id)
-    if project is None:
-        return Response(status=status.HTTP_404_NOT_FOUND)
-    try:
-        prop = ProjectSubmissionProperty.objects.get(project=project, pk=property_id)
-    except ProjectSubmissionProperty.DoesNotExist:
-        return Response(status=status.HTTP_404_NOT_FOUND)
+class ProjectSubmissionPropertyDetail(generics.RetrieveUpdateDestroyAPIView):
+    serializer_class = ProjectSubmissionPropertySerializer
+    lookup_url_kwarg = 'property_id'
 
-    if request.method == 'GET':
-        serializer = ProjectSubmissionPropertySerializer(prop)
-        return Response(serializer.data)
-
-    elif request.method == 'PUT':
-        serializer = ProjectSubmissionPropertySerializer(prop, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    elif request.method == 'DELETE':
-        prop.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+    def get_queryset(self):
+        project = get_project_or_404(self.kwargs['project_id'])
+        return project.properties.all()
 
 #
 # Project Webhook API endpoints
