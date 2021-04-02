@@ -32,11 +32,11 @@ urlpatterns = [
 
     path('api/projects/<str:project_id>/webhooks/<str:webhook_id>/logs', api.ProjectWebhookLogList.as_view(), name='api_project_webhook_logs'),
 
-    path('api/projects/<str:project_id>/submissions', api.project_submissions, name='api_project_submissions'),
-    path('api/projects/<str:project_id>/submissions/<str:submission_id>', api.project_submission, name='api_project_submission'),
+    path('api/projects/<str:project_id>/submissions', api.ProjectSubmissionList.as_view(), name='api_project_submissions'),
+    path('api/projects/<str:project_id>/submissions/<str:submission_id>', api.ProjectSubmissionDetail.as_view(), name='api_project_submission'),
 
-    path('api/projects/<str:project_id>/submissions/<str:submission_id>/tests', api.project_submission_tests, name='api_project_submission_tests'),
-    path('api/projects/<str:project_id>/submissions/<str:submission_id>/tests/<str:test_id>', api.project_submission_test, name='api_project_submission_test'),
+    path('api/projects/<str:project_id>/submissions/<str:submission_id>/tests', api.ProjectSubmissionTestResultList.as_view(), name='api_project_submission_tests'),
+    path('api/projects/<str:project_id>/submissions/<str:submission_id>/tests/<str:test_id>', api.ProjectSubmissionTestResultDetail.as_view(), name='api_project_submission_test'),
 
     path('api/projects/<str:project_id>/references', api.project_references, name='api_project_references'),
     path('api/projects/<str:project_id>/references/<str:reference_id>', api.project_reference, name='api_project_reference'),

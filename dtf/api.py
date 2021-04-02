@@ -1,6 +1,7 @@
 
 from django.db import IntegrityError
 from django.http import Http404
+from django.shortcuts import get_object_or_404
 from django.core.exceptions import ObjectDoesNotExist
 
 from rest_framework.decorators import api_view
@@ -106,105 +107,50 @@ class ProjectWebhookLogList(generics.ListAPIView):
 # Project Submission API endpoints
 #
 
-@api_view(["GET", "POST"])
-def project_submissions(request, project_id):
-    project = get_project_by_id_or_slug(project_id)
-    if project is None:
-        return Response(status=status.HTTP_404_NOT_FOUND)
+class ProjectSubmissionList(generics.ListCreateAPIView):
+    serializer_class = SubmissionSerializer
 
-    if request.method == 'GET':
-        submissions = Submission.objects.filter(project=project).order_by('-pk')
-        serializer = SubmissionSerializer(submissions, many=True, context={"request": request})
-        return Response(serializer.data, status.HTTP_200_OK)
+    def get_queryset(self):
+        project = get_project_or_404(self.kwargs['project_id'])
+        return project.submissions.order_by('-pk')
 
-    elif request.method == 'POST':
-        request.data['project'] = project.id
-        serializer = SubmissionSerializer(data=request.data, context={"request": request})
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status.HTTP_400_BAD_REQUEST)
+    def create(self, request, *args, **kwargs):
+        request.data['project'] = get_project_or_404(self.kwargs['project_id']).id
+        return super().create(request, *args, **kwargs)
 
-@api_view(["GET", "PUT", "DELETE"])
-def project_submission(request, project_id, submission_id):
-    project = get_project_by_id_or_slug(project_id)
-    if project is None:
-        return Response(status=status.HTTP_404_NOT_FOUND)
-    try:
-        submission = Submission.objects.get(project=project, pk=submission_id)
-    except Submission.DoesNotExist:
-        return Response(status=status.HTTP_404_NOT_FOUND)
+class ProjectSubmissionDetail(generics.RetrieveUpdateDestroyAPIView):
+    serializer_class = SubmissionSerializer
+    lookup_url_kwarg = 'submission_id'
 
-    if request.method == 'GET':
-        serializer = SubmissionSerializer(submission, context={"request": request})
-        return Response(serializer.data)
-
-    elif request.method == 'PUT':
-        serializer = SubmissionSerializer(submission, data=request.data, context={"request": request})
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    elif request.method == 'DELETE':
-        submission.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+    def get_queryset(self):
+        project = get_project_or_404(self.kwargs['project_id'])
+        return project.submissions.all()
 
 #
 # Project Submission Test API endpoints
 #
 
-@api_view(["GET", "POST"])
-def project_submission_tests(request, project_id, submission_id):
-    project = get_project_by_id_or_slug(project_id)
-    if project is None:
-        return Response(status=status.HTTP_404_NOT_FOUND)
-    try:
-        submission = Submission.objects.get(project=project, pk=submission_id)
-    except Submission.DoesNotExist:
-        return Response(status=status.HTTP_404_NOT_FOUND)
+class ProjectSubmissionTestResultList(generics.ListCreateAPIView):
+    serializer_class = TestResultSerializer
 
-    if request.method == 'GET':
-        tests = TestResult.objects.filter(submission=submission).order_by('-pk')
-        serializer = TestResultSerializer(tests, many=True, context={"request": request})
-        return Response(serializer.data, status.HTTP_200_OK)
+    def get_queryset(self):
+        project = get_project_or_404(self.kwargs['project_id'])
+        submission = get_child_or_404(project.submissions, pk=self.kwargs['submission_id'])
+        return submission.tests.order_by('-pk')
 
-    elif request.method == 'POST':
-        request.data['submission'] = submission.id
-        serializer = TestResultSerializer(data=request.data, context={"request": request})
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status.HTTP_400_BAD_REQUEST)
+    def create(self, request, *args, **kwargs):
+        project = get_project_or_404(self.kwargs['project_id'])
+        request.data['submission'] = get_child_or_404(project.submissions, pk=self.kwargs['submission_id']).id
+        return super().create(request, *args, **kwargs)
 
-@api_view(["GET", "PUT", "DELETE"])
-def project_submission_test(request, project_id, submission_id, test_id):
-    project = get_project_by_id_or_slug(project_id)
-    if project is None:
-        return Response(status=status.HTTP_404_NOT_FOUND)
-    try:
-        submission = Submission.objects.get(project=project, pk=submission_id)
-    except Submission.DoesNotExist:
-        return Response(status=status.HTTP_404_NOT_FOUND)
-    try:
-        test = TestResult.objects.get(submission=submission, pk=test_id)
-    except TestResult.DoesNotExist:
-        return Response(status=status.HTTP_404_NOT_FOUND)
+class ProjectSubmissionTestResultDetail(generics.RetrieveUpdateDestroyAPIView):
+    serializer_class = TestResultSerializer
+    lookup_url_kwarg = 'test_id'
 
-    if request.method == 'GET':
-        serializer = TestResultSerializer(test, context={"request": request})
-        return Response(serializer.data)
-
-    elif request.method == 'PUT':
-        serializer = TestResultSerializer(test, data=request.data, context={"request": request})
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    elif request.method == 'DELETE':
-        test.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+    def get_queryset(self):
+        project = get_project_or_404(self.kwargs['project_id'])
+        submission = get_child_or_404(project.submissions, pk=self.kwargs['submission_id'])
+        return submission.tests.all()
 
 #
 # Project Reference API endpoints
