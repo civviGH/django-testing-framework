@@ -47,19 +47,7 @@
                 {{ name }}
             </td>
             <td>
-                {% if entry.value %}
-                    {% if entry.source %}
-                        <a class="ref_link" target="_blank" href="{% url 'test_result_details' test_reference.reference_set.project.slug entry.source %}">{{ entry.value.data|create_html_representation:entry.value.type }}</a>
-                    {% else %}
-                        {{ entry.value.data|create_html_representation:entry.value.type }}
-                    {% endif %}
-                {% else %}
-                    {% if entry.source %}
-                        <a class="ref_link" target="_blank" href="{% url 'test_result_details' test_reference.reference_set.project.slug entry.source %}">N/A</a>
-                    {% else %}
-                        N/A
-                    {% endif %}
-                {% endif %}
+                {{ entry|as_measurement_entry:test_reference.reference_set.project }}
             </td>
         </tr>
     {% endfor %}
