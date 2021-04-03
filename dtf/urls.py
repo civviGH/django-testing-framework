@@ -15,9 +15,10 @@ urlpatterns = [
     path('', RedirectView.as_view(pattern_name='projects', permanent=False)),
     path('projects/', views.view_projects, name='projects'),
     path('projects/new', views.view_new_project, name='new_project'),
-    path('<str:project_slug>', views.view_project_details, name='project_details'),
+    path('<str:project_slug>', RedirectView.as_view(pattern_name='project_submissions', permanent=False), name='project_details'),
     path('<str:project_slug>/settings', views.view_project_settings, name='project_settings'),
     path('<str:project_slug>/webhook/<int:webhook_id>/log', views.view_webhook_log, name='webhook_log'),
+    path('<str:project_slug>/submissions', views.view_project_submissions, name='project_submissions'),
     path('<str:project_slug>/submissions/<int:submission_id>', views.view_submission_details, name='submission_details'),
     path('<str:project_slug>/tests/<int:test_id>', views.view_test_result_details, name='test_result_details'),
 

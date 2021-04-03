@@ -116,7 +116,7 @@ def view_webhook_log(request, project_slug, webhook_id):
         'webhook': webhook,
     })
 
-def view_project_details(request, project_slug):
+def view_project_submissions(request, project_slug):
     project = get_object_or_404(Project, slug=project_slug)
     properties = ProjectSubmissionProperty.objects.filter(project=project)
 
@@ -125,7 +125,7 @@ def view_project_details(request, project_slug):
     page_number = request.GET.get('page')
     submissions = paginator.get_page(page_number)
 
-    return render(request, 'dtf/project_details.html', {
+    return render(request, 'dtf/project_submissions.html', {
         'project':project,
         'properties':properties,
         'submissions':submissions

@@ -14,7 +14,10 @@
     <li class="breadcrumb-item" aria-current="page">
         <a href="{% url 'project_details' submission.project.slug %}">{{submission.project.name}}</a>
     </li>
-    <li class="breadcrumb-item active" aria-current="page">Submission {{submission.id}} | {{submission.created}}</li>
+    <li class="breadcrumb-item" aria-current="page">
+        <a href="{% url 'project_submissions' submission.project.slug %}">Submissions</a>
+    </li>
+    <li class="breadcrumb-item active" aria-current="page">{{submission.id}} | {{submission.created}}</li>
   </ol>
 </nav>
 

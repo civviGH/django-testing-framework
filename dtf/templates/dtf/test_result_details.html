@@ -109,8 +109,11 @@ function toggleAllBoxes(){
         <a href="{% url 'project_details' test_result.submission.project.slug %}">{{ project.name }}</a>
     </li>
     <li class="breadcrumb-item" aria-current="page">
+        <a href="{% url 'project_submissions' test_result.submission.project.slug %}">Submissions</a>
+    </li>
+    <li class="breadcrumb-item" aria-current="page">
         <a href="{% url 'submission_details' test_result.submission.project.slug test_result.submission.pk %}">
-        Submission {{test_result.submission.id}} | {{test_result.submission.created}}
+        {{test_result.submission.id}} | {{test_result.submission.created}}
         </a>
     </li>
     <li class="breadcrumb-item active" aria-current="page">
