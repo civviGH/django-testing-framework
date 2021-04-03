@@ -370,7 +370,12 @@ class TestReference(models.Model):
         'additionalProperties': {
             'type': 'object',
             'properties': {
-                'value': {'$ref': '#/definitions/value'},
+                'value': {
+                    'oneOf': [
+                        {'$ref': '#/definitions/value'},
+                        {'type': 'null'}
+                    ]
+                },
                 'source': {'type': 'integer'},
             },
             'required': ['value'],

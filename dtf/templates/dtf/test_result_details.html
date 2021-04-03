@@ -20,11 +20,13 @@ function postReferenceUpdate(reference_set_id){
         box = parameterBoxes[i];
         if (parameterBoxes[i].checked) {
             if (box.getAttribute("pindex") === "") {
-                data["references"][box.getAttribute("id")] = null;
+                data["references"][box.getAttribute("id")]= {
+                    "value": null
+                };
             }
             else {
                 data["references"][box.getAttribute("id")] = {
-                    "value": all_data[box.getAttribute("pindex")]["test"]
+                    "value": all_data[box.getAttribute("pindex")]["test"]["value"]
                 };
             }
         }
@@ -192,33 +194,13 @@ function toggleAllBoxes(){
                 {{ parameter.name }}
             </td>
             <td>
-                {% if parameter.test %}
-                    {{ parameter.test.data|create_html_representation:parameter.test.type }}
-                {% else %}
-                    N/A
-                {% endif %}
+                {{ parameter.test|as_measurement_entry:test_result.submission.project }}
             </td>
             <td>
-                {% if parameter.reference_on_submission %}
-                    {% if parameter.reference_on_submission_source %}
-                        <a class="ref_link" target="_blank" href="{% url 'test_result_details' test_result.submission.project.slug parameter.reference_on_submission_source %}">{{ parameter.reference_on_submission.data|create_html_representation:parameter.reference_on_submission.type }}</a>
-                    {% else %}
-                        {{ parameter.reference_on_submission.data|create_html_representation:parameter.reference_on_submission.type }}
-                    {% endif %}
-                {% else %}
-                    N/A
-                {% endif %}
+                {{ parameter.reference_on_submission|as_measurement_entry:test_result.submission.project }}
             </td>
             <td>
-                {% if parameter.reference %}
-                    {% if parameter.reference_source %}
-                        <a class="ref_link" target="_blank" href="{% url 'test_result_details' test_result.submission.project.slug parameter.reference_source %}">{{ parameter.reference.data|create_html_representation:parameter.reference.type }}</a>
-                    {% else %}
-                        {{ parameter.reference.data|create_html_representation:parameter.reference.type }}
-                    {% endif %}
-                {% else %}
-                    N/A
-                {% endif %}
+                {{ parameter.reference|as_measurement_entry:test_result.submission.project }}
             </td>
             <td>
                 {% if parameter.test %}

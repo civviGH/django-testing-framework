@@ -930,6 +930,13 @@ class TestReferencesApiTest(ApiTestCase):
         self.assertEqual(self.reference_set_1.test_references.count(), 1)
         self.assertEqual(self.reference_set_1.test_references.first().references, {'Result1' : {'value' : { 'data' : 2, 'type' : 'integer'}, 'source' : self.test_2_2_id}, 'Result2' : {'value' : { 'data' : 3.0, 'type' : 'float'}, 'source' : self.test_2_1_id}})
 
+    def test_create_null_value(self):
+        response, data = self.post(self.url, {'test_name' : "Test 1", 'default_source' : self.test_1_1_id, 'references' : {'Result1' : {'value' : None}}})
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(TestReference.objects.count(), 1)
+        self.assertEqual(self.reference_set_1.test_references.count(), 1)
+        self.assertEqual(self.reference_set_1.test_references.first().references, {'Result1' : {'value' : None, 'source' : self.test_1_1_id}})
+
     def test_create_missing_test_id(self):
         response, data = self.post(self.url, {'test_name' : "Test 2", 'references' : {'Result1' : {'value' : { 'data' : 2, 'type' : 'integer'}, 'source' : self.test_2_2_id}, 'Result2' : {'value' : { 'data' : 3.0, 'type' : 'float'} }}})
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
@@ -1088,6 +1095,16 @@ class TestReferenceApiTest(ApiTestCase):
 
         test_reference_1 = TestReference.objects.get(id=self.test_reference_1_id)
         self.assertEqual(test_reference_1.references["Result1"], {'value' : { 'data' : 3, 'type' : 'integer'}, 'source' : self.test_1_id})
+
+    def test_update_change_to_null(self):
+        data = {}
+        data['default_source'] = self.test_1_id
+        data['references'] = {'Result1' : {'value' : None}}
+        response, data = self.patch(self.url_1, data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        test_reference_1 = TestReference.objects.get(id=self.test_reference_1_id)
+        self.assertEqual(test_reference_1.references["Result1"], {'value' : None, 'source' : self.test_1_id})
 
     def test_update_remove(self):
         data = {}

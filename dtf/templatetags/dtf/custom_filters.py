@@ -9,6 +9,7 @@ from django.template import Context
 from django.template.loader import get_template
 from django.utils.safestring import mark_safe
 from django.utils.dateparse import parse_duration
+from django.urls import reverse
 from django import forms
 
 register = template.Library()
@@ -89,6 +90,24 @@ def create_html_representation(data, valuetype):
         out = f"<img src='data:image/png;base64, {data}' />"
         return mark_safe(out)
     return str(data)
+
+@register.filter
+def as_measurement_entry(entry, project):
+    if entry is None:
+        return "N/A"
+    value = entry.get('value', None)
+    source = entry.get('source', None)
+    if value is not None and 'data' in value and 'type' in value:
+        text = create_html_representation(value['data'], value['type'])
+    else:
+        text = "None"
+
+    if source is not None:
+        url = reverse('test_result_details', kwargs={'project_slug' : project.slug, 'test_id' : source})
+        out = f"<a class='ref_link' target='_blank' href='{url}'>{text}</a>"
+        return mark_safe(out)
+    else:
+        return text
 
 def _as_property(prop, value):
     if value is None:
