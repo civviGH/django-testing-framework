@@ -116,7 +116,7 @@ def view_webhook_log(request, project_slug, webhook_id):
         'webhook': webhook,
     })
 
-def view_project_details(request, project_slug):
+def view_project_submissions(request, project_slug):
     project = get_object_or_404(Project, slug=project_slug)
     properties = ProjectSubmissionProperty.objects.filter(project=project)
 
@@ -125,7 +125,7 @@ def view_project_details(request, project_slug):
     page_number = request.GET.get('page')
     submissions = paginator.get_page(page_number)
 
-    return render(request, 'dtf/project_details.html', {
+    return render(request, 'dtf/project_submissions.html', {
         'project':project,
         'properties':properties,
         'submissions':submissions
@@ -182,4 +182,39 @@ def view_submission_details(request, project_slug, submission_id):
         raise Http404("The submission does not belong to this project")
     return render(request, 'dtf/submission_details.html', {
         'submission':submission
+    })
+
+def view_project_reference_sets(request, project_slug):
+    project = get_object_or_404(Project, slug=project_slug)
+    properties = ProjectSubmissionProperty.objects.filter(project=project)
+
+    paginator = Paginator(project.reference_sets.order_by('-pk'), per_page=20)
+
+    page_number = request.GET.get('page')
+    reference_sets = paginator.get_page(page_number)
+
+    return render(request, 'dtf/project_reference_sets.html', {
+        'project':project,
+        'properties':properties,
+        'reference_sets':reference_sets
+    })
+
+def view_reference_set_details(request, project_slug, reference_id):
+    project = get_object_or_404(Project, slug=project_slug)
+    reference_set = get_object_or_404(ReferenceSet, pk=reference_id)
+    if reference_set.project != project:
+        raise Http404("The reference set does not belong to this project")
+    return render(request, 'dtf/reference_set_details.html', {
+        'reference_set': reference_set
+    })
+
+def view_test_reference_details(request, project_slug, test_id):
+    project = get_object_or_404(Project, slug=project_slug)
+    test_reference = get_object_or_404(TestReference, pk=test_id)
+    reference_set = test_reference.reference_set
+    if reference_set.project != project:
+        raise Http404("The test does not belong to this project")
+
+    return render(request, 'dtf/test_reference_details.html', {
+        'test_reference': test_reference
     })

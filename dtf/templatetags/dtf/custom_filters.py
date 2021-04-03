@@ -90,9 +90,7 @@ def create_html_representation(data, valuetype):
         return mark_safe(out)
     return str(data)
 
-@register.filter
-def submission_property(prop, submission):
-    value = submission.info.get(prop.name, None)
+def _as_property(prop, value):
     if value is None:
         return ""
 
@@ -105,6 +103,14 @@ def submission_property(prop, submission):
         return mark_safe(f'<a href="{replaced_value}">{value}</a>')
     else:
         return replaced_value
+
+@register.filter
+def submission_property(prop, submission):
+    return _as_property(prop, submission.info.get(prop.name, None))
+
+@register.filter
+def reference_property(prop, reference_set):
+    return _as_property(prop, reference_set.property_values.get(prop.name, None))
 
 @register.filter
 def as_bootstrap_field(field):

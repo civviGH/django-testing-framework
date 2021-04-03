@@ -11,25 +11,22 @@
     <li class="breadcrumb-item" aria-current="page">
         <a href="{% url 'projects' %}">Project List</a>
     </li>
-    <li class="breadcrumb-item active" aria-current="page">{{project.name}}</li>
+    <li class="breadcrumb-item" aria-current="page">
+        <a href="{% url 'project_details' project.slug %}">{{ project.name }}</a>
+    </li>
+    <li class="breadcrumb-item active" aria-current="page">Reference Sets</li>
   </ol>
 </nav>
 
 </div>
 
 <div class="page-header">
-    <h2 class="float-left">Submissions</h2>
-    <div class="float-right">
-        <a href="{% url 'project_settings' project.slug %}" class="btn btn-primary">Settings</a>
-    </div>
+    <h2 class="float-left">Reference Sets</h2>
 </div>
 
 <table class="table table-hover">
     <thead>
     <tr>
-        <th class="noselect fit">
-            Status
-        </th>
         <th class="noselect">
             ID
         </th>
@@ -37,7 +34,7 @@
             Created on
         </th>
         {% for property in properties %}
-            {% if property.display %}
+            {% if property.influence_reference %}
                 <th class="noselect">
                     {{ property.name }}
                 </th>
@@ -46,21 +43,18 @@
     </tr>
     </thead>
     <tbody>
-    {% for submission in submissions|dictsortreversed:"id" %}
-    <tr onclick="window.location='{% url 'submission_details' project.slug submission.pk %}';" style="cursor:pointer">
+    {% for reference_set in reference_sets %}
+    <tr onclick="window.location='{% url 'reference_set_details' project.slug reference_set.pk %}';" style="cursor:pointer">
         <td>
-            {{ submission.status|status_badge }}
+            {{ reference_set.pk }}
         </td>
         <td>
-            {{ submission.pk }}
-        </td>
-        <td>
-            {{ submission.created }}
+            {{ reference_set.created }}
         </td>
         {% for property in properties %}
-            {% if property.display %}
+            {% if property.influence_reference %}
                 <td>
-                    {{ property|submission_property:submission }}
+                    {{ property|reference_property:reference_set }}
                 </td>
             {% endif %}
         {% endfor %}
@@ -69,6 +63,6 @@
     </tbody>
 </table>
 
-{% include "dtf/bootstrap/paginator.html" with page_obj=submissions %}
+{% include "dtf/bootstrap/paginator.html" with page_obj=reference_sets %}
 
 {% endblock %}

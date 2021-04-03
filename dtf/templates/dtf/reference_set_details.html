@@ -12,31 +12,26 @@
         <a href="{% url 'projects' %}">Project List</a>
     </li>
     <li class="breadcrumb-item" aria-current="page">
-        <a href="{% url 'project_details' submission.project.slug %}">{{submission.project.name}}</a>
+        <a href="{% url 'project_details' reference_set.project.slug %}">{{reference_set.project.name}}</a>
     </li>
     <li class="breadcrumb-item" aria-current="page">
-        <a href="{% url 'project_submissions' submission.project.slug %}">Submissions</a>
+        <a href="{% url 'project_reference_sets' reference_set.project.slug %}">Reference Sets</a>
     </li>
-    <li class="breadcrumb-item active" aria-current="page">{{submission.id}} | {{submission.created}}</li>
+    <li class="breadcrumb-item active" aria-current="page">{{reference_set.id}}</li>
   </ol>
 </nav>
 
 <div class="page-header">
     <div class="w-100">
-        <h2>Tests</h2>
+        <h2>Test References</h2>
     </div>
 </div>
-
-{% include 'dtf/filter-box.html' with show_broken=True %}
 
 </div>
 
 <table class="table table-hover tablesorter">
     <thead>
     <tr>
-        <th class="noselect fit">
-            Test Status
-        </th>
         <th class="noselect">
             Test Name
         </th>
@@ -46,13 +41,10 @@
     </tr>
     </thead>
     <tbody>
-    {% for test in submission.tests.all %}
-    <tr onclick="window.location='{% url 'test_result_details' submission.project.slug test.pk %}'" style="cursor:pointer">
+    {% for test in reference_set.test_references.all %}
+    <tr onclick="window.location='{% url 'test_reference_details' reference_set.project.slug test.pk %}'" style="cursor:pointer">
         <td>
-            {{ test.status|status_badge }}
-        </td>
-        <td>
-            {{ test.name }}
+            {{ test.test_name }}
         </td>
         <td>
             {{ test.created }}
