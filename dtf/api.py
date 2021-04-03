@@ -195,7 +195,7 @@ class ProjectReferenceSetTestReferenceList(generics.ListCreateAPIView):
     def get_queryset(self):
         project = get_project_or_404(self.kwargs['project_id'])
         reference_set = get_child_or_404(project.reference_sets, pk=self.kwargs['reference_id'])
-        return reference_set.test_references.filter(**self.request.query_params).order_by('-pk')
+        return reference_set.test_references.filter(**self.request.query_params.dict()).order_by('-pk')
 
     def create(self, request, *args, **kwargs):
         project = get_project_or_404(self.kwargs['project_id'])
