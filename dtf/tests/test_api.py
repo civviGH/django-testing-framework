@@ -982,6 +982,26 @@ class TestReferencesApiTest(ApiTestCase):
         self.assertEqual(response.data, serializer.data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
+    def test_get_query(self):
+        self.post(self.url, {'test_name' : "Test 1", 'default_source' : self.test_1_1_id, 'references' : {'Result1' : {'value' : 2}}})
+        self.post(self.url, {'test_name' : "Test 2", 'default_source' : self.test_2_1_id, 'references' : {'Result1' : {'value' : 2}, 'Result2' : {'value' : { 'data' : 3.0, 'type' : 'float'}}}})
+
+        response = client.get(self.url + "?test_name=Test%201")
+        test_references = self.reference_set_1.test_references.filter(test_name='Test 1').order_by('-pk')
+        serializer = TestReferenceSerializer(test_references, many=True)
+        self.assertEqual(response.data, serializer.data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        response = client.get(self.url + "?test_name=Test%202")
+        test_references = self.reference_set_1.test_references.filter(test_name='Test 2').order_by('-pk')
+        serializer = TestReferenceSerializer(test_references, many=True)
+        self.assertEqual(response.data, serializer.data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        
+        response = client.get(self.url + "?test_name=DoesNotExit")
+        self.assertEqual(response.data, [])
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
 class TestReferenceApiTest(ApiTestCase):
     def setUp(self):
         _, data = self.create_project("Test Project 1", "test-project-1")
