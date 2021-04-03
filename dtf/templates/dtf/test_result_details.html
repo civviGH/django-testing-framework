@@ -20,7 +20,9 @@ function postReferenceUpdate(reference_set_id){
         box = parameterBoxes[i];
         if (parameterBoxes[i].checked) {
             if (box.getAttribute("pindex") === "") {
-                data["references"][box.getAttribute("id")] = null;
+                data["references"][box.getAttribute("id")]= {
+                    "value": null
+                };
             }
             else {
                 data["references"][box.getAttribute("id")] = {
