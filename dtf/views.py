@@ -120,7 +120,7 @@ def view_project_submissions(request, project_slug):
     project = get_object_or_404(Project, slug=project_slug)
     properties = ProjectSubmissionProperty.objects.filter(project=project)
 
-    paginator = Paginator(project.submissions.order_by('-pk'), per_page=20)
+    paginator = Paginator(project.submissions.order_by('-created'), per_page=20)
 
     page_number = request.GET.get('page')
     submissions = paginator.get_page(page_number)
@@ -188,7 +188,7 @@ def view_project_reference_sets(request, project_slug):
     project = get_object_or_404(Project, slug=project_slug)
     properties = ProjectSubmissionProperty.objects.filter(project=project)
 
-    paginator = Paginator(project.reference_sets.order_by('-pk'), per_page=20)
+    paginator = Paginator(project.reference_sets.order_by('-created'), per_page=20)
 
     page_number = request.GET.get('page')
     reference_sets = paginator.get_page(page_number)
