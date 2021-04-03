@@ -1,0 +1,57 @@
+{% extends 'dtf/base.html' %}
+
+{% load dtf.custom_filters %}
+
+{% block body %}
+
+<div class="bg-white sticky-top pt-3 pb-1">
+
+<nav>
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item" aria-current="page">
+        <a href="{% url 'projects' %}">Project List</a>
+    </li>
+    <li class="breadcrumb-item" aria-current="page">
+        <a href="{% url 'project_details' reference_set.project.slug %}">{{reference_set.project.name}}</a>
+    </li>
+    <li class="breadcrumb-item" aria-current="page">
+        <a href="{% url 'project_reference_sets' reference_set.project.slug %}">Reference Sets</a>
+    </li>
+    <li class="breadcrumb-item active" aria-current="page">{{reference_set.id}}</li>
+  </ol>
+</nav>
+
+<div class="page-header">
+    <div class="w-100">
+        <h2>Test References</h2>
+    </div>
+</div>
+
+</div>
+
+<table class="table table-hover tablesorter">
+    <thead>
+    <tr>
+        <th class="noselect">
+            Test Name
+        </th>
+        <th class="noselect">
+            Date
+        </th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for test in reference_set.test_references.all %}
+    <tr onclick="window.location='{% url 'test_reference_details' reference_set.project.slug test.pk %}'" style="cursor:pointer">
+        <td>
+            {{ test.test_name }}
+        </td>
+        <td>
+            {{ test.created }}
+        </td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+{% endblock %}

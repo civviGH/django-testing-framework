@@ -1,0 +1,68 @@
+{% extends 'dtf/base.html' %}
+
+{% load dtf.custom_filters %}
+
+{% block body %}
+
+<div class="bg-white sticky-top pt-3 pb-1">
+
+<nav>
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item" aria-current="page">
+        <a href="{% url 'projects' %}">Project List</a>
+    </li>
+    <li class="breadcrumb-item" aria-current="page">
+        <a href="{% url 'project_details' project.slug %}">{{ project.name }}</a>
+    </li>
+    <li class="breadcrumb-item active" aria-current="page">Reference Sets</li>
+  </ol>
+</nav>
+
+</div>
+
+<div class="page-header">
+    <h2 class="float-left">Reference Sets</h2>
+</div>
+
+<table class="table table-hover">
+    <thead>
+    <tr>
+        <th class="noselect">
+            ID
+        </th>
+        <th class="noselect">
+            Created on
+        </th>
+        {% for property in properties %}
+            {% if property.influence_reference %}
+                <th class="noselect">
+                    {{ property.name }}
+                </th>
+            {% endif %}
+        {% endfor %}
+    </tr>
+    </thead>
+    <tbody>
+    {% for reference_set in reference_sets %}
+    <tr onclick="window.location='{% url 'reference_set_details' project.slug reference_set.pk %}';" style="cursor:pointer">
+        <td>
+            {{ reference_set.pk }}
+        </td>
+        <td>
+            {{ reference_set.created }}
+        </td>
+        {% for property in properties %}
+            {% if property.influence_reference %}
+                <td>
+                    {{ property|reference_property:reference_set }}
+                </td>
+            {% endif %}
+        {% endfor %}
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+{% include "dtf/bootstrap/paginator.html" with page_obj=reference_sets %}
+
+{% endblock %}

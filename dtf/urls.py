@@ -21,6 +21,9 @@ urlpatterns = [
     path('<str:project_slug>/submissions', views.view_project_submissions, name='project_submissions'),
     path('<str:project_slug>/submissions/<int:submission_id>', views.view_submission_details, name='submission_details'),
     path('<str:project_slug>/tests/<int:test_id>', views.view_test_result_details, name='test_result_details'),
+    path('<str:project_slug>/reference_sets', views.view_project_reference_sets, name='project_reference_sets'),
+    path('<str:project_slug>/reference_sets/<int:reference_id>', views.view_reference_set_details, name='reference_set_details'),
+    path('<str:project_slug>/test_references/<int:test_id>', views.view_test_reference_details, name='test_reference_details'),
 
     path('api/projects', api.ProjectList.as_view(), name='api_projects'),
     path('api/projects/<str:id>', api.ProjectDetail.as_view(), name='api_project'),
