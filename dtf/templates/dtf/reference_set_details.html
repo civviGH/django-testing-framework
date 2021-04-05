@@ -36,7 +36,10 @@
             Test Name
         </th>
         <th class="noselect">
-            Date
+            Created on
+        </th>
+        <th class="noselect">
+            Last updated on
         </th>
     </tr>
     </thead>
@@ -48,6 +51,9 @@
         </td>
         <td>
             {{ test.created }}
+        </td>
+        <td>
+            {{ test.last_updated }}
         </td>
     </tr>
     {% endfor %}
