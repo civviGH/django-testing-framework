@@ -11,6 +11,7 @@ update_references
 import json
 import copy
 import datetime
+from urllib.parse import urlencode
 
 from rest_framework import status
 
@@ -65,12 +66,17 @@ class ApiTestCase(TestCase):
         }
         return self.post(reverse('api_projects'), valid_payload)
 
-    def create_submission(self, project_id=None, info=None):
-        valid_payload = {}
+    def create_submission(self, project_id=None, info=None, unique_key=None):
+        payload = {}
         if info is not None:
-            valid_payload['info'] = info
+            payload['info'] = info
 
-        return self.post(reverse('api_project_submissions', kwargs={'project_id' : project_id}), valid_payload)
+        url = reverse('api_project_submissions', kwargs={'project_id' : project_id})
+        if unique_key is not None:
+            url += "?"
+            url += urlencode({'unique_key': unique_key})
+
+        return self.post(url, payload)
 
 # Create your tests here.
 class ProjectsApiTest(ApiTestCase):
@@ -317,6 +323,21 @@ class SubmissionsApiTest(ApiTestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Submission.objects.count(), 1)
         self.assertEqual(data['id'], 1)
+
+    def test_create_with_unique_info(self):
+        response, data = self.create_submission(project_id=self.project_id, info={"Key": "123", "Unique Key": "456"}, unique_key="Unique Key")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(Submission.objects.count(), 1)
+        self.assertEqual(data['id'], 1)
+
+        response, data = self.create_submission(project_id=self.project_id, info={"Key": "123", "Unique Key": "456"}, unique_key="Unique Key")
+        self.assertEqual(response.status_code, status.HTTP_409_CONFLICT)
+        self.assertEqual(Submission.objects.count(), 1)
+
+        response, data = self.create_submission(project_id=self.project_id, info={"Key": "123", "Unique Key": "789"}, unique_key="Unique Key")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(Submission.objects.count(), 2)
+        self.assertEqual(data['id'], 2)
 
     def test_create_with_required_info(self):
         create_property_url = reverse('api_project_submission_properties', kwargs={'project_id' : self.project_id})

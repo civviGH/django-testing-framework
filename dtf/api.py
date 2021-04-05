@@ -3,6 +3,7 @@ from django.db import IntegrityError
 from django.http import Http404
 from django.shortcuts import get_object_or_404
 from django.core.exceptions import ObjectDoesNotExist
+from django.db import transaction
 
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -116,6 +117,20 @@ class ProjectSubmissionList(generics.ListCreateAPIView):
 
     def create(self, request, *args, **kwargs):
         request.data['project'] = get_project_or_404(self.kwargs['project_id']).id
+        unique_key = request.query_params.get('unique_key')
+        info = request.data.get('info')
+        if unique_key is not None and info is not None and unique_key in info:
+            query = {
+                f'info__{unique_key}': info[unique_key]
+            }
+
+            with transaction.atomic():
+                try:
+                    submission = self.get_queryset().get(**query)
+                    return Response("Submission for the unique key does already exist", status.HTTP_409_CONFLICT)
+                except ObjectDoesNotExist:
+                    return super().create(request, *args, **kwargs)
+
         return super().create(request, *args, **kwargs)
 
 class ProjectSubmissionDetail(generics.RetrieveUpdateDestroyAPIView):
