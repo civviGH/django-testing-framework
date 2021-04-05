@@ -113,10 +113,11 @@ class ProjectSubmissionList(generics.ListCreateAPIView):
 
     def get_queryset(self):
         project = get_project_or_404(self.kwargs['project_id'])
-        return project.submissions.order_by('-pk')
+        return project.submissions.filter(**self.request.query_params.dict()).order_by('-pk')
 
     def create(self, request, *args, **kwargs):
-        request.data['project'] = get_project_or_404(self.kwargs['project_id']).id
+        project = get_project_or_404(self.kwargs['project_id'])
+        request.data['project'] = project.id
         unique_key = request.query_params.get('unique_key')
         info = request.data.get('info')
         if unique_key is not None and info is not None and unique_key in info:
@@ -126,7 +127,7 @@ class ProjectSubmissionList(generics.ListCreateAPIView):
 
             with transaction.atomic():
                 try:
-                    submission = self.get_queryset().get(**query)
+                    submission = project.submissions.get(**query)
                     return Response("Submission for the unique key does already exist", status.HTTP_409_CONFLICT)
                 except ObjectDoesNotExist:
                     return super().create(request, *args, **kwargs)

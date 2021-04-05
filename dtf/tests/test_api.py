@@ -100,6 +100,11 @@ class ProjectsApiTest(ApiTestCase):
         self.assertEqual(Project.objects.count(), 1)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
+        # Different name, same slug
+        response, data = self.create_project("New Test Project", "test-project")
+        self.assertEqual(Project.objects.count(), 1)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
         # Test same name, different slug
         response, data = self.create_project("Test Project", "other-slug")
         self.assertEqual(Project.objects.count(), 2)
@@ -297,6 +302,8 @@ class SubmissionsApiTest(ApiTestCase):
         self.invalid_project_slug = "does-not-exist"
         self.invalid_project_id = "123"
 
+        self.url = reverse('api_project_submissions', kwargs={'project_id' : self.project_id})
+
     def test_create(self):
         # Create with project slug
         response, data = self.create_submission(project_id=self.project_slug)
@@ -365,7 +372,7 @@ class SubmissionsApiTest(ApiTestCase):
         payload = {
             'created': created.isoformat()
         }
-        response, data = self.post(reverse('api_project_submissions', kwargs={'project_id' : self.project_id}), payload)
+        response, data = self.post(self.url, payload)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Submission.objects.count(), 1)
         submission = Submission.objects.first()
@@ -374,10 +381,37 @@ class SubmissionsApiTest(ApiTestCase):
     def test_get(self):
         self.create_submission(project_id=self.project_id, info={"Key": "Value"})
         self.create_submission(project_id=self.project_id, info={"Key": "Value"})
-        response = client.get(reverse('api_project_submissions', kwargs={'project_id' : self.project_id}))
+        response = client.get(self.url)
         submissions = Submission.objects.order_by('-pk')
         serializer = SubmissionSerializer(submissions, many=True, context={"request": response.wsgi_request})
         self.assertEqual(response.data, serializer.data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_get_query(self):
+        self.create_submission(project_id=self.project_id, info={"Key": "Value 1"})
+        self.create_submission(project_id=self.project_id, info={"Key": "Value 1"})
+        self.create_submission(project_id=self.project_id, info={"Key": "Value 2"})
+
+        response = client.get(self.url, {"info__Key": "Value 1"})
+        submissions = Submission.objects.filter(info__Key="Value 1").order_by('-pk')
+        serializer = SubmissionSerializer(submissions, many=True, context={"request": response.wsgi_request})
+        self.assertEqual(len(response.data), 2)
+        self.assertEqual(response.data, serializer.data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        response = client.get(self.url, {"info__Key": "Value 2"})
+        submissions = Submission.objects.filter(info__Key="Value 2").order_by('-pk')
+        serializer = SubmissionSerializer(submissions, many=True, context={"request": response.wsgi_request})
+        self.assertEqual(len(response.data), 1)
+        self.assertEqual(response.data, serializer.data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        response = client.get(self.url, {"info__Key": "ValueDoesNotExit"})
+        self.assertEqual(len(response.data), 0)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        response = client.get(self.url, {"info__KeyDoesNotExist": "Value 1"})
+        self.assertEqual(len(response.data), 0)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
 class SubmissionApiTest(ApiTestCase):
