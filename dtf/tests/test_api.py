@@ -771,7 +771,7 @@ class ReferenceSetsApiTest(ApiTestCase):
 
         # Filter for 'Property 1' only:
         # we should get two results
-        response = client.get(self.url_2 + "?Property 1=Value 1")
+        response = client.get(self.url_2, {"Property 1" : "Value 1"})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 2)
         self.assertEqual(response.data[0], serializer_2.data)
@@ -779,20 +779,20 @@ class ReferenceSetsApiTest(ApiTestCase):
 
         # Filter for 'Property 1' and 'Property 2':
         # we should get a single result
-        response = client.get(self.url_2 + "?Property 1=Value 1&Property 2=Value 2")
+        response = client.get(self.url_2, {"Property 1" : "Value 1", "Property 2" : "Value 2"})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 1)
         self.assertEqual(response.data[0], serializer_2.data)
 
         # Filter for 'Property 1' and 'Property 2':
         # we should get no results
-        response = client.get(self.url_2 + "?Property 1=Value 1&Property 2=Value 3")
+        response = client.get(self.url_2, {"Property 1" : "Value 1", "Property 2" : "Value 3"})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 0)
 
         # Filter for 'Property 1' and 'Property 3':
         # Since Property 3 does not influence the reference, we still get two results
-        response = client.get(self.url_2 + "?Property 1=Value 1&Property 3=Value 2")
+        response = client.get(self.url_2, {"Property 1" : "Value 1", "Property 3" : "Value 2"})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 2)
         self.assertEqual(response.data[0], serializer_2.data)
@@ -993,19 +993,19 @@ class TestReferencesApiTest(ApiTestCase):
         self.post(self.url, {'test_name' : "Test 1", 'default_source' : self.test_1_1_id, 'references' : {'Result1' : {'value' : 2}}})
         self.post(self.url, {'test_name' : "Test 2", 'default_source' : self.test_2_1_id, 'references' : {'Result1' : {'value' : 2}, 'Result2' : {'value' : { 'data' : 3.0, 'type' : 'float'}}}})
 
-        response = client.get(self.url + "?test_name=Test%201")
+        response = client.get(self.url, {"test_name" : "Test 1"})
         test_references = self.reference_set_1.test_references.filter(test_name='Test 1').order_by('-pk')
         serializer = TestReferenceSerializer(test_references, many=True)
         self.assertEqual(response.data, serializer.data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-        response = client.get(self.url + "?test_name=Test%202")
+        response = client.get(self.url, {"test_name" : "Test 2"})
         test_references = self.reference_set_1.test_references.filter(test_name='Test 2').order_by('-pk')
         serializer = TestReferenceSerializer(test_references, many=True)
         self.assertEqual(response.data, serializer.data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         
-        response = client.get(self.url + "?test_name=DoesNotExit")
+        response = client.get(self.url, {"test_name" : "DoesNotExit"})
         self.assertEqual(response.data, [])
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
