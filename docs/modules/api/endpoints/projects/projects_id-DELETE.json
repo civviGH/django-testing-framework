@@ -1,6 +1,13 @@
 {
     "endpoint": "/projects/:id",
     "method": "DELETE",
+    "attributes" : {
+        ":id" : {
+            "type": "string/integer",
+            "required": true,
+            "description": "The id or slug of the project to delete."
+        }
+    },
     "examples" : [
         {
             "arguments" : {

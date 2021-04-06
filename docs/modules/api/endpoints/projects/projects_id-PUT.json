@@ -1,6 +1,26 @@
 {
     "endpoint": "/projects/:id",
     "method": "PUT",
+    "attributes" : {
+        ":id" : {
+            "type": "string/integer",
+            "required": true,
+            "description": "The id or slug of the project to modify."
+        },
+        "name" : {
+            "type": "string",
+            "required": true,
+            "description": "The new name of the project."
+        },
+        "slug" : {
+            "type": "string",
+            "required": true,
+            "description": [
+                "The new slug of the project.",
+                "This needs to be a valid `slug <https://en.wikipedia.org/wiki/Clean_URL#Slug>`_ and it needs to be unique over all projects."
+            ]
+        }
+    },
     "examples" : [
         {
             "arguments" : {

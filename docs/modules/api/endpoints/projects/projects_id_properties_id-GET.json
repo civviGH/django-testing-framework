@@ -1,6 +1,18 @@
 {
     "endpoint": "/projects/:project_id/properties/:prop_id",
     "method": "GET",
+    "attributes" : {
+        ":project_id" : {
+            "type": "string/integer",
+            "required": true,
+            "description": "The id or slug of the project."
+        },
+        ":prop_id" : {
+            "type": "integer",
+            "required": true,
+            "description": "The id of the property to get."
+        }
+    },
     "examples" : [
         {
             "arguments" : {

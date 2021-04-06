@@ -32,9 +32,28 @@ def regenerate_docs():
     def process_endpoint_description(desc, output_dir, basename):
         endpoint = desc['endpoint']
         method = desc['method']
+        attributes = desc.get('attributes', {})
 
         with open(os.path.join(output_dir, basename + "-desc.txt"), 'w') as file:
             file.write(f"{method} {endpoint}")
+
+        if len(attributes) > 0:
+            with open(os.path.join(output_dir, basename + "-attributes.csv"), 'w') as file:
+                file.write("Attribute|Type|Required|Description\n")
+                for (attr_name, data) in attributes.items():
+                    attr_type = data['type']
+                    attr_required = 'yes' if data['required'] else 'no'
+                    attr_description = data['description']
+                    attr_default = data.get('default')
+                    if attr_default is not None:
+                        if isinstance(attr_default, str) and 'string' in attr_type:
+                            attr_default = f'"{attr_default}"'
+                        if isinstance(attr_default, bool):
+                            attr_default = str(attr_default).lower()
+                        attr_required += f' (default: ``{attr_default}``)'
+                    if isinstance(attr_description, list):
+                        attr_description = " ".join(attr_description)
+                    file.write(f"``{attr_name}``|{attr_type}|{attr_required}|{attr_description}\n")
 
         examples = desc.get("examples", [])
         for example in examples:

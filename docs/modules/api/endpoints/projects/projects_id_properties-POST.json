@@ -2,6 +2,52 @@
 {
     "endpoint": "/projects/:project_id/properties",
     "method": "POST",
+    "attributes" : {
+        ":project_id" : {
+            "type": "string/integer",
+            "required": true,
+            "description": "The id or slug of the project to add the new property to."
+        },
+        "name" : {
+            "type": "string",
+            "required": false,
+            "default": false,
+            "description": "The name of the property to create."
+        },
+        "required" : {
+            "type": "boolean",
+            "required": false,
+            "default": false,
+            "description": "Whether the property is required for new submissions."
+        },
+        "display" : {
+            "type": "boolean",
+            "required": false,
+            "default": false,
+            "description": "Whether the display a column for this property in the submissions table."
+        },
+        "display_as_link" : {
+            "type": "boolean",
+            "required": false,
+            "default": false,
+            "description": "Whether the display this property as link in the submissions table."
+        },
+        "display_replace" : {
+            "type": "string",
+            "required": false,
+            "default": "",
+            "description": [
+                "Instead of the value of this property, this text will be displayed.",
+                "Use **{VALUE}** as a placeholder for the original value."
+            ]
+        },
+        "influence_reference" : {
+            "type": "boolean",
+            "required": false,
+            "default": false,
+            "description": "Include values for this property to find the references of a submission."
+        }
+    },
     "examples" : [
         {
             "arguments" : {
