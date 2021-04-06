@@ -28,6 +28,8 @@ if os.path.exists(db_path):
 
     os.remove(db_path)
 
+os.environ["DTF_ENABLE_WEBHOOKS"] = "0"
+
 os.system(f"{sys.executable} {manage_script_path} migrate --database demo")
 os.system(f"{sys.executable} {manage_script_path} loaddata --database demo demo-user") # Name: root PW: test1234
 os.system(f"{sys.executable} {manage_script_path} loaddata --database demo demo-project")
