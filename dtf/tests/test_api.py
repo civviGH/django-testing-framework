@@ -11,6 +11,7 @@ update_references
 import json
 import copy
 import datetime
+from urllib.parse import urlencode
 
 from rest_framework import status
 
@@ -65,12 +66,17 @@ class ApiTestCase(TestCase):
         }
         return self.post(reverse('api_projects'), valid_payload)
 
-    def create_submission(self, project_id=None, info=None):
-        valid_payload = {}
+    def create_submission(self, project_id=None, info=None, unique_key=None):
+        payload = {}
         if info is not None:
-            valid_payload['info'] = info
+            payload['info'] = info
 
-        return self.post(reverse('api_project_submissions', kwargs={'project_id' : project_id}), valid_payload)
+        url = reverse('api_project_submissions', kwargs={'project_id' : project_id})
+        if unique_key is not None:
+            url += "?"
+            url += urlencode({'unique_key': unique_key})
+
+        return self.post(url, payload)
 
 # Create your tests here.
 class ProjectsApiTest(ApiTestCase):
@@ -91,6 +97,11 @@ class ProjectsApiTest(ApiTestCase):
 
         # Test invalid payload
         response, data = self.post(reverse('api_projects'), self.invalid_payload)
+        self.assertEqual(Project.objects.count(), 1)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        # Different name, same slug
+        response, data = self.create_project("New Test Project", "test-project")
         self.assertEqual(Project.objects.count(), 1)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
@@ -291,6 +302,8 @@ class SubmissionsApiTest(ApiTestCase):
         self.invalid_project_slug = "does-not-exist"
         self.invalid_project_id = "123"
 
+        self.url = reverse('api_project_submissions', kwargs={'project_id' : self.project_id})
+
     def test_create(self):
         # Create with project slug
         response, data = self.create_submission(project_id=self.project_slug)
@@ -318,6 +331,21 @@ class SubmissionsApiTest(ApiTestCase):
         self.assertEqual(Submission.objects.count(), 1)
         self.assertEqual(data['id'], 1)
 
+    def test_create_with_unique_info(self):
+        response, data = self.create_submission(project_id=self.project_id, info={"Key": "123", "Unique Key": "456"}, unique_key="Unique Key")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(Submission.objects.count(), 1)
+        self.assertEqual(data['id'], 1)
+
+        response, data = self.create_submission(project_id=self.project_id, info={"Key": "123", "Unique Key": "456"}, unique_key="Unique Key")
+        self.assertEqual(response.status_code, status.HTTP_409_CONFLICT)
+        self.assertEqual(Submission.objects.count(), 1)
+
+        response, data = self.create_submission(project_id=self.project_id, info={"Key": "123", "Unique Key": "789"}, unique_key="Unique Key")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(Submission.objects.count(), 2)
+        self.assertEqual(data['id'], 2)
+
     def test_create_with_required_info(self):
         create_property_url = reverse('api_project_submission_properties', kwargs={'project_id' : self.project_id})
         response, data = self.post(create_property_url, {'name' : "Property1", "required" : True})
@@ -344,7 +372,7 @@ class SubmissionsApiTest(ApiTestCase):
         payload = {
             'created': created.isoformat()
         }
-        response, data = self.post(reverse('api_project_submissions', kwargs={'project_id' : self.project_id}), payload)
+        response, data = self.post(self.url, payload)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Submission.objects.count(), 1)
         submission = Submission.objects.first()
@@ -353,10 +381,37 @@ class SubmissionsApiTest(ApiTestCase):
     def test_get(self):
         self.create_submission(project_id=self.project_id, info={"Key": "Value"})
         self.create_submission(project_id=self.project_id, info={"Key": "Value"})
-        response = client.get(reverse('api_project_submissions', kwargs={'project_id' : self.project_id}))
+        response = client.get(self.url)
         submissions = Submission.objects.order_by('-pk')
         serializer = SubmissionSerializer(submissions, many=True, context={"request": response.wsgi_request})
         self.assertEqual(response.data, serializer.data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_get_query(self):
+        self.create_submission(project_id=self.project_id, info={"Key": "Value 1"})
+        self.create_submission(project_id=self.project_id, info={"Key": "Value 1"})
+        self.create_submission(project_id=self.project_id, info={"Key": "Value 2"})
+
+        response = client.get(self.url, {"info__Key": "Value 1"})
+        submissions = Submission.objects.filter(info__Key="Value 1").order_by('-pk')
+        serializer = SubmissionSerializer(submissions, many=True, context={"request": response.wsgi_request})
+        self.assertEqual(len(response.data), 2)
+        self.assertEqual(response.data, serializer.data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        response = client.get(self.url, {"info__Key": "Value 2"})
+        submissions = Submission.objects.filter(info__Key="Value 2").order_by('-pk')
+        serializer = SubmissionSerializer(submissions, many=True, context={"request": response.wsgi_request})
+        self.assertEqual(len(response.data), 1)
+        self.assertEqual(response.data, serializer.data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        response = client.get(self.url, {"info__Key": "ValueDoesNotExit"})
+        self.assertEqual(len(response.data), 0)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        response = client.get(self.url, {"info__KeyDoesNotExist": "Value 1"})
+        self.assertEqual(len(response.data), 0)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
 class SubmissionApiTest(ApiTestCase):
@@ -771,7 +826,7 @@ class ReferenceSetsApiTest(ApiTestCase):
 
         # Filter for 'Property 1' only:
         # we should get two results
-        response = client.get(self.url_2 + "?Property 1=Value 1")
+        response = client.get(self.url_2, {"Property 1" : "Value 1"})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 2)
         self.assertEqual(response.data[0], serializer_2.data)
@@ -779,20 +834,20 @@ class ReferenceSetsApiTest(ApiTestCase):
 
         # Filter for 'Property 1' and 'Property 2':
         # we should get a single result
-        response = client.get(self.url_2 + "?Property 1=Value 1&Property 2=Value 2")
+        response = client.get(self.url_2, {"Property 1" : "Value 1", "Property 2" : "Value 2"})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 1)
         self.assertEqual(response.data[0], serializer_2.data)
 
         # Filter for 'Property 1' and 'Property 2':
         # we should get no results
-        response = client.get(self.url_2 + "?Property 1=Value 1&Property 2=Value 3")
+        response = client.get(self.url_2, {"Property 1" : "Value 1", "Property 2" : "Value 3"})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 0)
 
         # Filter for 'Property 1' and 'Property 3':
         # Since Property 3 does not influence the reference, we still get two results
-        response = client.get(self.url_2 + "?Property 1=Value 1&Property 3=Value 2")
+        response = client.get(self.url_2, {"Property 1" : "Value 1", "Property 3" : "Value 2"})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 2)
         self.assertEqual(response.data[0], serializer_2.data)
@@ -993,19 +1048,19 @@ class TestReferencesApiTest(ApiTestCase):
         self.post(self.url, {'test_name' : "Test 1", 'default_source' : self.test_1_1_id, 'references' : {'Result1' : {'value' : 2}}})
         self.post(self.url, {'test_name' : "Test 2", 'default_source' : self.test_2_1_id, 'references' : {'Result1' : {'value' : 2}, 'Result2' : {'value' : { 'data' : 3.0, 'type' : 'float'}}}})
 
-        response = client.get(self.url + "?test_name=Test%201")
+        response = client.get(self.url, {"test_name" : "Test 1"})
         test_references = self.reference_set_1.test_references.filter(test_name='Test 1').order_by('-pk')
         serializer = TestReferenceSerializer(test_references, many=True)
         self.assertEqual(response.data, serializer.data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-        response = client.get(self.url + "?test_name=Test%202")
+        response = client.get(self.url, {"test_name" : "Test 2"})
         test_references = self.reference_set_1.test_references.filter(test_name='Test 2').order_by('-pk')
         serializer = TestReferenceSerializer(test_references, many=True)
         self.assertEqual(response.data, serializer.data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         
-        response = client.get(self.url + "?test_name=DoesNotExit")
+        response = client.get(self.url, {"test_name" : "DoesNotExit"})
         self.assertEqual(response.data, [])
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
