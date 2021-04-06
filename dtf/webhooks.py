@@ -28,7 +28,7 @@ class WebhookExecutionPool(concurrent.futures.ThreadPoolExecutor):
         current_outstanging = list(self._outstanding_futures)
         concurrent.futures.wait(current_outstanging, timeout=timeout)
 
-if settings.DTF_WEBHOOK_THREADPOOL:
+if settings.DTF_ENABLE_WEBHOOKS and settings.DTF_WEBHOOK_THREADPOOL:
     webhook_execution_pool = WebhookExecutionPool(max_workers=4)
 
 def _submit_webhook_request(request, webhook_id, sender):
@@ -144,10 +144,11 @@ def disconnect_webhook_signals():
 def connect_webhook_signals():
     webhook_models = [Submission, TestResult, ReferenceSet, TestReference]
 
-    for model in webhook_models:
-        lower_name = model.__name__.lower()
-        signals.post_save.connect(_on_model_save, sender=model, dispatch_uid=f"webhook_{lower_name}_save")
-        signals.post_delete.connect(_on_model_delete, sender=model, dispatch_uid=f"webhook_{lower_name}_delete")
+    if settings.DTF_ENABLE_WEBHOOKS:
+        for model in webhook_models:
+            lower_name = model.__name__.lower()
+            signals.post_save.connect(_on_model_save, sender=model, dispatch_uid=f"webhook_{lower_name}_save")
+            signals.post_delete.connect(_on_model_delete, sender=model, dispatch_uid=f"webhook_{lower_name}_delete")
 
     signals.pre_migrate.connect(_on_pre_migrate, dispatch_uid=f"disable_webhooks_on_migration")
     signals.post_migrate.disconnect(dispatch_uid=f"enable_webhooks_post_migration")
