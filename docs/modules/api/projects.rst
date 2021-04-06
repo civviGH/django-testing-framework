@@ -8,33 +8,18 @@ List projects
 
 List all projects available on the server.
 
-.. code-block:: bash
-
-    GET /projects
+.. literalinclude :: generated/projects/projects-GET-desc.txt
 
 An example could look as follows:
 
-.. code-block:: bash
 
-    curl -X GET \
-      http://dtf.example.com/api/projects
+.. literalinclude :: generated/projects/projects-GET-curl.sh
+   :language: bash
 
 which might give a result like this:
 
-.. code-block::
-
-    [
-        {
-            "id": 2,
-            "name": "Demo Project",
-            "slug": "demo"
-        },
-        {
-            "id": 1,
-            "name": "My Test Project",
-            "slug": "my-test-project"
-        }
-    ]
+.. literalinclude :: generated/projects/projects-GET-response.json
+   :language: json
 
 .. _api-projects-new:
 
@@ -43,9 +28,7 @@ Create new project
 
 Create a new, global project on the server.
 
-.. code-block:: bash
-
-    POST /projects
+.. literalinclude :: generated/projects/projects-POST-desc.txt
 
 .. table::
 
@@ -62,15 +45,13 @@ Create a new, global project on the server.
 
 An example could look as follows:
 
-.. code-block:: bash
+.. literalinclude :: generated/projects/projects-POST-curl.sh
+   :language: bash
 
-    curl -X POST \
-      --header "Content-Type: application/json" \
-      --data '{
-                  "name": "My Test Project",
-                  "slug": "my-test-project"
-              }' \
-      http://dtf.example.com/api/projects
+which might give a result like this:
+
+.. literalinclude :: generated/projects/projects-POST-response.json
+    :language: json
 
 .. _api-projects-get:
 
@@ -79,9 +60,7 @@ Get single project
 
 Retrieve a specific project from the server.
 
-.. code-block:: bash
-
-    GET /projects/:id
+.. literalinclude :: generated/projects/projects_id-GET-primary_key-desc.txt
 
 .. table::
 
@@ -93,27 +72,18 @@ Retrieve a specific project from the server.
 
 An example using the id could look as follows:
 
-.. code-block:: bash
-
-    curl -X GET \
-      http://dtf.example.com/api/projects/2
+.. literalinclude :: generated/projects/projects_id-GET-primary_key-curl.sh
+   :language: bash
 
 or using the project slug:
 
-.. code-block:: bash
-
-    curl -X GET \
-      http://dtf.example.com/api/projects/demo
+.. literalinclude :: generated/projects/projects_id-GET-slug-curl.sh
+   :language: bash
 
 which might give a result like this:
 
-.. code-block::
-
-    {
-        "id": 2,
-        "name": "Demo Project",
-        "slug": "demo"
-    }
+.. literalinclude :: generated/projects/projects_id-GET-slug-response.json
+   :language: json
 
 .. _api-projects-modify:
 
@@ -122,9 +92,7 @@ Modify single project
 
 Modify the fields of an existing project. All fields have to be given (even the ones that are unchanged).
 
-.. code-block:: bash
-
-    PUT /projects/:id
+.. literalinclude :: generated/projects/projects_id-PUT-desc.txt
 
 .. table::
 
@@ -143,15 +111,13 @@ Modify the fields of an existing project. All fields have to be given (even the 
 
 An example could look as follows:
 
-.. code-block:: bash
+.. literalinclude :: generated/projects/projects_id-PUT-curl.sh
+   :language: bash
 
-    curl -X POST \
-      --header "Content-Type: application/json" \
-      --data '{
-                  "name": "Demo Project New Name",
-                  "slug": "demo-project"
-              }' \
-      http://dtf.example.com/api/projects/2
+which might give a result like this:
+
+.. literalinclude :: generated/projects/projects_id-PUT-response.json
+    :language: json
 
 .. _api-projects-delete:
 
@@ -160,14 +126,13 @@ Delete single project
 
 Deletes a project and all associated data. This can not be undone!
 
-.. code-block:: bash
 
-    DELETE /projects/:id
+.. literalinclude :: generated/projects/projects_id-DELETE-desc.txt
 
-.. code-block:: bash
+An example could look as follows:
 
-    curl -X DELETE \
-      http://dtf.example.com/api/projects/2
+.. literalinclude :: generated/projects/projects_id-DELETE-curl.sh
+   :language: bash
 
 .. _api-projects-properties-list:
 
