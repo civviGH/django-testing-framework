@@ -11,7 +11,7 @@ root_path = os.path.dirname(os.path.realpath(__file__))
 
 manage_script_path = os.path.join(root_path, "manage.py")
 
-db_path = os.path.join(root_path, "db.sqlite3")
+db_path = os.path.join(root_path, "demo-db.sqlite3")
 
 if os.path.exists(db_path):
     print("WARNING: found existing database at:")
@@ -28,8 +28,8 @@ if os.path.exists(db_path):
 
     os.remove(db_path)
 
-os.system(f"{sys.executable} {manage_script_path} migrate")
-os.system(f"{sys.executable} {manage_script_path} loaddata demo-user") # Name: root PW: test1234
-os.system(f"{sys.executable} {manage_script_path} loaddata demo-project")
-os.system(f"{sys.executable} {manage_script_path} loaddata demo-submissions")
-os.system(f"{sys.executable} {manage_script_path} loaddata demo-webhook-log")
+os.system(f"{sys.executable} {manage_script_path} migrate --database demo")
+os.system(f"{sys.executable} {manage_script_path} loaddata --database demo demo-user") # Name: root PW: test1234
+os.system(f"{sys.executable} {manage_script_path} loaddata --database demo demo-project")
+os.system(f"{sys.executable} {manage_script_path} loaddata --database demo demo-submissions")
+os.system(f"{sys.executable} {manage_script_path} loaddata --database demo demo-webhook-log")
