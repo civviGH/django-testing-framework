@@ -1,3 +1,5 @@
-django==3.1b1
+django>=3.1
+djangorestframework
+jsonschema
 sphinx
 sphinx_hand_theme
