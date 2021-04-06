@@ -4,8 +4,9 @@ from django.db import migrations, models
 from django.utils.text import slugify
 
 def generate_default_project_slugs(apps, schema_editor):
+    db_alias = schema_editor.connection.alias
     Project = apps.get_model('dtf', 'Project')
-    for project in Project.objects.all().iterator():
+    for project in Project.objects.using(db_alias).all().iterator():
         project.slug = slugify(project.name)
         project.save()
 

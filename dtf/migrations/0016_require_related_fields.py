@@ -4,11 +4,12 @@ from django.db import migrations, models
 import django.db.models.deletion
 
 def delete_unrelated_objects(apps, schema_editor):
-    apps.get_model('dtf', 'ProjectSubmissionProperty').objects.filter(project=None).delete()
-    apps.get_model('dtf', 'ReferenceSet').objects.filter(project=None).delete()
-    apps.get_model('dtf', 'Submission').objects.filter(project=None).delete()
-    apps.get_model('dtf', 'TestReference').objects.filter(reference_set=None).delete()
-    apps.get_model('dtf', 'TestResult').objects.filter(submission=None).delete()
+    db_alias = schema_editor.connection.alias
+    apps.get_model('dtf', 'ProjectSubmissionProperty').objects.using(db_alias).filter(project=None).delete()
+    apps.get_model('dtf', 'ReferenceSet').objects.using(db_alias).filter(project=None).delete()
+    apps.get_model('dtf', 'Submission').objects.using(db_alias).filter(project=None).delete()
+    apps.get_model('dtf', 'TestReference').objects.using(db_alias).filter(reference_set=None).delete()
+    apps.get_model('dtf', 'TestResult').objects.using(db_alias).filter(submission=None).delete()
 
 
 class Migration(migrations.Migration):
