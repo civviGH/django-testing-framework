@@ -1,0 +1,65 @@
+[
+    {
+        "model": "dtf.project",
+        "pk": 1,
+        "fields": {
+            "name": "Demo Project",
+            "slug": "demo",
+            "created": "2021-04-06T07:21:22.515Z",
+            "last_updated": "2021-04-06T07:21:22.515Z"
+        }
+    },
+    {
+        "model": "dtf.projectsubmissionproperty",
+        "pk": 1,
+        "fields": {
+            "project": 1,
+            "name": "Branch",
+            "required": true,
+            "display": true,
+            "display_replace": "",
+            "display_as_link": false,
+            "influence_reference": true
+        }
+    },
+    {
+        "model": "dtf.projectsubmissionproperty",
+        "pk": 2,
+        "fields": {
+            "project": 1,
+            "name": "Hostname",
+            "required": true,
+            "display": true,
+            "display_replace": "",
+            "display_as_link": false,
+            "influence_reference": true
+        }
+    },
+    {
+        "model": "dtf.projectsubmissionproperty",
+        "pk": 3,
+        "fields": {
+            "project": 1,
+            "name": "GitLab CI Job",
+            "required": false,
+            "display": true,
+            "display_replace": "https://gitlab.example.com/demo/demo-project/-/jobs/{VALUE}",
+            "display_as_link": true,
+            "influence_reference": false
+        }
+    },
+    {
+        "model": "dtf.webhook",
+        "pk": 1,
+        "fields": {
+            "project": 1,
+            "name": "Demo Bot",
+            "url": "http://129.26.133.164:8666/references/demo",
+            "secret_token": "58a61681-f3c0-4d0f-a8bf-c87193f2603d",
+            "on_submission": false,
+            "on_test_result": false,
+            "on_reference_set": false,
+            "on_test_reference": true
+        }
+    }
+]
