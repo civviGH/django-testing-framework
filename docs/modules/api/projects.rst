@@ -60,7 +60,7 @@ Get single project
 
 Retrieve a specific project from the server.
 
-.. literalinclude :: generated/projects/projects_id-GET-primary_key-desc.txt
+.. literalinclude :: generated/projects/projects_id-GET-desc.txt
 
 .. table::
 
