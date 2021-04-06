@@ -31,7 +31,7 @@ class WebhookExecutionPool(concurrent.futures.ThreadPoolExecutor):
 if settings.DTF_ENABLE_WEBHOOKS and settings.DTF_WEBHOOK_THREADPOOL:
     webhook_execution_pool = WebhookExecutionPool(max_workers=4)
 
-def _submit_webhook_request(request, webhook_id, sender):
+def _submit_webhook_request(request, webhook_id, sender, db_alias):
     prepared_request = request.prepare()
 
     with requests.Session() as session:
@@ -56,14 +56,15 @@ def _submit_webhook_request(request, webhook_id, sender):
                                           response_data=response.text,
                                           response_headers=dict(response.headers))
 
-    webhook_log.save()
+    webhook_log.save(using=db_alias)
 
     # Delete old log entries
     max_logs_to_keep = 10
-    log_ids = WebhookLogEntry.objects.filter(webhook_id=webhook_id).order_by('-created')[max_logs_to_keep:].values_list("id", flat=True)
-    WebhookLogEntry.objects.filter(pk__in=log_ids).delete()
+    log_entries = WebhookLogEntry.objects.using(db_alias)
+    log_ids = log_entries.filter(webhook_id=webhook_id).order_by('-created')[max_logs_to_keep:].values_list("id", flat=True)
+    log_entries.filter(pk__in=log_ids).delete()
 
-def trigger_webhook(webhook, data, sender):
+def trigger_webhook(webhook, data, sender, db_alias):
     headers = {
         "X-DTF-Token": webhook.secret_token,
     }
@@ -71,9 +72,9 @@ def trigger_webhook(webhook, data, sender):
     request = requests.Request('POST', webhook.url, json=data, headers=headers)
 
     if settings.DTF_WEBHOOK_THREADPOOL:
-        webhook_execution_pool.submit(_submit_webhook_request, request, webhook.id, sender)
+        webhook_execution_pool.submit(_submit_webhook_request, request, webhook.id, sender, db_alias)
     else:
-        _submit_webhook_request(request, webhook.id, sender)
+        _submit_webhook_request(request, webhook.id, sender, db_alias)
 
 def _get_webhooks(instance):
     if isinstance(instance, Submission):
@@ -105,7 +106,7 @@ def _serialize(instance):
     elif isinstance(instance, TestReference):
         return TestReferenceSerializer(instance).data
 
-def trigger_webhooks(event, instance, sender):
+def trigger_webhooks(event, instance, sender, db_alias):
     webhooks = _get_webhooks(instance)
     if webhooks.exists():
         data = {
@@ -115,10 +116,10 @@ def trigger_webhooks(event, instance, sender):
             'object' : _serialize(instance)
         }
         for webhook in webhooks:
-            trigger_webhook(webhook, data, sender)
+            trigger_webhook(webhook, data, sender, db_alias)
 
 def _on_model_save(sender, instance, created, **kwargs):
-    trigger_webhooks('create' if created else 'edit', instance, sender)
+    trigger_webhooks('create' if created else 'edit', instance, sender, db_alias=kwargs.get('using'))
 
 def _on_model_delete(sender, instance, **kwargs):
     # trigger_webhooks('delete', instance, sender)
