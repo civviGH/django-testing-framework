@@ -139,42 +139,152 @@ An example could look as follows:
 List project properties
 -----------------------
 
-.. code-block:: bash
+List all properties of a given project.
 
-    GET /projects/:project_id/properties
+.. literalinclude :: generated/projects/projects_id_properties-GET-desc.txt
+
+An example could look as follows:
+
+.. literalinclude :: generated/projects/projects_id_properties-GET-curl.sh
+   :language: bash
+
+which might give a result like this:
+
+.. literalinclude :: generated/projects/projects_id_properties-GET-response.json
+   :language: json
 
 .. _api-projects-properties-new:
 
 Add new project property
 ------------------------
 
-.. code-block:: bash
+Add a new property to a project.
 
-    POST /projects/:project_id/properties
+.. literalinclude :: generated/projects/projects_id_properties-POST-desc.txt
+
+.. table::
+
+    +-----------------------+----------------+----------+--------------------------------------------------------+
+    | Attribute             | Type           | Required | Description                                            |
+    +=======================+================+==========+========================================================+
+    | `:project_id`         | string/integer | yes      | The id or slug of the project.                         |
+    +-----------------------+----------------+----------+--------------------------------------------------------+
+    | `name`                | string         | yes      | The name of the property to create.                    |
+    +-----------------------+----------------+----------+--------------------------------------------------------+
+    | `required`            | boolean        | no       | Whether the property is required for new submissions   |
+    |                       |                |          | (default=False).                                       |
+    +-----------------------+----------------+----------+--------------------------------------------------------+
+    | `display`             | boolean        | no       | Whether the display a column for this property in the  |
+    |                       |                |          | submissions table (default=False).                     |
+    +-----------------------+----------------+----------+--------------------------------------------------------+
+    | `display_as_link`     | boolean        | no       | Whether the display this property as link in the       |
+    |                       |                |          | submissions table (default=False).                     |
+    +-----------------------+----------------+----------+--------------------------------------------------------+
+    | `display_replace`     | string         | no       | Instead of the value of this property, this text will  |
+    |                       |                |          | be displayed. Use <b>{VALUE}</b> as a placeholder for  |
+    |                       |                |          | the original value (default="").                       |
+    +-----------------------+----------------+----------+--------------------------------------------------------+
+    | `influence_reference` | boolean        | no       | Include values for this property to find the           |
+    |                       |                |          | references of a submission.(default=False).            |
+    +-----------------------+----------------+----------+--------------------------------------------------------+
+
+An example could look as follows:
+
+.. literalinclude :: generated/projects/projects_id_properties-POST-curl.sh
+   :language: bash
+
+which might give a result like this:
+
+.. literalinclude :: generated/projects/projects_id_properties-POST-response.json
+    :language: json
+
 
 .. _api-projects-properties-get:
 
 Get single project property
 ---------------------------
 
-.. code-block:: bash
+Retrieve a specific property from a project.
 
-    GET /projects/:project_id/properties/:prop_id
+.. literalinclude :: generated/projects/projects_id_properties_id-GET-desc.txt
+
+.. table::
+
+    +----------------+----------------+----------+--------------------------------------------------------+
+    | Attribute      | Type           | Required | Description                                            |
+    +================+================+==========+========================================================+
+    | `:project_id`  | string/integer | yes      | The id or slug of the project.                         |
+    +----------------+----------------+----------+--------------------------------------------------------+
+    | `:prop_id`     | string/integer | yes      | The id of the property.                                |
+    +----------------+----------------+----------+--------------------------------------------------------+
+
+An example could look as follows:
+
+.. literalinclude :: generated/projects/projects_id_properties_id-GET-curl.sh
+   :language: bash
+
+which might give a result like this:
+
+.. literalinclude :: generated/projects/projects_id_properties_id-GET-response.json
+   :language: json
 
 .. _api-projects-properties-modify:
 
 Modify project property
 -----------------------
 
-.. code-block:: bash
+Modify the fields of an existing properties. All fields have to be given (even the ones that are unchanged).
 
-    PUT /projects/:project_id/properties/:prop_id
+.. literalinclude :: generated/projects/projects_id_properties_id-PUT-desc.txt
+
+.. table::
+
+    +-----------------------+----------------+----------+--------------------------------------------------------+
+    | Attribute             | Type           | Required | Description                                            |
+    +=======================+================+==========+========================================================+
+    | `:project_id`         | string/integer | yes      | The id or slug of the project.                         |
+    +-----------------------+----------------+----------+--------------------------------------------------------+
+    | `:prop_id`            | string/integer | yes      | The id of the property.                                |
+    +-----------------------+----------------+----------+--------------------------------------------------------+
+    | `name`                | string         | yes      | The new name of the property.                          |
+    +-----------------------+----------------+----------+--------------------------------------------------------+
+    | `required`            | boolean        | no       | Whether the property is required for new submissions   |
+    |                       |                |          | (default=False).                                       |
+    +-----------------------+----------------+----------+--------------------------------------------------------+
+    | `display`             | boolean        | no       | Whether the display a column for this property in the  |
+    |                       |                |          | submissions table (default=False).                     |
+    +-----------------------+----------------+----------+--------------------------------------------------------+
+    | `display_as_link`     | boolean        | no       | Whether the display this property as link in the       |
+    |                       |                |          | submissions table (default=False).                     |
+    +-----------------------+----------------+----------+--------------------------------------------------------+
+    | `display_replace`     | string         | no       | Instead of the value of this property, this text will  |
+    |                       |                |          | be displayed. Use <b>{VALUE}</b> as a placeholder for  |
+    |                       |                |          | the original value (default="").                       |
+    +-----------------------+----------------+----------+--------------------------------------------------------+
+    | `influence_reference` | boolean        | no       | Include values for this property to find the           |
+    |                       |                |          | references of a submission.(default=False).            |
+    +-----------------------+----------------+----------+--------------------------------------------------------+
+
+An example could look as follows:
+
+.. literalinclude :: generated/projects/projects_id_properties_id-PUT-curl.sh
+   :language: bash
+
+which might give a result like this:
+
+.. literalinclude :: generated/projects/projects_id_properties_id-PUT-response.json
+    :language: json
 
 .. _api-projects-properties-delete:
 
 Delete project property
 -----------------------
 
-.. code-block:: bash
+Deletes a property from a project. This can not be undone!
 
-    DELETE /projects/:project_id/properties/:prop_id
+.. literalinclude :: generated/projects/projects_id_properties_id-DELETE-desc.txt
+
+An example could look as follows:
+
+.. literalinclude :: generated/projects/projects_id_properties_id-DELETE-curl.sh
+   :language: bash
