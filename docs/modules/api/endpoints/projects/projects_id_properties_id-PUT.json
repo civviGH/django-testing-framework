@@ -1,0 +1,72 @@
+{
+    "endpoint": "/projects/:project_id/properties/:prop_id",
+    "method": "PUT",
+    "attributes" : {
+        ":project_id" : {
+            "type": "string/integer",
+            "required": true,
+            "description": "The id or slug of the project."
+        },
+        ":prop_id" : {
+            "type": "integer",
+            "required": true,
+            "description": "The id of the property to modify."
+        },
+        "name" : {
+            "type": "string",
+            "required": false,
+            "default": false,
+            "description": "The new name of the property."
+        },
+        "required" : {
+            "type": "boolean",
+            "required": false,
+            "default": false,
+            "description": "Whether the property is required for new submissions."
+        },
+        "display" : {
+            "type": "boolean",
+            "required": false,
+            "default": false,
+            "description": "Whether the display a column for this property in the submissions table."
+        },
+        "display_as_link" : {
+            "type": "boolean",
+            "required": false,
+            "default": false,
+            "description": "Whether the display this property as link in the submissions table."
+        },
+        "display_replace" : {
+            "type": "string",
+            "required": false,
+            "default": "",
+            "description": [
+                "Instead of the value of this property, this text will be displayed.",
+                "Use **{VALUE}** as a placeholder for the original value."
+            ]
+        },
+        "influence_reference" : {
+            "type": "boolean",
+            "required": false,
+            "default": false,
+            "description": "Include values for this property to find the references of a submission."
+        }
+    },
+    "examples" : [
+        {
+            "arguments" : {
+                "project_id" : 1,
+                "prop_id": 1
+            },
+            "data": {
+                "project" : 1,
+                "name" : "Branch",
+                "required" : false,
+                "display" : false,
+                "display_as_link" : false,
+                "display_replace" : "",
+                "influence_reference" : false
+            }
+        }
+    ]
+}

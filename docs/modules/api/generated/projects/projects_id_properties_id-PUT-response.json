@@ -1,0 +1,10 @@
+{
+    "project": 1,
+    "id": 1,
+    "name": "Branch",
+    "required": false,
+    "display": false,
+    "display_replace": "",
+    "display_as_link": false,
+    "influence_reference": false
+}

@@ -1,0 +1,25 @@
+{
+    "endpoint": "/projects/:id",
+    "method": "GET",
+    "attributes" : {
+        ":id" : {
+            "type": "string/integer",
+            "required": true,
+            "description": "The id or slug of the project to get."
+        }
+    },
+    "examples" : [
+        {
+            "name" : "primary_key",
+            "arguments" : {
+                "id" : 1
+            }
+        },
+        {
+            "name" : "slug",
+            "arguments" : {
+                "id" : "demo"
+            }
+        }
+    ]
+}

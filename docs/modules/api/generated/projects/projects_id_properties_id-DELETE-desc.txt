@@ -1,0 +1,1 @@
+DELETE /projects/:project_id/properties/:prop_id

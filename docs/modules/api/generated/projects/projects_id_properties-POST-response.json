@@ -1,0 +1,10 @@
+{
+    "project": 1,
+    "id": 4,
+    "name": "Property Name",
+    "required": false,
+    "display": true,
+    "display_replace": "Value is {VALUE}",
+    "display_as_link": false,
+    "influence_reference": false
+}

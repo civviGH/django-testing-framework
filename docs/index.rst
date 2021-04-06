@@ -11,6 +11,7 @@ Welcome to the Django Testing Framework documentation
    :caption: Content:
    
    modules/quickstart
+   modules/api
 
 .. toctree::
    :maxdepth: 3

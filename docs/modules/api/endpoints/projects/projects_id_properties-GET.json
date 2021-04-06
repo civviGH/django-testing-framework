@@ -1,0 +1,18 @@
+{
+    "endpoint": "/projects/:project_id/properties",
+    "method": "GET",
+    "attributes" : {
+        ":project_id" : {
+            "type": "string/integer",
+            "required": true,
+            "description": "The id or slug of the project to get the properties of."
+        }
+    },
+    "examples" : [
+        {
+            "arguments" : {
+                "project_id" : 1
+            }
+        }
+    ]
+}

@@ -1,0 +1,27 @@
+{
+    "endpoint": "/projects",
+    "method": "POST",
+    "attributes" : {
+        "name" : {
+            "type": "string",
+            "required": true,
+            "description": "The name of the project to create."
+        },
+        "slug" : {
+            "type": "string",
+            "required": true,
+            "description": [
+                "Slug for the project to be used in the URL.",
+                "This needs to be a valid `slug <https://en.wikipedia.org/wiki/Clean_URL#Slug>`_ and it needs to be unique over all projects."
+            ]
+        }
+    },
+    "examples" : [
+        {
+            "data": {
+                "name": "My Test Project",
+                "slug": "my-test-project"
+            }
+        }
+    ]
+}

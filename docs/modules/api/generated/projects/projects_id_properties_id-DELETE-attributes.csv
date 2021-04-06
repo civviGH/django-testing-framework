@@ -1,0 +1,3 @@
+Attribute|Type|Required|Description
+``:project_id``|string/integer|yes|The id or slug of the project.
+``:prop_id``|integer|yes|The id of the property to delete.
