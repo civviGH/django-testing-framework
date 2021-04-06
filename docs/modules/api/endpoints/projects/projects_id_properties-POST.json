@@ -1,0 +1,17 @@
+[
+    {
+        "endpoint": "/projects/:project_id/properties",
+        "kwargs": {
+            "project_id" : "1"
+        },
+        "method": "POST",
+        "data": {
+            "name" : "Property Name",
+            "required" : false,
+            "display" : true,
+            "display_as_link" : false,
+            "display_replace" : "Value is {VALUE}",
+            "influence_reference" : false
+        }
+    }
+]

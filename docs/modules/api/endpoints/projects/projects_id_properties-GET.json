@@ -1,0 +1,9 @@
+[
+    {
+        "endpoint": "/projects/:project_id/properties",
+        "kwargs": {
+            "project_id" : "1"
+        },
+        "method": "GET"
+    }
+]

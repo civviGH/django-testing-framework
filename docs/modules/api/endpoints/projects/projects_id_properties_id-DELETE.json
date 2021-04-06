@@ -1,0 +1,10 @@
+[
+    {
+        "endpoint": "/projects/:project_id/properties/:prop_id",
+        "kwargs": {
+            "project_id" : "1",
+            "prop_id": "1"
+        },
+        "method": "DELETE"
+    }
+]
