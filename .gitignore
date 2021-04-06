@@ -7,6 +7,7 @@ env/
 
 # Django specific
 db.sqlite3
+demo-db.sqlite3
 
 settings/local.py
 
