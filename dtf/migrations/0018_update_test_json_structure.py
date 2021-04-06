@@ -37,6 +37,7 @@ def convert_to_valuetype(data, valuetype):
     return data
 
 def upgrade_test_results(apps, schema_editor):
+    db_alias = schema_editor.connection.alias
     TestResult = apps.get_model('dtf', 'TestResult')
 
     def upgrade_results(test_results):
@@ -80,12 +81,13 @@ def upgrade_test_results(apps, schema_editor):
             })
         return new_test_results
 
-    for test_result in progressbar(TestResult.objects.all().iterator()):
+    for test_result in progressbar(TestResult.objects.using(db_alias).all().iterator()):
         test_result.results = upgrade_results(test_result.results)
         test_result.save()
 
 
 def upgrade_test_references(apps, schema_editor):
+    db_alias = schema_editor.connection.alias
     TestReference = apps.get_model('dtf', 'TestReference')
 
     def upgrade_references(references):
@@ -103,7 +105,7 @@ def upgrade_test_references(apps, schema_editor):
             new_references[name] = new_reference
         return new_references
 
-    for test_reference in progressbar(TestReference.objects.all().iterator()):
+    for test_reference in progressbar(TestReference.objects.using(db_alias).all().iterator()):
         test_reference.references = upgrade_references(test_reference.references)
         test_reference.save()
 
