@@ -124,6 +124,23 @@ def _on_model_delete(sender, instance, **kwargs):
     # trigger_webhooks('delete', instance, sender)
     pass
 
+def _on_pre_migrate(sender, **kwargs):
+    disconnect_webhook_signals()
+
+def _on_post_migrate(sender, **kwargs):
+    connect_webhook_signals()
+
+def disconnect_webhook_signals():
+    webhook_models = [Submission, TestResult, ReferenceSet, TestReference]
+
+    for model in webhook_models:
+        lower_name = model.__name__.lower()
+        signals.post_save.disconnect(sender=model, dispatch_uid=f"webhook_{lower_name}_save")
+        signals.post_delete.disconnect(sender=model, dispatch_uid=f"webhook_{lower_name}_delete")
+
+    signals.pre_migrate.disconnect(dispatch_uid=f"disable_webhooks_on_migration")
+    signals.post_migrate.connect(_on_post_migrate, dispatch_uid=f"enable_webhooks_post_migration")
+
 def connect_webhook_signals():
     webhook_models = [Submission, TestResult, ReferenceSet, TestReference]
 
@@ -131,3 +148,6 @@ def connect_webhook_signals():
         lower_name = model.__name__.lower()
         signals.post_save.connect(_on_model_save, sender=model, dispatch_uid=f"webhook_{lower_name}_save")
         signals.post_delete.connect(_on_model_delete, sender=model, dispatch_uid=f"webhook_{lower_name}_delete")
+
+    signals.pre_migrate.connect(_on_pre_migrate, dispatch_uid=f"disable_webhooks_on_migration")
+    signals.post_migrate.disconnect(dispatch_uid=f"enable_webhooks_post_migration")
