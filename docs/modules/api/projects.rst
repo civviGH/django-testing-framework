@@ -30,18 +30,10 @@ Create a new, global project on the server.
 
 .. literalinclude :: generated/projects/projects-POST-desc.txt
 
-.. table::
-
-    +----------------+----------------+----------+--------------------------------------------------------+
-    | Attribute      | Type           | Required | Description                                            |
-    +================+================+==========+========================================================+
-    | `name`         | string         | yes      | The name of the project to create.                     |
-    +----------------+----------------+----------+--------------------------------------------------------+
-    | `slug`         | string         | yes      | Slug for the project to be used in the URL.            |
-    |                |                |          | This needs to be a valid                               |
-    |                |                |          | `slug <https://en.wikipedia.org/wiki/Clean_URL#Slug>`_ |
-    |                |                |          | and it needs to be unique over all projects.           |
-    +----------------+----------------+----------+--------------------------------------------------------+
+.. csv-table::
+   :header-rows: 1
+   :file: generated/projects/projects-POST-attributes.csv
+   :delim: |
 
 An example could look as follows:
 
@@ -62,13 +54,10 @@ Retrieve a specific project from the server.
 
 .. literalinclude :: generated/projects/projects_id-GET-desc.txt
 
-.. table::
-
-    +----------------+----------------+----------+--------------------------------------------------------+
-    | Attribute      | Type           | Required | Description                                            |
-    +================+================+==========+========================================================+
-    | `:id`          | string/integer | yes      | The id or slug of the project.                         |
-    +----------------+----------------+----------+--------------------------------------------------------+
+.. csv-table::
+   :header-rows: 1
+   :file: generated/projects/projects_id-GET-attributes.csv
+   :delim: |
 
 An example using the id could look as follows:
 
@@ -94,20 +83,10 @@ Modify the fields of an existing project. All fields have to be given (even the 
 
 .. literalinclude :: generated/projects/projects_id-PUT-desc.txt
 
-.. table::
-
-    +----------------+----------------+----------+--------------------------------------------------------+
-    | Attribute      | Type           | Required | Description                                            |
-    +================+================+==========+========================================================+
-    | `:id`          | integer/string | yes      | The id or slug of the project.                         |
-    +----------------+----------------+----------+--------------------------------------------------------+
-    | `name`         | string         | yes      | The new name of the project.                           |
-    +----------------+----------------+----------+--------------------------------------------------------+
-    | `slug`         | string         | yes      | The new slug of the project.                           |
-    |                |                |          | This needs to be a valid                               |
-    |                |                |          | `slug <https://en.wikipedia.org/wiki/Clean_URL#Slug>`_ |
-    |                |                |          | and it needs to be unique over all projects.           |
-    +----------------+----------------+----------+--------------------------------------------------------+
+.. csv-table::
+   :header-rows: 1
+   :file: generated/projects/projects_id-PUT-attributes.csv
+   :delim: |
 
 An example could look as follows:
 
@@ -126,8 +105,12 @@ Delete single project
 
 Deletes a project and all associated data. This can not be undone!
 
-
 .. literalinclude :: generated/projects/projects_id-DELETE-desc.txt
+
+.. csv-table::
+   :header-rows: 1
+   :file: generated/projects/projects_id-DELETE-attributes.csv
+   :delim: |
 
 An example could look as follows:
 
@@ -142,6 +125,11 @@ List project properties
 List all properties of a given project.
 
 .. literalinclude :: generated/projects/projects_id_properties-GET-desc.txt
+
+.. csv-table::
+   :header-rows: 1
+   :file: generated/projects/projects_id_properties-GET-attributes.csv
+   :delim: |
 
 An example could look as follows:
 
@@ -162,31 +150,10 @@ Add a new property to a project.
 
 .. literalinclude :: generated/projects/projects_id_properties-POST-desc.txt
 
-.. table::
-
-    +-----------------------+----------------+----------+--------------------------------------------------------+
-    | Attribute             | Type           | Required | Description                                            |
-    +=======================+================+==========+========================================================+
-    | `:project_id`         | string/integer | yes      | The id or slug of the project.                         |
-    +-----------------------+----------------+----------+--------------------------------------------------------+
-    | `name`                | string         | yes      | The name of the property to create.                    |
-    +-----------------------+----------------+----------+--------------------------------------------------------+
-    | `required`            | boolean        | no       | Whether the property is required for new submissions   |
-    |                       |                |          | (default=False).                                       |
-    +-----------------------+----------------+----------+--------------------------------------------------------+
-    | `display`             | boolean        | no       | Whether the display a column for this property in the  |
-    |                       |                |          | submissions table (default=False).                     |
-    +-----------------------+----------------+----------+--------------------------------------------------------+
-    | `display_as_link`     | boolean        | no       | Whether the display this property as link in the       |
-    |                       |                |          | submissions table (default=False).                     |
-    +-----------------------+----------------+----------+--------------------------------------------------------+
-    | `display_replace`     | string         | no       | Instead of the value of this property, this text will  |
-    |                       |                |          | be displayed. Use <b>{VALUE}</b> as a placeholder for  |
-    |                       |                |          | the original value (default="").                       |
-    +-----------------------+----------------+----------+--------------------------------------------------------+
-    | `influence_reference` | boolean        | no       | Include values for this property to find the           |
-    |                       |                |          | references of a submission.(default=False).            |
-    +-----------------------+----------------+----------+--------------------------------------------------------+
+.. csv-table::
+   :header-rows: 1
+   :file: generated/projects/projects_id_properties-POST-attributes.csv
+   :delim: |
 
 An example could look as follows:
 
@@ -208,15 +175,10 @@ Retrieve a specific property from a project.
 
 .. literalinclude :: generated/projects/projects_id_properties_id-GET-desc.txt
 
-.. table::
-
-    +----------------+----------------+----------+--------------------------------------------------------+
-    | Attribute      | Type           | Required | Description                                            |
-    +================+================+==========+========================================================+
-    | `:project_id`  | string/integer | yes      | The id or slug of the project.                         |
-    +----------------+----------------+----------+--------------------------------------------------------+
-    | `:prop_id`     | string/integer | yes      | The id of the property.                                |
-    +----------------+----------------+----------+--------------------------------------------------------+
+.. csv-table::
+   :header-rows: 1
+   :file: generated/projects/projects_id_properties_id-GET-attributes.csv
+   :delim: |
 
 An example could look as follows:
 
@@ -237,33 +199,10 @@ Modify the fields of an existing properties. All fields have to be given (even t
 
 .. literalinclude :: generated/projects/projects_id_properties_id-PUT-desc.txt
 
-.. table::
-
-    +-----------------------+----------------+----------+--------------------------------------------------------+
-    | Attribute             | Type           | Required | Description                                            |
-    +=======================+================+==========+========================================================+
-    | `:project_id`         | string/integer | yes      | The id or slug of the project.                         |
-    +-----------------------+----------------+----------+--------------------------------------------------------+
-    | `:prop_id`            | string/integer | yes      | The id of the property.                                |
-    +-----------------------+----------------+----------+--------------------------------------------------------+
-    | `name`                | string         | yes      | The new name of the property.                          |
-    +-----------------------+----------------+----------+--------------------------------------------------------+
-    | `required`            | boolean        | no       | Whether the property is required for new submissions   |
-    |                       |                |          | (default=False).                                       |
-    +-----------------------+----------------+----------+--------------------------------------------------------+
-    | `display`             | boolean        | no       | Whether the display a column for this property in the  |
-    |                       |                |          | submissions table (default=False).                     |
-    +-----------------------+----------------+----------+--------------------------------------------------------+
-    | `display_as_link`     | boolean        | no       | Whether the display this property as link in the       |
-    |                       |                |          | submissions table (default=False).                     |
-    +-----------------------+----------------+----------+--------------------------------------------------------+
-    | `display_replace`     | string         | no       | Instead of the value of this property, this text will  |
-    |                       |                |          | be displayed. Use <b>{VALUE}</b> as a placeholder for  |
-    |                       |                |          | the original value (default="").                       |
-    +-----------------------+----------------+----------+--------------------------------------------------------+
-    | `influence_reference` | boolean        | no       | Include values for this property to find the           |
-    |                       |                |          | references of a submission.(default=False).            |
-    +-----------------------+----------------+----------+--------------------------------------------------------+
+.. csv-table::
+   :header-rows: 1
+   :file: generated/projects/projects_id_properties_id-PUT-attributes.csv
+   :delim: |
 
 An example could look as follows:
 
@@ -283,6 +222,11 @@ Delete project property
 Deletes a property from a project. This can not be undone!
 
 .. literalinclude :: generated/projects/projects_id_properties_id-DELETE-desc.txt
+
+.. csv-table::
+   :header-rows: 1
+   :file: generated/projects/projects_id_properties_id-DELETE-attributes.csv
+   :delim: |
 
 An example could look as follows:
 

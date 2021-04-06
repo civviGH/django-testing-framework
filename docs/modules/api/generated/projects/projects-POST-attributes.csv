@@ -1,0 +1,3 @@
+Attribute|Type|Required|Description
+``name``|string|yes|The name of the project to create.
+``slug``|string|yes|Slug for the project to be used in the URL. This needs to be a valid `slug <https://en.wikipedia.org/wiki/Clean_URL#Slug>`_ and it needs to be unique over all projects.

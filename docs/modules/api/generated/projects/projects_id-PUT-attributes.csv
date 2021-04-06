@@ -1,0 +1,4 @@
+Attribute|Type|Required|Description
+``:id``|string/integer|yes|The id or slug of the project to modify.
+``name``|string|yes|The new name of the project.
+``slug``|string|yes|The new slug of the project. This needs to be a valid `slug <https://en.wikipedia.org/wiki/Clean_URL#Slug>`_ and it needs to be unique over all projects.

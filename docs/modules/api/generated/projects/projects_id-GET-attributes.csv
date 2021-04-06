@@ -1,0 +1,2 @@
+Attribute|Type|Required|Description
+``:id``|string/integer|yes|The id or slug of the project to get.

@@ -1,0 +1,9 @@
+Attribute|Type|Required|Description
+``:project_id``|string/integer|yes|The id or slug of the project.
+``:prop_id``|integer|yes|The id of the property to modify.
+``name``|string|no (default: ``false``)|The new name of the property.
+``required``|boolean|no (default: ``false``)|Whether the property is required for new submissions.
+``display``|boolean|no (default: ``false``)|Whether the display a column for this property in the submissions table.
+``display_as_link``|boolean|no (default: ``false``)|Whether the display this property as link in the submissions table.
+``display_replace``|string|no (default: ``""``)|Instead of the value of this property, this text will be displayed. Use **{VALUE}** as a placeholder for the original value.
+``influence_reference``|boolean|no (default: ``false``)|Include values for this property to find the references of a submission.
