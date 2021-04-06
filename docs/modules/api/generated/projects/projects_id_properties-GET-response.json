@@ -1,0 +1,32 @@
+[
+    {
+        "project": 1,
+        "id": 3,
+        "name": "GitLab CI Job",
+        "required": false,
+        "display": true,
+        "display_replace": "https://gitlab.example.com/demo/demo-project/-/jobs/{VALUE}",
+        "display_as_link": true,
+        "influence_reference": false
+    },
+    {
+        "project": 1,
+        "id": 2,
+        "name": "Hostname",
+        "required": true,
+        "display": true,
+        "display_replace": "",
+        "display_as_link": false,
+        "influence_reference": true
+    },
+    {
+        "project": 1,
+        "id": 1,
+        "name": "Branch",
+        "required": true,
+        "display": true,
+        "display_replace": "",
+        "display_as_link": false,
+        "influence_reference": true
+    }
+]
