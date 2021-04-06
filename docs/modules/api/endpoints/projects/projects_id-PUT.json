@@ -1,0 +1,13 @@
+[
+    {
+        "endpoint": "/projects/:id",
+        "kwargs": {
+            "id" : "1"
+        },
+        "method": "PUT",
+        "data": {
+            "name": "Demo Project New Name",
+            "slug": "demo-project"
+        }
+    }
+]

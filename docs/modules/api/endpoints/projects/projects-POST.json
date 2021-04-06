@@ -1,0 +1,10 @@
+[
+    {
+        "endpoint": "/projects",
+        "method": "POST",
+        "data": {
+            "name": "My Test Project",
+            "slug": "my-test-project"
+        }
+    }
+]

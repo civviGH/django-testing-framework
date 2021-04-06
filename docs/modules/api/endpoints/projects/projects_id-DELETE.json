@@ -1,0 +1,9 @@
+[
+    {
+        "endpoint": "/projects/:id",
+        "kwargs": {
+            "id" : "1"
+        },
+        "method": "DELETE"
+    }
+]
