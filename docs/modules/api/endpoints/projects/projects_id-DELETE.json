@@ -1,9 +1,11 @@
-[
-    {
-        "endpoint": "/projects/:id",
-        "kwargs": {
-            "id" : "1"
-        },
-        "method": "DELETE"
-    }
-]
+{
+    "endpoint": "/projects/:id",
+    "method": "DELETE",
+    "examples" : [
+        {
+            "arguments" : {
+                "id" : 1
+            }
+        }
+    ]
+}

@@ -30,45 +30,50 @@ def regenerate_docs():
     generated_path = os.path.join(docs_path, "modules", "api", "generated")
 
     def process_endpoint_description(desc, output_dir, basename):
-        name = desc.get('name')
         endpoint = desc['endpoint']
-        endpoint_args = desc.get('kwargs', {})
         method = desc['method']
-        data = desc.get('data')
-
-        example_endpoint = endpoint
-        for (arg_name, arg_value) in endpoint_args.items():
-            example_endpoint = example_endpoint.replace(":" + arg_name, arg_value)
-
-        if name is not None:
-            basename += "-" + name
 
         with open(os.path.join(output_dir, basename + "-desc.txt"), 'w') as file:
             file.write(f"{method} {endpoint}")
 
-        with open(os.path.join(output_dir, basename + "-curl.sh"), 'w') as file:
-            file.write(f'curl -X {method} \\\n')
-            if data is not None:
-                data_lines = json.dumps(data, indent=4).splitlines()
-                for i in range(1, len(data_lines)):
-                    data_lines[i] = '         ' + data_lines[i]
-                data_str = "\n".join(data_lines)
-                file.write(f'  --header "Content-Type: application/json" \\\n')
-                file.write(f'  --data \'{data_str}\' \\\n')
-            file.write(f'  http://dtf.example.com/api{example_endpoint}')
+        examples = desc.get("examples", [])
+        for example in examples:
 
-        url = f"http://127.0.0.1:8000/api{example_endpoint}"
-        response = requests.request(method, url, json=data)
+            arguments = example.get('arguments', {})
+            name = example.get('name')
+            data = example.get('data')
 
-        if not response.ok:
-            print(f"FAILED: {method} {url}")
-            print(f"  data = {data}")
-            print(f"Response: {response.reason}")
-            print(f"  {response.text}")
-        elif response.text:
-            result_data = json.loads(response.text.replace("127.0.0.1:8000", "dtf.example.com"))
-            with open(os.path.join(output_dir, basename + "-response.json"), 'w') as file:
-                file.write(json.dumps(result_data, indent=4))
+            example_endpoint = endpoint
+            for (arg_name, arg_value) in arguments.items():
+                example_endpoint = example_endpoint.replace(":" + arg_name, str(arg_value))
+
+            example_name = basename
+            if name is not None:
+                example_name += "-" + name
+
+            with open(os.path.join(output_dir, example_name + "-curl.sh"), 'w') as file:
+                file.write(f'curl -X {method} \\\n')
+                if data is not None:
+                    data_lines = json.dumps(data, indent=4).splitlines()
+                    for i in range(1, len(data_lines)):
+                        data_lines[i] = '         ' + data_lines[i]
+                    data_str = "\n".join(data_lines)
+                    file.write(f'  --header "Content-Type: application/json" \\\n')
+                    file.write(f'  --data \'{data_str}\' \\\n')
+                file.write(f'  http://dtf.example.com/api{example_endpoint}')
+
+            url = f"http://127.0.0.1:8000/api{example_endpoint}"
+            response = requests.request(method, url, json=data)
+
+            if not response.ok:
+                print(f"FAILED: {method} {url}")
+                print(f"  data = {data}")
+                print(f"Response: {response.reason}")
+                print(f"  {response.text}")
+            elif response.text:
+                result_data = json.loads(response.text.replace("127.0.0.1:8000", "dtf.example.com"))
+                with open(os.path.join(output_dir, example_name + "-response.json"), 'w') as file:
+                    file.write(json.dumps(result_data, indent=4))
 
     # Sort the endpoints: We want to execute the GET requests first, and the DELETE requests last.
     # This tries to make sure we do not delete any datapoint from the DB that we need in another GET request.
@@ -88,22 +93,21 @@ def regenerate_docs():
             group = None
         return (group, -len(basename))
 
-    endpoint_files = list(pathlib.Path(endpoints_path).rglob('*.json'))
+    descriptor_files = list(pathlib.Path(endpoints_path).rglob('*.json'))
 
-    endpoint_files = sorted(endpoint_files, key=endpoint_key)
+    descriptor_files = sorted(descriptor_files, key=endpoint_key)
 
-    for endpoint_file in endpoint_files:
-        basename = os.path.splitext(os.path.basename(endpoint_file))[0]
-        sub_path = os.path.relpath(os.path.dirname(endpoint_file), endpoints_path)
+    for descriptor_file in descriptor_files:
+        basename = os.path.splitext(os.path.basename(descriptor_file))[0]
+        sub_path = os.path.relpath(os.path.dirname(descriptor_file), endpoints_path)
 
         output_dir = os.path.join(generated_path, sub_path)
         os.makedirs(output_dir, exist_ok=True)
 
-        with open(endpoint_file) as file:
-            endpoint_descriptions = json.load(file)
+        with open(descriptor_file) as file:
+            endpoint_description = json.load(file)
 
-        for endpoint_description in endpoint_descriptions:
-            process_endpoint_description(endpoint_description, output_dir, basename)
+        process_endpoint_description(endpoint_description, output_dir, basename)
 
 
 # Initialize demo db

@@ -1,13 +1,15 @@
-[
-    {
-        "endpoint": "/projects/:id",
-        "kwargs": {
-            "id" : "1"
-        },
-        "method": "PUT",
-        "data": {
-            "name": "Demo Project New Name",
-            "slug": "demo-project"
+{
+    "endpoint": "/projects/:id",
+    "method": "PUT",
+    "examples" : [
+        {
+            "arguments" : {
+                "id" : 1
+            },
+            "data": {
+                "name": "Demo Project New Name",
+                "slug": "demo-project"
+            }
         }
-    }
-]
+    ]
+}

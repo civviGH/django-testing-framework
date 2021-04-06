@@ -1,10 +1,12 @@
-[
-    {
-        "endpoint": "/projects/:project_id/properties/:prop_id",
-        "kwargs": {
-            "project_id" : "1",
-            "prop_id": "1"
-        },
-        "method": "GET"
-    }
-]
+{
+    "endpoint": "/projects/:project_id/properties/:prop_id",
+    "method": "GET",
+    "examples" : [
+        {
+            "arguments" : {
+                "project_id" : 1,
+                "prop_id": 1
+            }
+        }
+    ]
+}

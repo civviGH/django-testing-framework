@@ -1,19 +1,21 @@
-[
-    {
-        "endpoint": "/projects/:project_id/properties/:prop_id",
-        "kwargs": {
-            "project_id" : "1",
-            "prop_id": "1"
-        },
-        "method": "PUT",
-        "data": {
-            "project" : 1,
-            "name" : "Branch",
-            "required" : false,
-            "display" : false,
-            "display_as_link" : false,
-            "display_replace" : "",
-            "influence_reference" : false
+{
+    "endpoint": "/projects/:project_id/properties/:prop_id",
+    "method": "PUT",
+    "examples" : [
+        {
+            "arguments" : {
+                "project_id" : 1,
+                "prop_id": 1
+            },
+            "data": {
+                "project" : 1,
+                "name" : "Branch",
+                "required" : false,
+                "display" : false,
+                "display_as_link" : false,
+                "display_replace" : "",
+                "influence_reference" : false
+            }
         }
-    }
-]
+    ]
+}
