@@ -83,3 +83,89 @@ table.ndarray-value {
     border: 1px solid #999;
     background: #ffffff;
 }
+
+/*
+ * Navbar
+ */
+.navbar {
+    padding: 0 16px;
+    z-index: 1000;
+    margin-bottom: 0;
+    min-height: 40px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+}
+
+.header-content {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    position: relative;
+    min-height: 40px;
+    padding-left: 0;
+}
+
+.header-content .title-container {
+    display: flex;
+    align-items: stretch;
+    flex: 1 1 auto;
+    padding-top: 0;
+    overflow: visible;
+}
+
+.header-content .title {
+    padding-right: 0;
+    display: flex;
+    position: relative;
+    margin: 0;
+    font-size: 18px;
+    vertical-align: top;
+    white-space: nowrap;
+}
+
+.navbar a {
+    text-decoration: none;
+}
+
+.header-content .title a {
+    display: flex;
+    align-items: center;
+    padding: 2px 8px;
+    margin: 5px 2px 5px -8px;
+    border-radius: 4px;
+    color: #ffffff;
+}
+
+.navbar-sub-nav {
+    display: flex;
+    margin: 0 0 0 6px;
+}
+
+.navbar-sub-nav li a {
+    display: flex;
+    justify-content: center;
+    padding: 6px 8px;
+    margin: 4px 2px;
+    font-size: 12px;
+    border-radius: 4px;
+    height: 32px;
+    font-weight: 600;
+    color: #ffffff;
+}
+
+.navbar-collapse {
+    flex: 0 0 auto;
+    border-top: 0;
+    padding: 0;
+}
+
+
+/*
+ * Content
+ */
+.content-wrapper {
+    margin-top: 41px; /* header (40) + boarder (1) */
+    padding-bottom: 100px;
+}

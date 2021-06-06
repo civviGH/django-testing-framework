@@ -1,7 +1,10 @@
 {% extends 'dtf/base.html' %}
 
 {% load dtf.custom_filters %}
-{% block body %}
+
+{% block containertype %}fluid{% endblock %}
+
+{% block content %}
 
 <script>
 
@@ -100,7 +103,7 @@ function toggleAllBoxes(){
 
 </script>
 
-<div class="bg-white sticky-top pt-3 pb-1">
+<div class="bg-white pt-3 pb-1">
 
 <nav>
   <ol class="breadcrumb">
