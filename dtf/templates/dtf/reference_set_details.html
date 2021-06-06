@@ -8,29 +8,18 @@
 
 {% block content %}
 
-<div class="bg-white pt-3 pb-1">
-
-<nav>
-  <ol class="breadcrumb">
-    <li class="breadcrumb-item" aria-current="page">
-        <a href="{% url 'projects' %}">Project List</a>
-    </li>
-    <li class="breadcrumb-item" aria-current="page">
-        <a href="{% url 'project_details' reference_set.project.slug %}">{{reference_set.project.name}}</a>
-    </li>
-    <li class="breadcrumb-item" aria-current="page">
-        <a href="{% url 'project_reference_sets' reference_set.project.slug %}">Reference Sets</a>
-    </li>
-    <li class="breadcrumb-item active" aria-current="page">{{reference_set.id}}</li>
-  </ol>
-</nav>
-
-<div class="page-header">
-    <div class="w-100">
-        <h2>Test References</h2>
-    </div>
-</div>
-
+<div class="pt-3 pb-3 border-bottom">
+    <nav>
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item" aria-current="page">
+            <a href="{% url 'project_details' reference_set.project.slug %}">{{reference_set.project.name}}</a>
+        </li>
+        <li class="breadcrumb-item" aria-current="page">
+            <a href="{% url 'project_reference_sets' reference_set.project.slug %}">Reference Sets</a>
+        </li>
+        <li class="breadcrumb-item active" aria-current="page">{{reference_set.id}}</li>
+    </ol>
+    </nav>
 </div>
 
 <table class="table table-hover tablesorter">

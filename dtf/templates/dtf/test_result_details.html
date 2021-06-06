@@ -107,13 +107,9 @@ function toggleAllBoxes(){
 
 </script>
 
-<div class="bg-white pt-3 pb-1">
-
+<div class="pt-3 pb-3 border-bottom">
 <nav>
   <ol class="breadcrumb">
-    <li class="breadcrumb-item" aria-current="page">
-        <a href="{% url 'projects' %}">Project List</a>
-    </li>
     <li class="breadcrumb-item" aria-current="page">
         <a href="{% url 'project_details' test_result.submission.project.slug %}">{{ project.name }}</a>
     </li>
@@ -130,7 +126,9 @@ function toggleAllBoxes(){
     </li>
   </ol>
 </nav>
+</div>
 
+<div class="bg-white pt-3 pb-1">
 
 <div class="page-header mb-5">
     {# <h2 class="my-auto float-left">{{ test_result.name }} [{{ test_result.submission.pk }}]</h2> #}

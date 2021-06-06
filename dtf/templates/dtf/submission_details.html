@@ -8,31 +8,22 @@
 
 {% block content %}
 
-<div class="bg-white pt-3 pb-1">
-
-<nav>
-  <ol class="breadcrumb">
-    <li class="breadcrumb-item" aria-current="page">
-        <a href="{% url 'projects' %}">Project List</a>
-    </li>
-    <li class="breadcrumb-item" aria-current="page">
-        <a href="{% url 'project_details' submission.project.slug %}">{{submission.project.name}}</a>
-    </li>
-    <li class="breadcrumb-item" aria-current="page">
-        <a href="{% url 'project_submissions' submission.project.slug %}">Submissions</a>
-    </li>
-    <li class="breadcrumb-item active" aria-current="page">{{submission.id}} | {{submission.created}}</li>
-  </ol>
-</nav>
-
-<div class="page-header">
-    <div class="w-100">
-        <h2>Tests</h2>
-    </div>
+<div class="pt-3 pb-3 border-bottom">
+    <nav>
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item" aria-current="page">
+                <a href="{% url 'project_details' submission.project.slug %}">{{submission.project.name}}</a>
+            </li>
+            <li class="breadcrumb-item" aria-current="page">
+                <a href="{% url 'project_submissions' submission.project.slug %}">Submissions</a>
+            </li>
+            <li class="breadcrumb-item active" aria-current="page">{{submission.id}} | {{submission.created}}</li>
+        </ol>
+    </nav>
 </div>
 
-{% include 'dtf/filter-box.html' with show_broken=True %}
-
+<div class="pt-3 pb-1">
+    {% include 'dtf/filter-box.html' with show_broken=True %}
 </div>
 
 <table class="table table-hover tablesorter">
