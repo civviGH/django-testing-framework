@@ -1,6 +1,10 @@
-{% extends 'dtf/base.html' %}
+{% extends 'dtf/page_with_sidebar.html' %}
 
 {% load dtf.custom_filters %}
+
+{% block sidebarcontent %}
+    {% include "dtf/project_sidebar.html" with active_page='references' project=test_reference.reference_set.project %}
+{% endblock %}
 
 {% block content %}
 

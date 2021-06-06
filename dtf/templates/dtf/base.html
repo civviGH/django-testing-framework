@@ -46,6 +46,9 @@
         {% endblock %}
 
         <div class="layout-page {% block layout %}{% endblock %}">
+            {% block sidebar %}
+            {% endblock %}
+
             <div class="content-wrapper">
                 <div class="container-{% block containertype %}xl{% endblock %}">
                     <main class="content">
