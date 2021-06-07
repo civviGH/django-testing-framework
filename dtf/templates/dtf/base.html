@@ -21,8 +21,43 @@
         <script src="{% static 'dtf/script.js' %}"></script>
 
     </head>
-    <body class="px-4">
-        {% block body %}
+    <body>
+        {% block header %}
+            <header class="navbar bg-dark border-bottom border-dark text-white">
+                <div class="container-fluid header-content align-items-center">
+                    <div class="title-container">
+                        <h1 class="title">
+                            <a href="{% url 'home' %}">
+                                <span>DTF</span>
+                            </a>
+                        </h1>
+                        <ul class="list-unstyled navbar-sub-nav">
+                            <li>
+                                <a href="{% url 'projects' %}">
+                                    <span>Projects</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="navbar-collapse collapse">
+                    </div>
+                </div>
+            </header>
         {% endblock %}
+
+        <div class="layout-page {% block layout %}{% endblock %}">
+            {% block navigation-sidebar %}
+            {% endblock %}
+
+            <div class="content-wrapper">
+                <div class="container-{% block containertype %}xl{% endblock %}">
+                    <main class="content">
+                        {% block content %}{% endblock %}
+                    </main>
+                </div>
+                {% block content-sidebar %}
+                {% endblock %}
+            </div>
+        </div>
     </body>
 </html>

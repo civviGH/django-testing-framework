@@ -1,18 +1,18 @@
-{% extends 'dtf/base.html' %}
+{% extends 'dtf/page_with_sidebar.html' %}
 
 {% load static %}
 
 {% load dtf.custom_filters %}
 
-{% block body %}
+{% block navigation-sidebar-content %}
+    {% include "dtf/project_sidebar.html" with active_page='settings' project=webhook.project %}
+{% endblock %}
 
-<div class="bg-white pt-3 pb-1">
+{% block content %}
 
+<div class="pt-3 pb-3 border-bottom">
   <nav>
     <ol class="breadcrumb">
-      <li class="breadcrumb-item" aria-current="page">
-        <a href="{% url 'projects' %}">Project List</a>
-      </li>
       <li class="breadcrumb-item" aria-current="page">
         <a href="{% url 'project_details' webhook.project.slug %}">{{ webhook.project.name }}</a>
       </li>
@@ -22,16 +22,14 @@
       <li class="breadcrumb-item active" aria-current="page">{{ webhook.name }}</li>
     </ol>
   </nav>
-
-  <div class="page-header">
-    <div class="w-100">
-      <h2>Log for {{ webhook.name }}</h2>
-    </div>
-    Showing the 10 most recent requests.
-  </div>
 </div>
 
-<div class="content">
+<div class="page-header">
+  <div class="w-100">
+    <h2>Log for {{ webhook.name }}</h2>
+  </div>
+  Showing the 10 most recent requests.
+</div>
 
 <table class="table table-hover table-sm">
     <thead>
@@ -94,6 +92,6 @@
     </tr>
     {% endfor %}
     </tbody>
-</div>
+</table>
 
 {% endblock %}

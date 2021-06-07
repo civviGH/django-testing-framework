@@ -12,7 +12,7 @@ from dtf import api
 urlpatterns = [
     path('admin/', admin.site.urls),
 
-    path('', RedirectView.as_view(pattern_name='projects', permanent=False)),
+    path('', RedirectView.as_view(pattern_name='projects', permanent=False), name="home"),
     path('projects/', views.view_projects, name='projects'),
     path('projects/new', views.view_new_project, name='new_project'),
     path('<str:project_slug>', RedirectView.as_view(pattern_name='project_submissions', permanent=False), name='project_details'),

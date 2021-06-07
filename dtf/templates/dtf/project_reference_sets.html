@@ -1,27 +1,22 @@
-{% extends 'dtf/base.html' %}
+{% extends 'dtf/page_with_sidebar.html' %}
 
 {% load dtf.custom_filters %}
 
-{% block body %}
+{% block navigation-sidebar-content %}
+    {% include "dtf/project_sidebar.html" with active_page='references' %}
+{% endblock %}
 
-<div class="bg-white sticky-top pt-3 pb-1">
+{% block content %}
 
-<nav>
-  <ol class="breadcrumb">
-    <li class="breadcrumb-item" aria-current="page">
-        <a href="{% url 'projects' %}">Project List</a>
-    </li>
-    <li class="breadcrumb-item" aria-current="page">
-        <a href="{% url 'project_details' project.slug %}">{{ project.name }}</a>
-    </li>
-    <li class="breadcrumb-item active" aria-current="page">Reference Sets</li>
-  </ol>
-</nav>
-
-</div>
-
-<div class="page-header">
-    <h2 class="float-left">Reference Sets</h2>
+<div class="pt-3 pb-3 border-bottom">
+  <nav>
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item" aria-current="page">
+          <a href="{% url 'project_details' project.slug %}">{{ project.name }}</a>
+      </li>
+      <li class="breadcrumb-item active" aria-current="page">Reference Sets</li>
+    </ol>
+  </nav>
 </div>
 
 <table class="table table-hover">
@@ -44,16 +39,16 @@
     </thead>
     <tbody>
     {% for reference_set in reference_sets %}
-    <tr onclick="window.location='{% url 'reference_set_details' project.slug reference_set.pk %}';" style="cursor:pointer">
-        <td>
-            {{ reference_set.pk }}
+    <tr class="reference_set">
+        <td class="id">
+            <a href="{% url 'reference_set_details' project.slug reference_set.pk %}">{{ reference_set.pk }}</a>
         </td>
-        <td>
-            {{ reference_set.created }}
+        <td class="date">
+            <a href="{% url 'reference_set_details' project.slug reference_set.pk %}">{{ reference_set.created }}</a>
         </td>
         {% for property in properties %}
             {% if property.influence_reference %}
-                <td>
+                <td class="property">
                     {{ property|reference_property:reference_set }}
                 </td>
             {% endif %}

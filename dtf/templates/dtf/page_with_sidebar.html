@@ -1,0 +1,10 @@
+{% extends 'dtf/base.html' %}
+
+{% block layout %}page-with-navigation-sidebar{% endblock %}
+
+{% block navigation-sidebar %}
+    <nav id="navigation-sidebar" class="sidebar navigation-sidebar">
+        {% block navigation-sidebar-content %}
+        {% endblock %}
+    </nav>
+{% endblock %}

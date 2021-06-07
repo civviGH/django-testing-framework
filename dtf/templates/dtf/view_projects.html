@@ -1,24 +1,13 @@
-{% extends 'dtf/base.html' %}
+{% extends 'dtf/page_no_sidebar.html' %}
 
-{% block body %}
-
-<div class="bg-white sticky-top pt-3 pb-1">
-
-<nav>
-  <ol class="breadcrumb">
-    <li class="breadcrumb-item active" aria-current="page">
-        Project List
-    </li>
-  </ol>
-</nav>
-
-<div class="page-header">
-    <h2 class="float-left">Projects</h2>
-    <div class="float-right">
-        <a href="{% url 'new_project' %}" class="btn btn-success">New project</a>
+{% block content %}
+<div class="pt-3 pb-1 border-bottom">
+    <div class="page-header mb-5">
+        <h2 class="float-left">Projects</h2>
+        <div class="float-right">
+            <a href="{% url 'new_project' %}" class="btn btn-success">New project</a>
+        </div>
     </div>
-</div>
-
 </div>
 
 <table class="table table-hover tablesorter">
@@ -34,16 +23,15 @@
     </thead>
     <tbody>
     {% for project in projects %}
-    <tr onclick="window.location='{% url 'project_details' project.slug %}';" style="cursor:pointer">
-        <td>
-            {{ project.name }}
+    <tr class="project">
+        <td class="name">
+            <a href="{% url 'project_details' project.slug %}">{{ project.name }}</a>
         </td>
-        <td>
-            {{ project.id }}
+        <td class="id">
+            <a href="{% url 'project_details' project.slug %}">{{ project.id }}</a>
         </td>
     </tr>
     {% endfor %}
     </tbody>
 </table>
-
 {% endblock %}

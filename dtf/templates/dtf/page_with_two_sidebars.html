@@ -1,0 +1,10 @@
+{% extends 'dtf/page_with_sidebar.html' %}
+
+{% block layout %}page-with-navigation-sidebar page-with-content-sidebar{% endblock %}
+
+{% block content-sidebar %}
+    <nav id="content-sidebar" class="sidebar content-sidebar">
+        {% block content-sidebar-content %}
+        {% endblock %}
+    </nav>
+{% endblock %}

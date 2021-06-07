@@ -1,0 +1,71 @@
+
+{% load static %}
+
+<div>
+    <div class="sidebar-header border-bottom">
+        <a href="{% url 'project_details' project.slug %}">
+            <span class="title">{{ project.name }}</span>
+        </a>
+    </div>
+
+    <ul>
+        <li class="{% if active_page == 'submissions' %}active{% endif %}">
+            <a href="{% url 'project_submissions' project.slug %}">
+                <span class="item-icon"><i class="bi bi-box-arrow-in-right"></i></span>
+                <span class="item-name">Submissions</span>
+            </a>
+        </li>
+        <li class="{% if active_page == 'references' %}active{% endif %}">
+            <a href="{% url 'project_reference_sets' project.slug %}">
+                <span class="item-icon"><i class="bi bi-star"></i></span>
+                <span class="item-name">References</span>
+            </a>
+        </li>
+        <li class="{% if active_page == 'settings' %}active{% endif %}">
+            <a href="{% url 'project_settings' project.slug %}">
+                <span class="item-icon"><i class="bi bi-gear"></i></span>
+                <span class="item-name">Settings</span>
+            </a>
+        </li>
+    </ul>
+
+    <a class="toggle-sidebar-button border-top" type="button" onclick="toggleNavigationSidebar()">
+        <i class="item-icon bi bi-chevron-double-left"></i>
+        <i class="item-icon bi bi-chevron-double-right"></i>
+        <span class="item-name">Collapse</span>
+    </a>
+</div>
+
+<script>
+function toggleNavigationSidebar(){
+    const sidebar = document.getElementById("navigation-sidebar");
+    const pages = document.getElementsByClassName("page-with-navigation-sidebar");
+
+    sidebar.classList.remove('notransition');
+    sidebar.classList.toggle('collapsed')
+    Array.prototype.forEach.call(pages, function(item){
+        item.classList.remove('notransition');
+        item.classList.toggle('navigation-collapsed')
+    });
+
+    if (localStorage) {
+        const isCollapsed = sidebar.classList.contains('collapsed');
+        localStorage.setItem("navigation-sidebar-collapsed", isCollapsed);
+    }
+}
+
+if (localStorage) {
+    const isCollapsed = localStorage.getItem("navigation-sidebar-collapsed", "false") === 'true';
+    if (isCollapsed) {
+        const sidebar = document.getElementById("navigation-sidebar");
+        const pages = document.getElementsByClassName("page-with-navigation-sidebar");
+
+        sidebar.classList.add('notransition');
+        sidebar.classList.toggle('collapsed');
+        Array.prototype.forEach.call(pages, function(item){
+            item.classList.add('notransition');
+            item.classList.toggle('navigation-collapsed');
+        });
+    }
+}
+</script>

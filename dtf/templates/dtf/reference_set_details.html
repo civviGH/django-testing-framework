@@ -1,32 +1,35 @@
-{% extends 'dtf/base.html' %}
+{% extends 'dtf/page_with_two_sidebars.html' %}
 
 {% load dtf.custom_filters %}
 
-{% block body %}
+{% block navigation-sidebar-content %}
+    {% include "dtf/project_sidebar.html" with active_page='references' project=reference_set.project %}
+{% endblock %}
 
-<div class="bg-white sticky-top pt-3 pb-1">
+{% block content-sidebar-content %}
+    {% include "dtf/reference_set_sidebar.html" with reference_set=reference_set %}
+{% endblock %}
 
-<nav>
-  <ol class="breadcrumb">
-    <li class="breadcrumb-item" aria-current="page">
-        <a href="{% url 'projects' %}">Project List</a>
-    </li>
-    <li class="breadcrumb-item" aria-current="page">
-        <a href="{% url 'project_details' reference_set.project.slug %}">{{reference_set.project.name}}</a>
-    </li>
-    <li class="breadcrumb-item" aria-current="page">
-        <a href="{% url 'project_reference_sets' reference_set.project.slug %}">Reference Sets</a>
-    </li>
-    <li class="breadcrumb-item active" aria-current="page">{{reference_set.id}}</li>
-  </ol>
-</nav>
+{% block content %}
 
-<div class="page-header">
-    <div class="w-100">
-        <h2>Test References</h2>
-    </div>
+<div class="pt-3 pb-3 border-bottom">
+    <nav>
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item" aria-current="page">
+            <a href="{% url 'project_details' reference_set.project.slug %}">{{reference_set.project.name}}</a>
+        </li>
+        <li class="breadcrumb-item" aria-current="page">
+            <a href="{% url 'project_reference_sets' reference_set.project.slug %}">Reference Sets</a>
+        </li>
+        <li class="breadcrumb-item active" aria-current="page">{{reference_set.id}}</li>
+    </ol>
+    </nav>
 </div>
 
+<div class="mt-1 mb-1">
+    <div class="float-right content-sidebar-dependent">
+        <button class="btn btn-outline-dark btn-sm" onclick="toggleContentSidebar()"><i class="bi bi-chevron-double-left"></i></button>
+    </div>
 </div>
 
 <table class="table table-hover tablesorter">
@@ -45,15 +48,15 @@
     </thead>
     <tbody>
     {% for test in reference_set.test_references.all %}
-    <tr onclick="window.location='{% url 'test_reference_details' reference_set.project.slug test.pk %}'" style="cursor:pointer">
-        <td>
-            {{ test.test_name }}
+    <tr class="test_references">
+        <td class="name">
+            <a href="{% url 'test_reference_details' reference_set.project.slug test.pk %}">{{ test.test_name }}</a>
         </td>
-        <td>
-            {{ test.created }}
+        <td class="date">
+            <a href="{% url 'test_reference_details' reference_set.project.slug test.pk %}">{{ test.created }}</a>
         </td>
-        <td>
-            {{ test.last_updated }}
+        <td class="date">
+            <a href="{% url 'test_reference_details' reference_set.project.slug test.pk %}">{{ test.last_updated }}</a>
         </td>
     </tr>
     {% endfor %}

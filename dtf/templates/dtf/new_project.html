@@ -1,11 +1,10 @@
-{% extends 'dtf/base.html' %}
+{% extends 'dtf/page_no_sidebar.html' %}
 
 {% load dtf.custom_filters %}
 
-{% block body %}
+{% block content %}
 
-<div class="bg-white sticky-top pt-3 pb-1">
-
+<div class="pt-3 pb-3 border-bottom">
   <nav>
     <ol class="breadcrumb">
       <li class="breadcrumb-item" aria-current="page">
@@ -14,13 +13,9 @@
       <li class="breadcrumb-item active" aria-current="page">New</li>
     </ol>
   </nav>
+</div>
 
-  <div class="page-header">
-    <div class="w-100">
-      <h2>New Project</h2>
-    </div>
-  </div>
-
+<div class="content mt-3">
   <form action="{% url 'new_project' %}" method="post" novalidate>
     {% csrf_token %}
 
