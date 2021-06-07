@@ -104,7 +104,7 @@ def as_measurement_entry(entry, project):
 
     if source is not None:
         url = reverse('test_result_details', kwargs={'project_slug' : project.slug, 'test_id' : source})
-        out = f"<a class='ref_link' target='_blank' href='{url}'>{text}</a>"
+        out = f"<a class='ref_link' href='{url}'>{text}</a>"
         return mark_safe(out)
     else:
         return text
