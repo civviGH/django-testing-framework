@@ -29,7 +29,7 @@
         </li>
     </ul>
 
-    <a class="toggle-sidebar-button border-top" type="button" onclick="toggleSidebar()">
+    <a class="toggle-sidebar-button border-top" type="button" onclick="toggleNavigationSidebar()">
         <i class="item-icon bi bi-chevron-double-left"></i>
         <i class="item-icon bi bi-chevron-double-right"></i>
         <span class="item-name">Collapse</span>
@@ -37,7 +37,7 @@
 </div>
 
 <script>
-function toggleSidebar(){
+function toggleNavigationSidebar(){
     const sidebar = document.getElementById("navigation-sidebar");
     const pages = document.getElementsByClassName("page-with-navigation-sidebar");
 
@@ -45,17 +45,17 @@ function toggleSidebar(){
     sidebar.classList.toggle('collapsed')
     Array.prototype.forEach.call(pages, function(item){
         item.classList.remove('notransition');
-        item.classList.toggle('collapsed')
+        item.classList.toggle('navigation-collapsed')
     });
 
     if (localStorage) {
         const isCollapsed = sidebar.classList.contains('collapsed');
-        localStorage.setItem("sidebar-collapsed", isCollapsed);
+        localStorage.setItem("navigation-sidebar-collapsed", isCollapsed);
     }
 }
 
 if (localStorage) {
-    const isCollapsed = localStorage.getItem("sidebar-collapsed", "false") === 'true';
+    const isCollapsed = localStorage.getItem("navigation-sidebar-collapsed", "false") === 'true';
     if (isCollapsed) {
         const sidebar = document.getElementById("navigation-sidebar");
         const pages = document.getElementsByClassName("page-with-navigation-sidebar");
@@ -64,7 +64,7 @@ if (localStorage) {
         sidebar.classList.toggle('collapsed');
         Array.prototype.forEach.call(pages, function(item){
             item.classList.add('notransition');
-            item.classList.toggle('collapsed');
+            item.classList.toggle('navigation-collapsed');
         });
     }
 }
