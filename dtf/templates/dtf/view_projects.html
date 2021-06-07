@@ -23,12 +23,12 @@
     </thead>
     <tbody>
     {% for project in projects %}
-    <tr onclick="window.location='{% url 'project_details' project.slug %}';" style="cursor:pointer">
-        <td>
-            {{ project.name }}
+    <tr class="project">
+        <td class="name">
+            <a href="{% url 'project_details' project.slug %}">{{ project.name }}</a>
         </td>
-        <td>
-            {{ project.id }}
+        <td class="id">
+            <a href="{% url 'project_details' project.slug %}">{{ project.id }}</a>
         </td>
     </tr>
     {% endfor %}

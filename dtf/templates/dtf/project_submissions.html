@@ -42,19 +42,19 @@
     </thead>
     <tbody>
     {% for submission in submissions %}
-    <tr onclick="window.location='{% url 'submission_details' project.slug submission.pk %}';" style="cursor:pointer">
-        <td>
-            {{ submission.status|status_badge }}
+    <tr class="submission">
+        <td class="status">
+            <a href="{% url 'submission_details' project.slug submission.pk %}">{{ submission.status|status_badge }}</a>
         </td>
-        <td>
-            {{ submission.pk }}
+        <td class="id">
+            <a href="{% url 'submission_details' project.slug submission.pk %}">{{ submission.pk }}</a>
         </td>
-        <td>
-            {{ submission.created }}
+        <td class="date">
+            <a href="{% url 'submission_details' project.slug submission.pk %}">{{ submission.created }}</a>
         </td>
         {% for property in properties %}
             {% if property.display %}
-                <td>
+                <td class="property">
                     {{ property|submission_property:submission }}
                 </td>
             {% endif %}

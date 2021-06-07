@@ -87,6 +87,13 @@ table.ndarray-value {
     background: #ffffff;
 }
 
+td.status a,
+td.name a,
+td.id a,
+td.date a {
+    color: #000000;
+}
+
 /*
  * breadcrumbs
  */

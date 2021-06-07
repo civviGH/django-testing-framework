@@ -46,15 +46,15 @@
     </thead>
     <tbody>
     {% for test in submission.tests.all %}
-    <tr onclick="window.location='{% url 'test_result_details' submission.project.slug test.pk %}'" style="cursor:pointer">
-        <td>
-            {{ test.status|status_badge }}
+    <tr class="test">
+        <td class="status">
+            <a href="{% url 'test_result_details' submission.project.slug test.pk %}">{{ test.status|status_badge }}</a>
         </td>
-        <td>
-            {{ test.name }}
+        <td class="name">
+            <a href="{% url 'test_result_details' submission.project.slug test.pk %}">{{ test.name }}</a>
         </td>
-        <td>
-            {{ test.created }}
+        <td class="date">
+            <a href="{% url 'test_result_details' submission.project.slug test.pk %}">{{ test.created }}</a>
         </td>
     </tr>
     {% endfor %}

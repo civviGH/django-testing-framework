@@ -38,15 +38,15 @@
     </thead>
     <tbody>
     {% for test in reference_set.test_references.all %}
-    <tr onclick="window.location='{% url 'test_reference_details' reference_set.project.slug test.pk %}'" style="cursor:pointer">
-        <td>
-            {{ test.test_name }}
+    <tr class="test_references">
+        <td class="name">
+            <a href="{% url 'test_reference_details' reference_set.project.slug test.pk %}">{{ test.test_name }}</a>
         </td>
-        <td>
-            {{ test.created }}
+        <td class="date">
+            <a href="{% url 'test_reference_details' reference_set.project.slug test.pk %}">{{ test.created }}</a>
         </td>
-        <td>
-            {{ test.last_updated }}
+        <td class="date">
+            <a href="{% url 'test_reference_details' reference_set.project.slug test.pk %}">{{ test.last_updated }}</a>
         </td>
     </tr>
     {% endfor %}

@@ -39,16 +39,16 @@
     </thead>
     <tbody>
     {% for reference_set in reference_sets %}
-    <tr onclick="window.location='{% url 'reference_set_details' project.slug reference_set.pk %}';" style="cursor:pointer">
-        <td>
-            {{ reference_set.pk }}
+    <tr class="reference_set">
+        <td class="id">
+            <a href="{% url 'reference_set_details' project.slug reference_set.pk %}">{{ reference_set.pk }}</a>
         </td>
-        <td>
-            {{ reference_set.created }}
+        <td class="date">
+            <a href="{% url 'reference_set_details' project.slug reference_set.pk %}">{{ reference_set.created }}</a>
         </td>
         {% for property in properties %}
             {% if property.influence_reference %}
-                <td>
+                <td class="property">
                     {{ property|reference_property:reference_set }}
                 </td>
             {% endif %}
