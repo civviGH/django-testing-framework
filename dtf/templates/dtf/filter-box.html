@@ -37,19 +37,59 @@
 </div>
 
 <script>
+function restoreFilterState(status_type, filter_status) {
+    const filterState = (sessionStorage.getItem("filter-{{filter_context}}-" + status_type) || 'true') === 'true';
+
+    const checkBox = document.getElementById("filter_" + status_type);
+    if(checkBox) {
+        checkBox.checked = filterState;
+    }
+    return filterState;
+}
+
+$('document').ready(function(){
+if(sessionStorage) {
+    var filter_status = {};
+    filter_status["successful"] = restoreFilterState("successful");
+    filter_status["unstable"] = restoreFilterState("unstable", filter_status);
+    filter_status["failed"] = restoreFilterState("failed", filter_status);
+    filter_status["skip"] = restoreFilterState("skip", filter_status);
+    filter_status["broken"] = restoreFilterState("broken", filter_status);
+    filter_status["unknown"] = restoreFilterState("unknown", filter_status);
+
+    const rows = document.getElementsByClassName("filtered-row");
+    Array.prototype.forEach.call(rows, function(item){
+        const row_status_type = item.getElementsByClassName("filter-status")[0].textContent.trim();
+        const checked = filter_status[row_status_type]
+        if (checked) {
+            item.style.display = "table-row";
+        }
+        else {
+            item.style.display = "none";
+        }
+    });
+}
+});
+
 $("input[name='filter_status']").change(function () {
     var status_type = this.value;
     var checked = this.checked;
-    $('table > tbody > tr > td > span').each(function(index, elem) {
-        if (elem.textContent.trim() != status_type){
+
+    const rows = document.getElementsByClassName("filtered-row");
+    Array.prototype.forEach.call(rows, function(item){
+        const row_status_type = item.getElementsByClassName("filter-status")[0].textContent.trim();
+        if (row_status_type != status_type){
             return;
         }
         if (checked) {
-            elem.parentElement.parentElement.style.display = "table-row";
+            item.style.display = "table-row";
         }
         else {
-            elem.parentElement.parentElement.style.display = "none";
+            item.style.display = "none";
         }
     });
+    if(sessionStorage) {
+        sessionStorage.setItem("filter-{{filter_context}}-" + status_type, checked);
+    }
 });
 </script>

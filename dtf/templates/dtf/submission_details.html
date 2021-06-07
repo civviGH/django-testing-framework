@@ -27,7 +27,7 @@
 </div>
 
 <div class="pt-3 pb-1">
-    {% include 'dtf/filter-box.html' with show_broken=True %}
+    {% include 'dtf/filter-box.html' with show_broken=True filter_context=submission%}
     <div class="float-right content-sidebar-dependent">
         <button class="btn btn-outline-dark btn-sm" onclick="toggleContentSidebar()"><i class="bi bi-chevron-double-left"></i></button>
     </div>
@@ -49,8 +49,8 @@
     </thead>
     <tbody>
     {% for test in submission.tests.all %}
-    <tr class="test">
-        <td class="status">
+    <tr class="filtered-row test">
+        <td class="filter-status status">
             <a href="{% url 'test_result_details' submission.project.slug test.pk %}">{{ test.status|status_badge }}</a>
         </td>
         <td class="name">
