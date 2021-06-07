@@ -46,7 +46,7 @@
         {% endblock %}
 
         <div class="layout-page {% block layout %}{% endblock %}">
-            {% block sidebar %}
+            {% block navigation-sidebar %}
             {% endblock %}
 
             <div class="content-wrapper">
@@ -55,6 +55,8 @@
                         {% block content %}{% endblock %}
                     </main>
                 </div>
+                {% block content-sidebar %}
+                {% endblock %}
             </div>
         </div>
     </body>

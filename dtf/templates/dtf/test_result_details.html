@@ -1,11 +1,15 @@
-{% extends 'dtf/page_with_sidebar.html' %}
+{% extends 'dtf/page_with_two_sidebars.html' %}
 
 {% load dtf.custom_filters %}
 
 {% block containertype %}fluid{% endblock %}
 
-{% block sidebarcontent %}
+{% block navigation-sidebar-content %}
     {% include "dtf/project_sidebar.html" with active_page='submissions' project=test_result.submission.project %}
+{% endblock %}
+
+{% block content-sidebar-content %}
+    {% include "dtf/submission_sidebar.html" with submission=test_result.submission %}
 {% endblock %}
 
 {% block content %}
@@ -118,7 +122,7 @@ function toggleAllBoxes(){
     </li>
     <li class="breadcrumb-item" aria-current="page">
         <a href="{% url 'submission_details' test_result.submission.project.slug test_result.submission.pk %}">
-        {{test_result.submission.id}} | {{test_result.submission.created}}
+        {{test_result.submission.id}}
         </a>
     </li>
     <li class="breadcrumb-item active" aria-current="page">

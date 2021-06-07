@@ -1,9 +1,13 @@
-{% extends 'dtf/page_with_sidebar.html' %}
+{% extends 'dtf/page_with_two_sidebars.html' %}
 
 {% load dtf.custom_filters %}
 
-{% block sidebarcontent %}
+{% block navigation-sidebar-content %}
     {% include "dtf/project_sidebar.html" with active_page='submissions' project=submission.project %}
+{% endblock %}
+
+{% block content-sidebar-content %}
+    {% include "dtf/submission_sidebar.html" with submission=submission %}
 {% endblock %}
 
 {% block content %}
@@ -17,7 +21,7 @@
             <li class="breadcrumb-item" aria-current="page">
                 <a href="{% url 'project_submissions' submission.project.slug %}">Submissions</a>
             </li>
-            <li class="breadcrumb-item active" aria-current="page">{{submission.id}} | {{submission.created}}</li>
+            <li class="breadcrumb-item active" aria-current="page">{{submission.id}}</li>
         </ol>
     </nav>
 </div>

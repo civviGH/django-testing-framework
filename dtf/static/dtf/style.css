@@ -183,14 +183,24 @@ table.ndarray-value {
 .sidebar {
     transition: width 0.3s, left 0.3s;
     position: fixed;
-    z-index: 600;
-    width: 220px;
     top: 40px;
     bottom: 0;
-    left: 0;
     background-color: #fafafa;
-    box-shadow: inset -1px 0 0 #dbdbdb;
     transform: translate3d(0, 0, 0);
+}
+
+.navigation-sidebar {
+    width: 220px;
+    left: 0;
+    z-index: 600;
+    box-shadow: inset -1px 0 0 #dbdbdb;
+}
+
+.content-sidebar {
+    width: 240px;
+    right: 0;
+    z-index: 200;
+    border-left: 1px solid #dbdbdb;
 }
 
 .sidebar a {
@@ -236,7 +246,6 @@ table.ndarray-value {
 .sidebar-header {
     position: relative;
     margin-right: 2px;
-    width: 220px;
 }
 
 .sidebar-header a,
@@ -257,9 +266,13 @@ table.ndarray-value {
 /*
  * Content
  */
-.page-with-contextual-sidebar {
+.page-with-navigation-sidebar {
     padding-left: 220px;
     transition: padding-left 0.3s;
+}
+
+.page-with-content-sidebar .content-wrapper {
+    padding-right: 240px;
 }
 
 .content-wrapper {
