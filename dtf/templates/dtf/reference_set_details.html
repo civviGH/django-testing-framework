@@ -1,9 +1,13 @@
-{% extends 'dtf/page_with_sidebar.html' %}
+{% extends 'dtf/page_with_two_sidebars.html' %}
 
 {% load dtf.custom_filters %}
 
 {% block navigation-sidebar-content %}
     {% include "dtf/project_sidebar.html" with active_page='references' project=reference_set.project %}
+{% endblock %}
+
+{% block content-sidebar-content %}
+    {% include "dtf/reference_set_sidebar.html" with reference_set=reference_set %}
 {% endblock %}
 
 {% block content %}
