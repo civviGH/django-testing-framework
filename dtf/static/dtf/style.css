@@ -217,16 +217,13 @@ td.date a {
     width: 0px;
 }
 
-.sidebar a {
-    text-decoration: none;
-}
-
 .sidebar ul {
     padding-left: 0;
     list-style: none;
 }
 
-.sidebar li {
+.sidebar li,
+.sidebar a.toggle-sidebar-button {
     white-space: nowrap;
     overflow: hidden;
 }
@@ -236,15 +233,17 @@ td.date a {
     margin-right: 8px;
 }
 
-.sidebar a {
-    transition: padding 0.3s;
+.sidebar li a,
+.sidebar a.toggle-sidebar-button {
+    text-decoration: none;
     display: flex;
     align-items: center;
     padding: 12px 16px;
     color: #666;
     min-height: 48px;
 }
-.sidebar a:hover {
+.sidebar li a:hover,
+.sidebar a.toggle-sidebar-button:hover {
     color: #000000;
     background: rgba(0,0,0,0.04);
 }
@@ -275,6 +274,7 @@ td.date a {
     background-color: transparent;
     border: 0;
     text-align: left;
+    min-height: 48px;
 }
 
 .sidebar .toggle-sidebar-button {
