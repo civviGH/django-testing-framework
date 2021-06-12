@@ -243,7 +243,8 @@ td.date a {
     min-height: 48px;
 }
 .sidebar li a:hover,
-.sidebar a.toggle-sidebar-button:hover {
+.sidebar a.toggle-sidebar-button:hover,
+.sidebar-header a:hover {
     color: #000000;
     background: rgba(0,0,0,0.04);
 }
@@ -264,6 +265,7 @@ td.date a {
 
 .sidebar-header a,
 .sidebar-header button {
+    text-decoration: none;
     transition: padding 0.3s;
     font-weight: 600;
     display: flex;
