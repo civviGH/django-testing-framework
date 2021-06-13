@@ -352,3 +352,9 @@ td.date a {
 .notransition {
     transition: none;
 }
+
+.dtf-btn-xs {
+    padding: .15rem .3rem;
+    font-size: .7rem;
+    border-radius: .2rem;
+}
