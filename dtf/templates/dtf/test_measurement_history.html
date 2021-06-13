@@ -1,0 +1,277 @@
+{% extends 'dtf/page_with_two_sidebars.html' %}
+
+{% load dtf.custom_filters %}
+
+{% block containertype %}fluid{% endblock %}
+
+{% block navigation-sidebar-content %}
+    {% include "dtf/project_sidebar.html" with active_page='submissions' project=test_result.submission.project %}
+{% endblock %}
+
+{% block content-sidebar-content %}
+    {% include "dtf/submission_sidebar.html" with submission=test_result.submission %}
+{% endblock %}
+
+{% block content %}
+
+<div class="pt-3 pb-3 border-bottom">
+<nav>
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item" aria-current="page">
+        <a href="{% url 'project_details' test_result.submission.project.slug %}">{{ test_result.submission.project.name }}</a>
+    </li>
+    <li class="breadcrumb-item" aria-current="page">
+        <a href="{% url 'project_submissions' test_result.submission.project.slug %}">Submissions</a>
+    </li>
+    <li class="breadcrumb-item" aria-current="page">
+        <a href="{% url 'submission_details' test_result.submission.project.slug test_result.submission.pk %}">
+        {{test_result.submission.id}}
+        </a>
+    </li>
+    <li class="breadcrumb-item" aria-current="page">
+        <a href="{% url 'test_result_details' test_result.submission.project.slug test_result.pk %}">
+        {{ test_result.name }}
+        </a>
+    </li>
+    <li class="breadcrumb-item active" aria-current="page">
+        History
+    </li>
+  </ol>
+</nav>
+</div>
+
+<div id="histrory_chart" class="mt-3" style="height:500px;"></div>
+
+<script type="text/javascript">
+    const iso8601DurationRegex = /^(?<sign>[-+]?)P(?:(?<days>\d+(\.\d+)?)D)?(?:T(?:(?<hours>\d+(\.\d+)?)H)?(?:(?<minutes>\d+(\.\d+)?)M)?(?:(?<seconds>\d+(\.\d+)?)S)?)?$/u
+
+    parseISO8601Duration = function (iso8601DurationStr) {
+        var matches = iso8601DurationRegex.exec(iso8601DurationStr);
+
+        return {
+            sign: matches.groups.sign === undefined ? '+' : matches.groups.sign,
+            days: matches.groups.days === undefined ? 0 : matches.groups.days,
+            hours: matches.groups.hours === undefined ? 0 : matches.groups.hours,
+            minutes: matches.groups.minutes === undefined ? 0 : matches.groups.minutes,
+            seconds: matches.groups.seconds === undefined ? 0 : matches.groups.seconds
+        };
+    };
+    totalSeconds = function (duration) {
+        return (duration.sign === '-' ? -1 : 1) *
+            (duration.days*24*60*60 +
+            duration.hours*60*60 +
+            duration.minutes*60 + 
+            duration.seconds);
+    };
+    statusToBadgeClass = {
+        successful: "text-success border-success",
+        unstable:   "text-warning border-warning",
+        failed:     "text-danger border-danger",
+        broken:     "text-danger border-danger",
+        unknown:    "text-secondary border-secondary",
+        skip:       "text-info border-info"
+    }
+    statusToIconClass = {
+        successful: "bi-check-circle-fill",
+        unstable:   "bi-exclamation-circle-fill",
+        failed:     "bi-x-circle-fill",
+        broken:     "bi-dash-circle-fill",
+        unknown:    "bi-question-circle-fill",
+        skip:       "bi-slash-circle-fill"
+    }
+
+    extractValue = function (value) {
+        if (value == null){
+            return null;
+        }
+        if (value.type === 'duration'){
+            const duration = parseISO8601Duration(value.data);
+            return totalSeconds(duration);
+        }
+        else if (value.type === 'integer'){
+            return value.data;
+        }
+        else if (value.type === 'float'){
+            return value.data;
+        }
+        return null;
+    };
+
+    var historyChart = echarts.init(document.getElementById('histrory_chart'));
+
+    // show title. legend and empty axis
+    historyChart.setOption({
+        title: {
+            text: 'Measurement History'
+        },
+        tooltip: {
+            trigger: 'axis',
+            formatter: function(params, ticket, callback) {
+                if (params.Length === 0) {
+                    return '';
+                }
+                result = $("<div>")
+                    .attr('class', '')
+                    .append($('<div>')
+                        .attr('class', 'mb-1')
+                        .text(params[0].data[0])
+                    )
+                    .append($('<div>')
+                        .attr('class', 'd-flex mb-1')
+                        .append($('<span>')
+                            .attr('class', 'mr-1')
+                            .text('Test ID')
+                        )
+                        .append($('<span>')
+                            .attr('class', 'ml-auto')
+                            .append($('<b>')
+                                .text(params[0].data[1])
+                            )
+                        )
+                    )
+                    .append($('<div>')
+                        .attr('class', 'd-flex mb-1')
+                        .append($('<span>')
+                            .attr('class', 'mr-1')
+                            .text('Status')
+                        )
+                        .append($('<span>')
+                            .attr('class', 'ml-auto badge border ' + statusToBadgeClass[params[0].data[2]])
+                            .append($('<i>')
+                                .attr('class', 'bi ' + statusToIconClass[params[0].data[2]])
+                            )
+                            .append(" " + params[0].data[2])
+                        )
+                    )
+                params.forEach(function (entry) {
+                    result.append($('<div>')
+                            .attr('class', 'd-flex mb-1')
+                            .append($('<div>')
+                                .attr('class', 'mr-1')
+                                .attr('style', `justify-content: center; align-items: center;`)
+                                .append($('<span>')
+                                    .attr('style', `background: ${entry.color}; width: 10px; height: 10px; border-radius: 50%; display: inline-block;`)
+                                )
+                            )
+                            .append($('<span>')
+                                .attr('class', 'mr-3')
+                                .text(entry.seriesName)
+                            )
+                            .append($('<span>')
+                                .attr('class', 'ml-auto')
+                                .append($('<b>')
+                                    .text(entry.data[entry.encode.y[0]])
+                                )
+                            )
+                        )
+                });
+                {% comment %} var result = `${params[0].data[0]}</br>`;
+                result += `Test ID: <b>${params[0].data[1]}</b></br>`;
+                params.forEach(function (entry) {
+                    result += `${entry.seriesName}: <b>${entry.data[entry.encode.y[0]]}</b></br>`;
+                }); {% endcomment %}
+                return result.html();
+            }
+        },
+        dataset: {
+            source: [
+                ['date', 'test_id', 'status', 'value', 'reference']
+            ]
+        },
+        legend: {},
+        xAxis: {
+            type: 'time',
+            name: 'date'
+        },
+        yAxis: {
+            type: 'value',
+            name: 'value',
+            min: function (value) {
+                return value.min - (value.max - value.min) * 0.1;
+            },
+            max: function (value) {
+                return value.max + (value.max - value.min) * 0.1;
+            },
+        },
+        dataZoom: [
+            {
+                id: 'dataZoomX',
+                type: 'slider',
+                xAxisIndex: [0],
+                filterMode: 'filter'
+            }
+        ],
+        series: [{
+            name: '{{ measurement_name }} - value',
+            type: 'line',
+            encode: {
+                x: 'date',
+                y: 'value'
+            },
+        },
+        {
+            name: '{{ measurement_name }} - reference',
+            type: 'line',
+            encode: {
+                x: 'date',
+                y: 'reference'
+            }
+        }]
+    });
+
+    const globalReference = {{ measurement_global_reference | to_js_dict }};
+    if(globalReference) {
+        historyChart.setOption({
+            series: [
+            {},
+            {},
+            {
+                name: 'Global reference',
+                type: 'line',
+                data: [],
+                markLine: {
+                    data: [
+                        {
+                            name: 'Global reference',
+                            yAxis: extractValue(globalReference)
+                        }
+                    ]
+                }
+            }]
+        });
+    }
+
+    const limit = {{ limit|default_if_none:"null" }};
+
+    historyChart.showLoading();
+    $.ajax({
+        beforeSend: function (xhr, settings) {
+            xhr.setRequestHeader("X-CSRFToken", "{{ csrf_token }}");
+        },
+        type: 'GET',
+        url: '{% url 'api_project_submission_test_measurement_history' test_result.submission.project.slug test_result.submission.pk test_result.pk %}?measurement_name={{ measurement_name }}' + (limit ? `&limit=${limit}` : ""),
+        success: function (data) {
+            source = [
+                ['date', 'test_id', 'status', 'value', 'reference']
+            ]
+            data.forEach(function (entry) {
+                value = extractValue(entry.value)
+                reference = extractValue(entry.reference)
+                source.push(
+                    [entry.date, entry.test_id, entry.status, value, reference]
+                )
+            })
+            historyChart.setOption({
+                dataset: {
+                    source: source
+                },
+            });
+            historyChart.hideLoading();
+        },
+        error: function () {
+            historyChart.hideLoading();
+            alert("Error!")
+        }
+    })
+</script>
+{% endblock %}
