@@ -1,9 +1,12 @@
 
+import copy
+
 from django.db import IntegrityError
 from django.http import Http404
 from django.shortcuts import get_object_or_404
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import transaction
+from django.utils.dateparse import parse_duration
 
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -248,6 +251,67 @@ class ProjectReferenceSetTestReferenceDetail(generics.RetrieveUpdateDestroyAPIVi
             return Response({}, status=status.HTTP_200_OK)
         except Exception as err:
             return Response(str(err), status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(["GET"])
+def get_test_measurement_history(request, project_id, submission_id, test_id):
+    project = get_project_or_404(project_id)
+    submission = get_object_or_404(Submission, pk=submission_id)
+    test_result = get_object_or_404(TestResult, pk=test_id)
+
+    if test_result.submission != submission:
+        return Response(str("The test does not belong to this submission"), status=status.HTTP_400_BAD_REQUEST)
+    if submission.project != project:
+        return Response(str("The test does not belong to this project"), status=status.HTTP_400_BAD_REQUEST)
+
+    measurement_name = request.query_params.get("measurement_name")
+
+    limit = request.query_params.get("limit")
+    try:
+        if limit:
+            limit = int(limit)
+    except:
+        limit = None
+
+    info_query = {}
+    submission_info_query = {}
+    for prop in project.properties.all():
+        if prop.influence_reference:
+            prop_value = submission.info.get(prop.name)
+            if not prop_value is None:
+                info_query['info__' + prop.name] = prop_value
+                submission_info_query['submission__info__' + prop.name] = prop_value
+
+    # submissions = project.submissions.filter(**queries).order_by("-created")
+
+    historic_tests = TestResult.objects.filter(
+        name=test_result.name,
+        submission__project__id=project.id,
+        **submission_info_query
+    ).order_by("-created")
+
+    if limit:
+        historic_tests = historic_tests[:limit]
+    else:
+        historic_tests = historic_tests.all()
+
+    data = []
+    # for submission in submissions.all():
+    #     test = submission.tests.get(name=test_result.name)
+    #     if not test: continue
+    for test in historic_tests:
+        entry = {
+            'test_id' : test.id,
+            'date' : test.created
+        }
+        for measurement in test.results:
+            if measurement['name'] == measurement_name:
+                entry['value'] = copy.deepcopy(measurement['value'])
+                entry['reference'] = copy.deepcopy(measurement['reference'])
+                entry['status'] = copy.deepcopy(measurement['status'])
+                break
+        data.append(entry)
+
+    return Response(data, status.HTTP_200_OK)
 
 #
 # DEBUGGING
