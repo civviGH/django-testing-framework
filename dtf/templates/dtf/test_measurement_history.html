@@ -136,11 +136,11 @@
                             .text('Status')
                         )
                         .append($('<span>')
-                            .attr('class', 'ml-auto badge border ' + statusToBadgeClass[params[0].data[2]])
+                            .attr('class', 'ml-auto badge border ' + statusToBadgeClass[params[0].data[3]])
                             .append($('<i>')
-                                .attr('class', 'bi ' + statusToIconClass[params[0].data[2]])
+                                .attr('class', 'bi ' + statusToIconClass[params[0].data[3]])
                             )
-                            .append(" " + params[0].data[2])
+                            .append(" " + params[0].data[3])
                         )
                     )
                 params.forEach(function (entry) {
@@ -175,7 +175,7 @@
         },
         dataset: {
             source: [
-                ['date', 'test_id', 'status', 'value', 'reference']
+                ['date', 'value_source', 'reference_source', 'status', 'value', 'reference']
             ]
         },
         legend: {},
@@ -252,13 +252,13 @@
         url: '{% url 'api_project_submission_test_measurement_history' test_result.submission.project.slug test_result.submission.pk test_result.pk %}?measurement_name={{ measurement_name }}' + (limit ? `&limit=${limit}` : ""),
         success: function (data) {
             source = [
-                ['date', 'test_id', 'status', 'value', 'reference']
+                ['date', 'value_source', 'reference_source', 'status', 'value', 'reference']
             ]
             data.forEach(function (entry) {
                 value = extractValue(entry.value)
                 reference = extractValue(entry.reference)
                 source.push(
-                    [entry.date, entry.test_id, entry.status, value, reference]
+                    [entry.date, entry.value_source, entry.reference_source, entry.status, value, reference]
                 )
             })
             historyChart.setOption({

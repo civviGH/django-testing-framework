@@ -315,7 +315,7 @@ def get_test_measurement_history(request, project_id, submission_id, test_id):
     #     if not test: continue
     for test in historic_tests:
         entry = {
-            'test_id' : test.id,
+            'value_source' : test.id,
             'date' : test.created
         }
         for measurement in test.results:
@@ -323,6 +323,7 @@ def get_test_measurement_history(request, project_id, submission_id, test_id):
                 entry['value'] = copy.deepcopy(measurement['value'])
                 entry['reference'] = copy.deepcopy(measurement['reference'])
                 entry['status'] = copy.deepcopy(measurement['status'])
+                entry['reference_source'] = measurement.get('reference_source')
                 break
         data.append(entry)
 
