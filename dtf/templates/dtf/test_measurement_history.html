@@ -228,6 +228,77 @@
         });
     }
 
+    historyChart.on('click', 'series.line', function(params) {
+        console.log(params);
+
+        value_source = params.data[1];
+        if(value_source) {
+            $('#test-id').text(value_source);
+
+            $.ajax({
+                beforeSend: function (xhr, settings) {
+                    xhr.setRequestHeader("X-CSRFToken", "{{ csrf_token }}");
+                },
+                type: 'GET',
+                url: `/api/projects/{{ test_result.submission.project.id }}/tests/${value_source}`,
+                success: function (data) {
+                    $('#test-id').attr('href', data['url']);
+                    $('#test-created').text(data['created']);
+                    {% comment %} $('#test-status').text(data['status']); {% endcomment %}
+                    $('#test-status').empty()
+                        .append($('<span>')
+                            .attr('class', 'ml-auto badge border ' + statusToBadgeClass[data['status']])
+                            .append($('<i>')
+                                .attr('class', 'bi ' + statusToIconClass[data['status']])
+                            )
+                            .append(" " + data['status'])
+                        )
+                    const measurement = data['results'].find(element => element.name == '{{ measurement_name }}');
+                    $('#test-value').text(measurement['value']['data']);
+                },
+                error: function (jqXHR, textStatus, errorThrown) {
+                    alert(`Error: ${jqXHR.status} - ${jqXHR.statusText}`)
+                }
+            });
+        }
+        else {
+            {% comment %} $('#p-test-none').show(); {% endcomment %}
+            $('#test-id').text('N/A');
+            $('#test-created').text('N/A');
+            $('#test-status').text('N/A');
+            $('#test-value').text('N/A');
+        }
+
+        reference_source = params.data[2];
+        if(reference_source) {
+            $('#reference-id').text(reference_source);
+
+            {% comment %} $('#p-reference-none').hide(); {% endcomment %}
+            $.ajax({
+                beforeSend: function (xhr, settings) {
+                    xhr.setRequestHeader("X-CSRFToken", "{{ csrf_token }}");
+                },
+                type: 'GET',
+                url: `/api/projects/{{ test_result.submission.project.id }}/tests/${reference_source}`,
+                success: function (data) {
+                    $('#reference-id').attr('href', data['url']);
+                    $('#reference-created').text(data['created']);
+                    const measurement = data['results'].find(element => element.name == '{{ measurement_name }}');
+                    $('#reference-value').text(measurement['value']['data']);
+                },
+                error: function (jqXHR, textStatus, errorThrown) {
+                    alert(`Error: ${jqXHR.status} - ${jqXHR.statusText}`)
+                }
+            });
+        }
+        else {
+            {% comment %} $('#p-reference-none').show(); {% endcomment %}
+            $('#reference-id').text('N/A');
+            $('#reference-created').text('N/A');
+            $('#reference-value').text('N/A');
+        }
+    });
+
     const limit = {{ limit|default_if_none:"null" }};
 
     historyChart.showLoading();
