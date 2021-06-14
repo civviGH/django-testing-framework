@@ -50,10 +50,10 @@
 
         return {
             sign: matches.groups.sign === undefined ? '+' : matches.groups.sign,
-            days: matches.groups.days === undefined ? 0 : matches.groups.days,
-            hours: matches.groups.hours === undefined ? 0 : matches.groups.hours,
-            minutes: matches.groups.minutes === undefined ? 0 : matches.groups.minutes,
-            seconds: matches.groups.seconds === undefined ? 0 : matches.groups.seconds
+            days: matches.groups.days === undefined ? 0 : parseFloat(matches.groups.days),
+            hours: matches.groups.hours === undefined ? 0 : parseFloat(matches.groups.hours),
+            minutes: matches.groups.minutes === undefined ? 0 : parseFloat(matches.groups.minutes),
+            seconds: matches.groups.seconds === undefined ? 0 : parseFloat(matches.groups.seconds)
         };
     };
     totalSeconds = function (duration) {
