@@ -3,6 +3,7 @@ from django.core.paginator import Paginator
 from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponseRedirect, JsonResponse, HttpResponse, Http404
 from django.urls import reverse
+from django.conf import settings
 
 from rest_framework import status
 
@@ -252,6 +253,7 @@ def view_test_measurement_history(request, project_slug, test_id):
 
     return render(request, 'dtf/test_measurement_history.html', {
         'test_result' : test_result,
+        'display_timezone' : settings.DTF_DEFAULT_DISPLAY_TIME_ZONE,
         'measurement_name' : measurement_name,
         'limit' : limit,
         'measurement_global_reference' : measurement_global_reference

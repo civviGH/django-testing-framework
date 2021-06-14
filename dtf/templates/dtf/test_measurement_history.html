@@ -110,11 +110,12 @@
                 if (params.Length === 0) {
                     return '';
                 }
+                const date = new Date(params[0].data[0]);
                 result = $("<div>")
                     .attr('class', '')
                     .append($('<div>')
                         .attr('class', 'mb-1')
-                        .text(params[0].data[0])
+                        .text(date.toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'medium', timeZone: '{{ display_timezone }}' }))
                     )
                     .append($('<div>')
                         .attr('class', 'd-flex mb-1')
@@ -243,7 +244,8 @@
                 url: `/api/projects/{{ test_result.submission.project.id }}/tests/${value_source}`,
                 success: function (data) {
                     $('#test-id').attr('href', data['url']);
-                    $('#test-created').text(data['created']);
+                    const date = new Date(data['created']);
+                    $('#test-created').text(date.toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'medium', timeZone: '{{ display_timezone }}' }));
                     {% comment %} $('#test-status').text(data['status']); {% endcomment %}
                     $('#test-status').empty()
                         .append($('<span>')
@@ -282,7 +284,8 @@
                 url: `/api/projects/{{ test_result.submission.project.id }}/tests/${reference_source}`,
                 success: function (data) {
                     $('#reference-id').attr('href', data['url']);
-                    $('#reference-created').text(data['created']);
+                    const date = new Date(data['created']);
+                    $('#reference-created').text(date.toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'medium', timeZone: '{{ display_timezone }}' }));
                     const measurement = data['results'].find(element => element.name == '{{ measurement_name }}');
                     $('#reference-value').text(measurement['value']['data']);
                 },
