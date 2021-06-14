@@ -1,0 +1,66 @@
+
+{% extends 'dtf/content_sidebar.html' %}
+
+{% load dtf.custom_filters %}
+
+{% block content-sidebar-inner-content %}
+<div>
+    <div class="pt-2 sidebar-header">
+        <h4>Properties</h4>
+    </div>
+    <hr class="mt-2 mb-2">
+    <div>
+        {% for property in submission.project.properties.all %}
+            {% if property.display and property.influence_reference %}
+                <p class="mb-1"><span><b>{{ property.name }}:</b> {{ property|submission_property:submission }}</span></p>
+            {% endif %}
+        {% endfor %}
+    </div>
+</div>
+<div>
+    <div class="pt-2 sidebar-header">
+        <h4>Test</h4>
+    </div>
+    <hr class="mt-2 mb-2">
+    <div>
+        {% comment %} <p class="mb-1" id="p-test-none"><span><b>None</b></span></p> {% endcomment %}
+        <p class="mb-1" id="p-test-id">
+            <b>ID:</b>
+            <a class="ml-1"id="test-id">N/A</a>
+        </p>
+        <p class="mb-1" id="p-test-created">
+            <b>Created:</b>
+            <span class="ml-1" id="test-created">N/A</span>
+        </p>
+        <p class="mb-1" id="p-test-status">
+            <b>Status:</b>
+            <span class="ml-1" id="test-status">N/A</span>
+        </p>
+        <p class="mb-1" id="p-test-value">
+            <b>Value:</b>
+            <span class="ml-1" id="test-value">N/A</span>
+        </p>
+    </div>
+</div>
+<div>
+    <div class="pt-2 sidebar-header">
+        <h4>Reference</h4>
+    </div>
+    <hr class="mt-2 mb-2">
+    <div>
+        {% comment %} <p class="mb-1" id="p-reference-none"><span><b>None</b></span></p> {% endcomment %}
+        <p class="mb-1" id="p-reference-id">
+            <b>ID:</b>
+            <a class="ml-1" id="reference-id">N/A</a>
+        </p>
+        <p class="mb-1" id="p-reference-created">
+            <b>Created:</b>
+            <span class="ml-1" id="reference-created">N/A</span>
+        </p>
+        <p class="mb-1" id="p-reference-value">
+            <b>Value:</b>
+            <span class="ml-1" id="reference-value">N/A</span>
+        </p>
+    </div>
+</div>
+{% endblock %}
