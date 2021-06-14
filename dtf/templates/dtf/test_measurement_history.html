@@ -312,13 +312,14 @@
             source = [
                 ['date', 'value_source', 'reference_source', 'status', 'value', 'reference']
             ]
-            data.forEach(function (entry) {
+            for (let index = data.length - 1; index >= 0; index--) {
+                const entry = data[index];
                 value = extractValue(entry.value)
                 reference = extractValue(entry.reference)
                 source.push(
                     [entry.date, entry.value_source, entry.reference_source, entry.status, value, reference]
                 )
-            })
+            }
             historyChart.setOption({
                 dataset: {
                     source: source
