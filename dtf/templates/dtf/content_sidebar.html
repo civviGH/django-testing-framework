@@ -1,0 +1,52 @@
+
+<div class="pl-3 pr-3">
+    {% block content-sidebar-inner-content %}
+    {% endblock %}
+</div>
+
+<a class="toggle-sidebar-button border-top" type="button" onclick="toggleContentSidebar()">
+    <i class="item-icon bi bi-chevron-double-right"></i>
+    <span class="item-name">Collapse</span>
+</a>
+
+<script>
+function toggleContentSidebar(){
+    const sidebar = document.getElementById("content-sidebar");
+    const pages = document.getElementsByClassName("page-with-content-sidebar");
+    const content = document.getElementsByClassName("content-sidebar-dependent");
+
+    sidebar.classList.remove('notransition');
+    sidebar.classList.toggle('collapsed')
+    Array.prototype.forEach.call(pages, function(item){
+        item.classList.remove('notransition');
+        item.classList.toggle('content-collapsed')
+    });
+    Array.prototype.forEach.call(content, function(item){
+        item.classList.toggle('content-collapsed')
+    });
+
+    if (localStorage) {
+        const isCollapsed = sidebar.classList.contains('collapsed');
+        localStorage.setItem("content-sidebar-collapsed", isCollapsed);
+    }
+}
+
+if (localStorage) {
+    const isCollapsed = localStorage.getItem("content-sidebar-collapsed", "false") === 'true';
+    if (isCollapsed) {
+        const sidebar = document.getElementById("content-sidebar");
+        const pages = document.getElementsByClassName("page-with-content-sidebar");
+        const content = document.getElementsByClassName("content-sidebar-dependent");
+
+        sidebar.classList.add('notransition');
+        sidebar.classList.toggle('collapsed');
+        Array.prototype.forEach.call(pages, function(item){
+            item.classList.add('notransition');
+            item.classList.toggle('content-collapsed');
+        });
+        Array.prototype.forEach.call(content, function(item){
+            item.classList.toggle('content-collapsed')
+        });
+    }
+}
+</script>
