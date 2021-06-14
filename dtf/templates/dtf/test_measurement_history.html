@@ -255,9 +255,9 @@
             });
             historyChart.hideLoading();
         },
-        error: function () {
+        error: function (jqXHR, textStatus, errorThrown) {
             historyChart.hideLoading();
-            alert("Error!")
+            alert(`Error: ${jqXHR.status} - ${jqXHR.statusText}`)
         }
     })
 </script>
