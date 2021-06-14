@@ -307,7 +307,7 @@
             xhr.setRequestHeader("X-CSRFToken", "{{ csrf_token }}");
         },
         type: 'GET',
-        url: '{% url 'api_project_submission_test_measurement_history' test_result.submission.project.slug test_result.submission.pk test_result.pk %}?measurement_name={{ measurement_name }}' + (limit ? `&limit=${limit}` : ""),
+        url: '{% url 'api_project_submission_test_measurement_history' test_result.submission.project.slug test_result.submission.pk test_result.pk %}?measurement_name={{ measurement_name|urlencode:"" }}' + (limit ? `&limit=${limit}` : ""),
         success: function (data) {
             source = [
                 ['date', 'value_source', 'reference_source', 'status', 'value', 'reference']
