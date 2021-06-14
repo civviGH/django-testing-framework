@@ -235,6 +235,11 @@
         value_source = params.data[1];
         if(value_source) {
             $('#test-id').text(value_source);
+            $('#test-id').removeAttr('href');
+
+            $('#test-created').empty().addClass("spinner-border spinner-border-sm text-secondary");
+            $('#test-status').empty().addClass("spinner-border spinner-border-sm text-secondary");
+            $('#test-value').empty().addClass("spinner-border spinner-border-sm text-secondary");
 
             $.ajax({
                 beforeSend: function (xhr, settings) {
@@ -244,9 +249,13 @@
                 url: `/api/projects/{{ test_result.submission.project.id }}/tests/${value_source}`,
                 success: function (data) {
                     $('#test-id').attr('href', data['url']);
+
+                    $('#test-created').removeClass("spinner-border spinner-border-sm text-secondary");
+                    $('#test-status').removeClass("spinner-border spinner-border-sm text-secondary");
+                    $('#test-value').removeClass("spinner-border spinner-border-sm text-secondary");
+
                     const date = new Date(data['created']);
                     $('#test-created').text(date.toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'medium', timeZone: '{{ display_timezone }}' }));
-                    {% comment %} $('#test-status').text(data['status']); {% endcomment %}
                     $('#test-status').empty()
                         .append($('<span>')
                             .attr('class', 'ml-auto badge border ' + statusToBadgeClass[data['status']])
@@ -259,13 +268,21 @@
                     $('#test-value').text(measurement['value']['data']);
                 },
                 error: function (jqXHR, textStatus, errorThrown) {
+                    $('#test-created').removeClass("spinner-border spinner-border-sm text-secondary");
+                    $('#test-status').removeClass("spinner-border spinner-border-sm text-secondary");
+                    $('#test-value').removeClass("spinner-border spinner-border-sm text-secondary");
+
+                    $('#test-created').text('N/A');
+                    $('#test-status').text('N/A');
+                    $('#test-value').text('N/A');
+
                     alert(`Error: ${jqXHR.status} - ${jqXHR.statusText}`)
                 }
             });
         }
         else {
-            {% comment %} $('#p-test-none').show(); {% endcomment %}
             $('#test-id').text('N/A');
+            $('#test-id').removeAttr('href');
             $('#test-created').text('N/A');
             $('#test-status').text('N/A');
             $('#test-value').text('N/A');
@@ -274,8 +291,11 @@
         reference_source = params.data[2];
         if(reference_source) {
             $('#reference-id').text(reference_source);
+            $('#reference-id').removeAttr('href');
 
-            {% comment %} $('#p-reference-none').hide(); {% endcomment %}
+            $('#reference-created').empty().addClass("spinner-border spinner-border-sm text-secondary");
+            $('#reference-value').empty().addClass("spinner-border spinner-border-sm text-secondary");
+
             $.ajax({
                 beforeSend: function (xhr, settings) {
                     xhr.setRequestHeader("X-CSRFToken", "{{ csrf_token }}");
@@ -284,19 +304,29 @@
                 url: `/api/projects/{{ test_result.submission.project.id }}/tests/${reference_source}`,
                 success: function (data) {
                     $('#reference-id').attr('href', data['url']);
+
+                    $('#reference-created').removeClass("spinner-border spinner-border-sm text-secondary");
+                    $('#reference-value').removeClass("spinner-border spinner-border-sm text-secondary");
+
                     const date = new Date(data['created']);
                     $('#reference-created').text(date.toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'medium', timeZone: '{{ display_timezone }}' }));
                     const measurement = data['results'].find(element => element.name == '{{ measurement_name }}');
                     $('#reference-value').text(measurement['value']['data']);
                 },
                 error: function (jqXHR, textStatus, errorThrown) {
+                    $('#reference-created').removeClass("spinner-border spinner-border-sm text-secondary");
+                    $('#reference-value').removeClass("spinner-border spinner-border-sm text-secondary");
+
+                    $('#reference-created').text('N/A');
+                    $('#reference-value').text('N/A');
+
                     alert(`Error: ${jqXHR.status} - ${jqXHR.statusText}`)
                 }
             });
         }
         else {
-            {% comment %} $('#p-reference-none').show(); {% endcomment %}
             $('#reference-id').text('N/A');
+            $('#reference-id').removeAttr('href');
             $('#reference-created').text('N/A');
             $('#reference-value').text('N/A');
         }
