@@ -1,0 +1,27 @@
+[
+    {
+        "value_source": 2,
+        "date": "2021-04-06T08:10:24.818000Z",
+        "value": {
+            "data": "PT0.094780S",
+            "type": "duration"
+        },
+        "reference": {
+            "data": "PT0.124356S",
+            "type": "duration"
+        },
+        "status": "successful",
+        "reference_source": 1
+    },
+    {
+        "value_source": 1,
+        "date": "2021-04-06T08:02:57.249000Z",
+        "value": {
+            "data": "PT0.124356S",
+            "type": "duration"
+        },
+        "reference": null,
+        "status": "unknown",
+        "reference_source": null
+    }
+]
