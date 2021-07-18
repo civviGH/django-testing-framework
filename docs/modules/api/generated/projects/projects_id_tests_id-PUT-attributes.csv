@@ -1,0 +1,6 @@
+Attribute|Type|Required|Description
+``:project_id``|string/integer|yes|The id or slug of the project.
+``:test_id``|integer|yes|The id of the test results to modify.
+``name``|string|yes|The new name of the test.
+``status``|string|yes|Status of the test. Allowed values are 'skip', 'successful', 'unstable', 'unknown', 'failed', or 'broken'.
+``results``|json|yes|Test results. TODO: add JSON schema

@@ -1,0 +1,1 @@
+PUT /projects/:project_id/tests/:test_id

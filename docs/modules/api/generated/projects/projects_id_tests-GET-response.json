@@ -1,0 +1,178 @@
+[
+    {
+        "name": "demo (np=1)",
+        "id": 2,
+        "results": [
+            {
+                "name": "runtime",
+                "value": {
+                    "data": "PT0.094780S",
+                    "type": "duration"
+                },
+                "reference": {
+                    "data": "PT0.124356S",
+                    "type": "duration"
+                },
+                "reference_source": 1,
+                "status": "successful"
+            },
+            {
+                "name": "residual[0]",
+                "value": {
+                    "data": 2.345,
+                    "type": "float"
+                },
+                "reference": {
+                    "data": 2.345,
+                    "type": "float"
+                },
+                "reference_source": 1,
+                "status": "successful"
+            },
+            {
+                "name": "integer[0]",
+                "value": {
+                    "data": 103,
+                    "type": "integer"
+                },
+                "reference": {
+                    "data": 98,
+                    "type": "integer"
+                },
+                "reference_source": 1,
+                "status": "failed"
+            },
+            {
+                "name": "algorithm-time[0]",
+                "value": {
+                    "data": "PT0.345000S",
+                    "type": "duration"
+                },
+                "reference": {
+                    "data": "PT0.345000S",
+                    "type": "duration"
+                },
+                "reference_source": 1,
+                "status": "successful"
+            },
+            {
+                "name": "argument[0]",
+                "value": {
+                    "data": "process argument 1",
+                    "type": "string"
+                },
+                "reference": {
+                    "data": "process argument 1",
+                    "type": "string"
+                },
+                "reference_source": 1,
+                "status": "successful"
+            },
+            {
+                "name": "argument[1]",
+                "value": {
+                    "data": "process argument 2",
+                    "type": "string"
+                },
+                "reference": {
+                    "data": "process argument 2",
+                    "type": "string"
+                },
+                "reference_source": 1,
+                "status": "successful"
+            },
+            {
+                "name": "screenshot-image.png",
+                "value": {
+                    "data": "iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAIAAAD91JpzAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsEAAA7BAbiRa+0AAAODaVRYdFhNTDpjb20uYWRvYmUueG1wAAAAAAA8P3hwYWNrZXQgYmVnaW49Iu+7vyIgaWQ9Ilc1TTBNcENlaGlIenJlU3pOVGN6a2M5ZCI/Pg0KPHg6eG1wbWV0YSB4bWxuczp4PSJhZG9iZTpuczptZXRhLyIgeDp4bXB0az0iQWRvYmUgWE1QIENvcmUgNS4zLWMwMTEgNjYuMTQ1NjYxLCAyMDEyLzAyLzA2LTE0OjU2OjI3ICAgICAgICAiPg0KICA8cmRmOlJERiB4bWxuczpyZGY9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkvMDIvMjItcmRmLXN5bnRheC1ucyMiPg0KICAgIDxyZGY6RGVzY3JpcHRpb24gcmRmOmFib3V0PSIiIHhtbG5zOnhtcE1NPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvbW0vIiB4bWxuczpzdFJlZj0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wL3NUeXBlL1Jlc291cmNlUmVmIyIgeG1sbnM6eG1wPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvIiB4bXBNTTpPcmlnaW5hbERvY3VtZW50SUQ9InhtcC5kaWQ6NjI3NTk3QzkxNTIwNjgxMTk3QTVENkZCNTAzMEMyMUMiIHhtcE1NOkRvY3VtZW50SUQ9InhtcC5kaWQ6QUE0Q0YyRTc0RTlGMTFFMzhFQkFEREEzMjM4MTA0NDIiIHhtcE1NOkluc3RhbmNlSUQ9InhtcC5paWQ6QUE0Q0YyRTY0RTlGMTFFMzhFQkFEREEzMjM4MTA0NDIiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENTNiAoTWFjaW50b3NoKSI+DQogICAgICA8eG1wTU06RGVyaXZlZEZyb20gc3RSZWY6aW5zdGFuY2VJRD0ieG1wLmlpZDowNTgwMTE3NDA3MjA2ODExODIyQUE3NDk3QjdFNzQyMSIgc3RSZWY6ZG9jdW1lbnRJRD0ieG1wLmRpZDo2Mjc1OTdDOTE1MjA2ODExOTdBNUQ2RkI1MDMwQzIxQyIgLz4NCiAgICA8L3JkZjpEZXNjcmlwdGlvbj4NCiAgPC9yZGY6UkRGPg0KPC94OnhtcG1ldGE+DQo8P3hwYWNrZXQgZW5kPSJyIj8+VtnJzwAAABZJREFUGFdj/M/A8M3iP6OxyH+u13EAKIYFyOIlKZYAAAAASUVORK5CYII=",
+                    "type": "image"
+                },
+                "reference": {
+                    "data": "iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAIAAAD91JpzAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsEAAA7BAbiRa+0AAAODaVRYdFhNTDpjb20uYWRvYmUueG1wAAAAAAA8P3hwYWNrZXQgYmVnaW49Iu+7vyIgaWQ9Ilc1TTBNcENlaGlIenJlU3pOVGN6a2M5ZCI/Pg0KPHg6eG1wbWV0YSB4bWxuczp4PSJhZG9iZTpuczptZXRhLyIgeDp4bXB0az0iQWRvYmUgWE1QIENvcmUgNS4zLWMwMTEgNjYuMTQ1NjYxLCAyMDEyLzAyLzA2LTE0OjU2OjI3ICAgICAgICAiPg0KICA8cmRmOlJERiB4bWxuczpyZGY9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkvMDIvMjItcmRmLXN5bnRheC1ucyMiPg0KICAgIDxyZGY6RGVzY3JpcHRpb24gcmRmOmFib3V0PSIiIHhtbG5zOnhtcE1NPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvbW0vIiB4bWxuczpzdFJlZj0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wL3NUeXBlL1Jlc291cmNlUmVmIyIgeG1sbnM6eG1wPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvIiB4bXBNTTpPcmlnaW5hbERvY3VtZW50SUQ9InhtcC5kaWQ6NjI3NTk3QzkxNTIwNjgxMTk3QTVENkZCNTAzMEMyMUMiIHhtcE1NOkRvY3VtZW50SUQ9InhtcC5kaWQ6QUE0Q0YyRTc0RTlGMTFFMzhFQkFEREEzMjM4MTA0NDIiIHhtcE1NOkluc3RhbmNlSUQ9InhtcC5paWQ6QUE0Q0YyRTY0RTlGMTFFMzhFQkFEREEzMjM4MTA0NDIiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENTNiAoTWFjaW50b3NoKSI+DQogICAgICA8eG1wTU06RGVyaXZlZEZyb20gc3RSZWY6aW5zdGFuY2VJRD0ieG1wLmlpZDowNTgwMTE3NDA3MjA2ODExODIyQUE3NDk3QjdFNzQyMSIgc3RSZWY6ZG9jdW1lbnRJRD0ieG1wLmRpZDo2Mjc1OTdDOTE1MjA2ODExOTdBNUQ2RkI1MDMwQzIxQyIgLz4NCiAgICA8L3JkZjpEZXNjcmlwdGlvbj4NCiAgPC9yZGY6UkRGPg0KPC94OnhtcG1ldGE+DQo8P3hwYWNrZXQgZW5kPSJyIj8+VtnJzwAAABZJREFUGFdj/M/A8M3iP6OxyH+u13EAKIYFyOIlKZYAAAAASUVORK5CYII=",
+                    "type": "image"
+                },
+                "reference_source": 1,
+                "status": "successful"
+            }
+        ],
+        "created": "2021-04-06T10:10:24.818000+02:00",
+        "last_updated": "2021-04-06T10:10:24.818000+02:00",
+        "submission": 2,
+        "url": "http://dtf.example.com/demo/tests/2",
+        "status": "failed"
+    },
+    {
+        "name": "demo (np=1)",
+        "id": 1,
+        "results": [
+            {
+                "name": "runtime",
+                "value": {
+                    "data": "PT0.124356S",
+                    "type": "duration"
+                },
+                "status": "unknown",
+                "reference": null
+            },
+            {
+                "name": "residual[0]",
+                "value": {
+                    "data": 2.345,
+                    "type": "float"
+                },
+                "status": "unknown",
+                "reference": null
+            },
+            {
+                "name": "integer[0]",
+                "value": {
+                    "data": 98,
+                    "type": "integer"
+                },
+                "status": "unknown",
+                "reference": null
+            },
+            {
+                "name": "algorithm-time[0]",
+                "value": {
+                    "data": "PT0.345000S",
+                    "type": "duration"
+                },
+                "status": "unknown",
+                "reference": null
+            },
+            {
+                "name": "argument[0]",
+                "value": {
+                    "data": "process argument 1",
+                    "type": "string"
+                },
+                "status": "unknown",
+                "reference": null
+            },
+            {
+                "name": "argument[1]",
+                "value": {
+                    "data": "process argument 2",
+                    "type": "string"
+                },
+                "status": "unknown",
+                "reference": null
+            },
+            {
+                "name": "screenshot-image.png",
+                "value": {
+                    "data": "iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAIAAAD91JpzAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsEAAA7BAbiRa+0AAAODaVRYdFhNTDpjb20uYWRvYmUueG1wAAAAAAA8P3hwYWNrZXQgYmVnaW49Iu+7vyIgaWQ9Ilc1TTBNcENlaGlIenJlU3pOVGN6a2M5ZCI/Pg0KPHg6eG1wbWV0YSB4bWxuczp4PSJhZG9iZTpuczptZXRhLyIgeDp4bXB0az0iQWRvYmUgWE1QIENvcmUgNS4zLWMwMTEgNjYuMTQ1NjYxLCAyMDEyLzAyLzA2LTE0OjU2OjI3ICAgICAgICAiPg0KICA8cmRmOlJERiB4bWxuczpyZGY9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkvMDIvMjItcmRmLXN5bnRheC1ucyMiPg0KICAgIDxyZGY6RGVzY3JpcHRpb24gcmRmOmFib3V0PSIiIHhtbG5zOnhtcE1NPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvbW0vIiB4bWxuczpzdFJlZj0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wL3NUeXBlL1Jlc291cmNlUmVmIyIgeG1sbnM6eG1wPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvIiB4bXBNTTpPcmlnaW5hbERvY3VtZW50SUQ9InhtcC5kaWQ6NjI3NTk3QzkxNTIwNjgxMTk3QTVENkZCNTAzMEMyMUMiIHhtcE1NOkRvY3VtZW50SUQ9InhtcC5kaWQ6QUE0Q0YyRTc0RTlGMTFFMzhFQkFEREEzMjM4MTA0NDIiIHhtcE1NOkluc3RhbmNlSUQ9InhtcC5paWQ6QUE0Q0YyRTY0RTlGMTFFMzhFQkFEREEzMjM4MTA0NDIiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENTNiAoTWFjaW50b3NoKSI+DQogICAgICA8eG1wTU06RGVyaXZlZEZyb20gc3RSZWY6aW5zdGFuY2VJRD0ieG1wLmlpZDowNTgwMTE3NDA3MjA2ODExODIyQUE3NDk3QjdFNzQyMSIgc3RSZWY6ZG9jdW1lbnRJRD0ieG1wLmRpZDo2Mjc1OTdDOTE1MjA2ODExOTdBNUQ2RkI1MDMwQzIxQyIgLz4NCiAgICA8L3JkZjpEZXNjcmlwdGlvbj4NCiAgPC9yZGY6UkRGPg0KPC94OnhtcG1ldGE+DQo8P3hwYWNrZXQgZW5kPSJyIj8+VtnJzwAAABZJREFUGFdj/M/A8M3iP6OxyH+u13EAKIYFyOIlKZYAAAAASUVORK5CYII=",
+                    "type": "image"
+                },
+                "status": "unknown",
+                "reference": null
+            }
+        ],
+        "created": "2021-04-06T10:02:57.249000+02:00",
+        "last_updated": "2021-04-06T10:02:57.249000+02:00",
+        "submission": 1,
+        "url": "http://dtf.example.com/demo/tests/1",
+        "status": "unknown"
+    }
+]
