@@ -92,3 +92,30 @@ An example could look as follows:
 
 .. literalinclude :: generated/projects/projects_id_tests_id-DELETE-curl.sh
    :language: bash
+
+
+.. _api-test_results-history:
+
+History of a test result measurement
+------------------------------------
+
+Retrieves the history of a measurement for a given test.
+The history is extracted for the all test results of that project that belong to a submission
+which has the same *reference relevant properties* as the submission the current test belongs to.
+
+.. literalinclude :: generated/projects/projects_id_submissions_id_tests_id_history-GET-desc.txt
+
+.. csv-table::
+   :header-rows: 1
+   :file: generated/projects/projects_id_submissions_id_tests_id_history-GET-attributes.csv
+   :delim: |
+
+An example could look as follows:
+
+.. literalinclude :: generated/projects/projects_id_submissions_id_tests_id_history-GET-limited-curl.sh
+   :language: bash
+
+which might give a result like this:
+
+.. literalinclude :: generated/projects/projects_id_submissions_id_tests_id_history-GET-unlimited-response.json
+    :language: json
