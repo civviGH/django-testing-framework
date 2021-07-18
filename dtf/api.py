@@ -145,6 +145,21 @@ class ProjectSubmissionDetail(generics.RetrieveUpdateDestroyAPIView):
         project = get_project_or_404(self.kwargs['project_id'])
         return project.submissions.all()
 
+class ProjectTestResultList(generics.ListAPIView):
+    serializer_class = TestResultSerializer
+
+    def get_queryset(self):
+        project = get_project_or_404(self.kwargs['project_id'])
+        return TestResult.objects.filter(submission__project__id=project.id).all().order_by('-pk')
+
+class ProjectTestResultDetail(generics.RetrieveUpdateDestroyAPIView):
+    serializer_class = TestResultSerializer
+    lookup_url_kwarg = 'test_id'
+
+    def get_queryset(self):
+        project = get_project_or_404(self.kwargs['project_id'])
+        return TestResult.objects.filter(submission__project__id=project.id).all()
+
 #
 # Project Submission Test API endpoints
 #

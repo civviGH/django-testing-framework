@@ -37,6 +37,9 @@ urlpatterns = [
 
     path('api/projects/<str:project_id>/webhooks/<str:webhook_id>/logs', api.ProjectWebhookLogList.as_view(), name='api_project_webhook_logs'),
 
+    path('api/projects/<str:project_id>/tests', api.ProjectTestResultList.as_view(), name='api_project_tests'),
+    path('api/projects/<str:project_id>/tests/<str:test_id>', api.ProjectTestResultDetail.as_view(), name='api_project_test'),
+
     path('api/projects/<str:project_id>/submissions', api.ProjectSubmissionList.as_view(), name='api_project_submissions'),
     path('api/projects/<str:project_id>/submissions/<str:submission_id>', api.ProjectSubmissionDetail.as_view(), name='api_project_submission'),
 
