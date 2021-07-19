@@ -43,6 +43,3 @@ By default, the server is only available locally and starts on port 8000. You ca
     python manage.py runserver 0.0.0.0:80
 
 The server is then reachable for all hosts on the network under the default HTTP port 80.
-
-Using the API
--------------
