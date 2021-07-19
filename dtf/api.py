@@ -57,8 +57,10 @@ class UserDetail(generics.RetrieveAPIView):
 # Project API endpoints
 #
 class ProjectList(generics.ListCreateAPIView):
-    queryset = Project.objects.order_by('-pk')
     serializer_class = ProjectSerializer
+
+    def get_queryset(self):
+        return self.request.user.projects.order_by('-pk')
 
 class ProjectDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = Project.objects.all()
