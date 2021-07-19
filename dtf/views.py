@@ -4,6 +4,7 @@ from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponseRedirect, JsonResponse, HttpResponse, Http404
 from django.urls import reverse, reverse_lazy
 from django.contrib.auth.views import LoginView, LogoutView, PasswordResetView, PasswordResetDoneView, PasswordResetConfirmView, PasswordResetCompleteView
+from django.contrib.auth.decorators import login_required
 from django.conf import settings
 
 from rest_framework import status
@@ -71,6 +72,7 @@ def view_projects(request):
     projects = Project.objects.order_by('-name')
     return render(request, 'dtf/view_projects.html', {'projects':projects})
 
+@login_required
 def view_new_project(request):
     if request.method == 'POST':
         form = NewProjectForm(request.POST)
@@ -83,6 +85,7 @@ def view_new_project(request):
         'form': form}
     )
 
+@login_required
 def view_project_settings(request, project_slug):
     project = get_object_or_404(Project, slug=project_slug)
     properties = project.properties.all()
@@ -154,6 +157,7 @@ def view_project_settings(request, project_slug):
     })
 
 
+@login_required
 def view_webhook_log(request, project_slug, webhook_id):
     project = get_object_or_404(Project, slug=project_slug)
     webhook = project.webhooks.get(id=webhook_id)
@@ -161,6 +165,7 @@ def view_webhook_log(request, project_slug, webhook_id):
         'webhook': webhook,
     })
 
+@login_required
 def view_project_submissions(request, project_slug):
     project = get_object_or_404(Project, slug=project_slug)
     properties = ProjectSubmissionProperty.objects.filter(project=project)
@@ -176,6 +181,7 @@ def view_project_submissions(request, project_slug):
         'submissions':submissions
     })
 
+@login_required
 def view_test_result_details(request, project_slug, test_id):
     project = get_object_or_404(Project, slug=project_slug)
     test_result = get_object_or_404(TestResult, pk=test_id)
@@ -220,6 +226,7 @@ def view_test_result_details(request, project_slug, test_id):
         # 'nav_data':nav_data
     })
 
+@login_required
 def view_submission_details(request, project_slug, submission_id):
     project = get_object_or_404(Project, slug=project_slug)
     submission = get_object_or_404(Submission, pk=submission_id)
@@ -229,6 +236,7 @@ def view_submission_details(request, project_slug, submission_id):
         'submission':submission
     })
 
+@login_required
 def view_project_reference_sets(request, project_slug):
     project = get_object_or_404(Project, slug=project_slug)
     properties = ProjectSubmissionProperty.objects.filter(project=project)
@@ -244,6 +252,7 @@ def view_project_reference_sets(request, project_slug):
         'reference_sets':reference_sets
     })
 
+@login_required
 def view_reference_set_details(request, project_slug, reference_id):
     project = get_object_or_404(Project, slug=project_slug)
     reference_set = get_object_or_404(ReferenceSet, pk=reference_id)
@@ -253,6 +262,7 @@ def view_reference_set_details(request, project_slug, reference_id):
         'reference_set': reference_set
     })
 
+@login_required
 def view_test_reference_details(request, project_slug, test_id):
     project = get_object_or_404(Project, slug=project_slug)
     test_reference = get_object_or_404(TestReference, pk=test_id)
@@ -264,6 +274,7 @@ def view_test_reference_details(request, project_slug, test_id):
         'test_reference': test_reference
     })
 
+@login_required
 def view_test_measurement_history(request, project_slug, test_id):
     project = get_object_or_404(Project, slug=project_slug)
     test_result = get_object_or_404(TestResult, pk=test_id)
