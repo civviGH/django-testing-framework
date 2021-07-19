@@ -120,6 +120,9 @@ function submitForm(url, id_prefix, scope, action, csrf_token, successCallback) 
         obj[item.name] = item.value;
         return obj;
     }, {});
+    $(':disabled[name]', form).each(function () {
+        data[this.name] = $(this).val();
+    });
     data['scope'] = scope
     data['action'] = action
 
