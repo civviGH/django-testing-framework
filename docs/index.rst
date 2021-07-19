@@ -13,14 +13,6 @@ Welcome to the Django Testing Framework documentation
    modules/quickstart
    modules/api
 
-.. toctree::
-   :maxdepth: 3
-   :caption: Code docstrings
-
-   modules/models
-   modules/views
-   modules/serializer
-
 
 Indices and tables
 ==================
