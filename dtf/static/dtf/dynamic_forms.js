@@ -16,11 +16,17 @@ function fillForm(form_id, data) {
     $(form_id).find('input,select').each(function () {
         let field = $(this)
         if (this.name in data) {
+            const value = data[this.name];
             if (this.type == 'checkbox') {
-                field.prop('checked', data[this.name]);
+                field.prop('checked', value);
             }
             else {
-                field.val(data[this.name]);
+                if((typeof value === 'object') && ('id' in value) && field.attr('id').startsWith('id_')) {
+                    field.val(value['id']);
+                }
+                else {
+                    field.val(value);
+                }
             }
         }
     })
