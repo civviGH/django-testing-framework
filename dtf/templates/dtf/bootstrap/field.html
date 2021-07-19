@@ -20,7 +20,7 @@
     {{ field|add_bootstrap_class}}
   {% endif %}
 
-  {% if field.widget_type == 'text' %}
+  {% if field.widget_type == 'text' or field.widget_type == 'password' %}
     {% if field.help_text %}
       <small class="form-text text-muted">{{ field.help_text }}</small>
     {% endif %}

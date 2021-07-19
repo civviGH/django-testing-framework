@@ -159,6 +159,8 @@ def add_bootstrap_class(field, add_class=""):
         "checkbox" : "form-check-input",
         "url" : "form-control",
         "textarea" : "form-control",
+        "password" : "form-control",
+        "email" : "form-control",
     }
 
     current_class = field.field.widget.attrs.get('class', None)

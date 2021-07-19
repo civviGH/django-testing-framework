@@ -77,8 +77,8 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'dtf.wsgi.application'
 
-
-
+LOGIN_URL = '/users/sign_in'
+LOGIN_REDIRECT_URL = '/'
 
 # Password validation
 # https://docs.djangoproject.com/en/3.0/ref/settings/#auth-password-validators

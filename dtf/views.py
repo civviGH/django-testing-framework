@@ -2,7 +2,8 @@
 from django.core.paginator import Paginator
 from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponseRedirect, JsonResponse, HttpResponse, Http404
-from django.urls import reverse
+from django.urls import reverse, reverse_lazy
+from django.contrib.auth.views import LoginView, LogoutView, PasswordResetView, PasswordResetDoneView, PasswordResetConfirmView, PasswordResetCompleteView
 from django.conf import settings
 
 from rest_framework import status
@@ -13,15 +14,58 @@ from dtf.serializers import WebhookSerializer
 
 from dtf.models import TestResult, Project, ReferenceSet, TestReference, Submission, ProjectSubmissionProperty, Webhook
 from dtf.functions import create_view_data_from_test_references, create_reference_query
-from dtf.forms import NewProjectForm, ProjectSettingsForm, ProjectSubmissionPropertyForm, WebhookForm
+from dtf.forms import NewProjectForm, ProjectSettingsForm, ProjectSubmissionPropertyForm, WebhookForm, NewUserForm, LoginForm, ResetPasswordForm, PasswordSetForm
 
 #
 # User views
 #
 
-def frontpage(request):
-    results = TestResult.objects.order_by('-created')[:5]
-    return render(request, 'dtf/index.html', {'data':results})
+def view_sign_up(request):
+    if request.method == 'POST':
+        form = NewUserForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return HttpResponseRedirect(reverse('projects'))
+    else:
+        form = NewUserForm()
+    return render(request, 'dtf/users/sign_up.html', {
+        'form': form}
+    )
+
+class SignInView(LoginView):
+    form_class = LoginForm
+    template_name = 'dtf/users/sign_in.html'
+
+    def form_valid(self, form):
+        remember_me = form.cleaned_data['remember_me']
+        if not remember_me:
+             self.request.session.set_expiry(0)
+             self.request.session.modified = True
+        return super().form_valid(form)
+
+class SignOutView(LogoutView):
+    template_name = 'dtf/users/sign_out.html'
+
+class ResetPasswordView(PasswordResetView):
+    form_class = ResetPasswordForm
+    template_name = 'dtf/users/reset_password.html'
+    email_template_name = 'dtf/users/reset_password_email.html'
+    success_url = reverse_lazy('reset_password_done')
+
+class ResetPasswordDoneView(PasswordResetDoneView):
+    template_name = 'dtf/users/reset_password_done.html'
+
+class ResetPasswordConfirmView(PasswordResetConfirmView):
+    form_class = PasswordSetForm
+    template_name = 'dtf/users/reset_password_confirm.html'
+    success_url = reverse_lazy('reset_password_complete')
+
+class ResetPasswordCompleteView(PasswordResetCompleteView):
+    template_name = 'dtf/users/reset_password_complete.html'
+
+#
+# Project views
+#
 
 def view_projects(request):
     projects = Project.objects.order_by('-name')

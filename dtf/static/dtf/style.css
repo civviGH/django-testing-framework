@@ -178,10 +178,34 @@ td.date a {
     color: #ffffff;
 }
 
-.navbar-collapse {
-    flex: 0 0 auto;
-    border-top: 0;
-    padding: 0;
+.nav {
+    flex-wrap: nowrap;
+}
+
+.navbar-nav {
+    display: flex;
+    flex-direction: row;
+    padding-left: 0;
+    margin-bottom: 0;
+    list-style: none;
+}
+
+.nav li {
+    margin: 0 2px;
+}
+
+.nav li a,
+.nav li span,
+.nav li button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 8px;
+    margin: 4px 2px;
+    font-size: 12px;
+    border-radius: 4px;
+    height: 32px;
+    font-weight: 600;
 }
 
 /*
