@@ -1,0 +1,40 @@
+{
+    "endpoint": "/projects/:project_id/members/:member_id",
+    "method": "PUT",
+    "attributes" : {
+        ":project_id" : {
+            "type": "string/integer",
+            "required": true,
+            "description": "The id or slug of the project."
+        },
+        ":member_id" : {
+            "type": "integer",
+            "required": true,
+            "description": "The id of the membership to modify."
+        },
+        "user" : {
+            "type": "integer",
+            "required": true,
+            "description": "The new user associated with this membership."
+        },
+        "role" : {
+            "type": "string",
+            "required": false,
+            "default": "guest",
+            "description": "The new role of the user in the project. Can be 'guest', 'developer' or 'owner'."
+        }
+    },
+    "examples" : [
+        {
+            "arguments" : {
+                "project_id" : 1,
+                "member_id": 1
+            },
+            "data": {
+                "project" : 1,
+                "user" : 2,
+                "role" : "developer"
+            }
+        }
+    ]
+}

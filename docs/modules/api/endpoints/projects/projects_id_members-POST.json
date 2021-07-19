@@ -1,0 +1,34 @@
+
+{
+    "endpoint": "/projects/:project_id/members",
+    "method": "POST",
+    "attributes" : {
+        ":project_id" : {
+            "type": "string/integer",
+            "required": true,
+            "description": "The id or slug of the project to add the new member to."
+        },
+        "user" : {
+            "type": "integer",
+            "required": true,
+            "description": "The user to add as a member to the project."
+        },
+        "role" : {
+            "type": "string",
+            "required": false,
+            "default": "guest",
+            "description": "The role of the user to be added. Can be 'guest', 'developer' or 'owner'."
+        }
+    },
+    "examples" : [
+        {
+            "arguments" : {
+                "project_id" : 1
+            },
+            "data": {
+                "user" : 1,
+                "role" : "developer"
+            }
+        }
+    ]
+}
