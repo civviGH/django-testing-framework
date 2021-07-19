@@ -10,12 +10,13 @@ from django.conf import settings
 from rest_framework import status
 
 from dtf.serializers import ProjectSerializer
+from dtf.serializers import MembershipSerializer
 from dtf.serializers import ProjectSubmissionPropertySerializer
 from dtf.serializers import WebhookSerializer
 
-from dtf.models import TestResult, Project, ReferenceSet, TestReference, Submission, ProjectSubmissionProperty, Webhook
+from dtf.models import TestResult, Membership, Project, ReferenceSet, TestReference, Submission, ProjectSubmissionProperty, Webhook
 from dtf.functions import create_view_data_from_test_references, create_reference_query
-from dtf.forms import NewProjectForm, ProjectSettingsForm, ProjectSubmissionPropertyForm, WebhookForm, NewUserForm, LoginForm, ResetPasswordForm, PasswordSetForm
+from dtf.forms import NewProjectForm, ProjectSettingsForm, ProjectSubmissionPropertyForm, MembershipForm, WebhookForm, NewUserForm, LoginForm, ResetPasswordForm, PasswordSetForm
 
 #
 # User views
@@ -84,6 +85,37 @@ def view_new_project(request):
     return render(request, 'dtf/new_project.html', {
         'form': form}
     )
+
+@login_required
+def view_project_members(request, project_slug):
+    project = get_object_or_404(Project, slug=project_slug)
+
+    if request.method == 'POST':
+        if request.POST.get('action') == 'add':
+            member_form = MembershipForm(request.POST, initial={'project': project,})
+        elif request.POST.get('action') == 'edit':
+            try:
+                membership = Membership.objects.get(pk=request.POST.get('id', None))
+            except Membership.DoesNotExist:
+                return HttpResponse(status=status.HTTP_404_NOT_FOUND)
+            member_form = MembershipForm(request.POST, initial={'project': project, 'user': membership.user}, instance=membership)
+        else:
+            return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
+
+        if member_form.is_valid():
+            member_form.save()
+            serializer = MembershipSerializer(member_form.instance)
+            return JsonResponse({'result' : 'valid', 'member' : serializer.data})
+        else:
+            errors = member_form.errors.get_json_data()
+            return JsonResponse({'result' : 'invalid', 'errors' : errors})
+
+    # Not any valid POST request: return the site
+    member_form = MembershipForm(initial={'project': project})
+    return render(request, 'dtf/project_members.html', {
+        'project': project,
+        'member_form': member_form,
+    })
 
 @login_required
 def view_project_settings(request, project_slug):

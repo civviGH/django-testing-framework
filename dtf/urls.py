@@ -26,6 +26,7 @@ urlpatterns = [
     path('users/password/reset_complete', views.ResetPasswordCompleteView.as_view(), name='reset_password_complete'),
 
     path('<str:project_slug>', RedirectView.as_view(pattern_name='project_submissions', permanent=False), name='project_details'),
+    path('<str:project_slug>/members', views.view_project_members, name='project_members'),
     path('<str:project_slug>/settings', views.view_project_settings, name='project_settings'),
     path('<str:project_slug>/webhook/<int:webhook_id>/log', views.view_webhook_log, name='webhook_log'),
     path('<str:project_slug>/submissions', views.view_project_submissions, name='project_submissions'),
