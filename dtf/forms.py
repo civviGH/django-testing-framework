@@ -6,7 +6,7 @@ from django.contrib.auth.forms import AuthenticationForm, PasswordResetForm, Set
 from django.contrib.auth import password_validation
 from django.core.exceptions import ValidationError
 
-from dtf.models import Project, ProjectSubmissionProperty, Webhook
+from dtf.models import Project, Membership, ProjectSubmissionProperty, Webhook
 
 class NewProjectForm(forms.ModelForm):
 
@@ -23,6 +23,17 @@ class ProjectSettingsForm(forms.ModelForm):
     class Meta:
         model = Project
         fields = ['name', 'slug']
+
+
+class MembershipForm(forms.ModelForm):
+    id = forms.IntegerField(widget=forms.HiddenInput(), required=False)
+
+    class Meta:
+        model = Membership
+        fields = ['project', 'user', 'role']
+        widgets = {
+            'project': forms.HiddenInput()
+        }
 
 class ProjectSubmissionPropertyForm(forms.ModelForm):
     id = forms.IntegerField(widget=forms.HiddenInput(), required=False)
