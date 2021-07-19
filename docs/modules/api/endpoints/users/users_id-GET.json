@@ -1,0 +1,18 @@
+{
+    "endpoint": "/users/:id",
+    "method": "GET",
+    "attributes" : {
+        ":id" : {
+            "type": "integer",
+            "required": true,
+            "description": "The id of the user to get."
+        }
+    },
+    "examples" : [
+        {
+            "arguments" : {
+                "id" : 2
+            }
+        }
+    ]
+}
