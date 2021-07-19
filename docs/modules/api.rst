@@ -32,6 +32,8 @@ API Overview
 
 :doc:`References <api/references>`
 
+:doc:`Users <api/users>`
+
 .. toctree::
    :hidden:
 
@@ -39,3 +41,4 @@ API Overview
    api/submissions
    api/test_results
    api/references
+   api/users
