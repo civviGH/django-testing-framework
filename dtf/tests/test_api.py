@@ -20,6 +20,7 @@ from django.test import TestCase, Client
 from django.urls import reverse
 from django.utils.text import slugify
 from django.db import transaction
+from django.contrib.auth.models import User
 
 from dtf.models import Project, TestResult, ReferenceSet, TestReference, Submission, ProjectSubmissionProperty, Webhook
 from dtf.serializers import ProjectSerializer
@@ -33,6 +34,10 @@ from dtf.serializers import WebhookSerializer
 client = Client()
 
 class ApiTestCase(TestCase):
+
+    def setUp(self):
+        self.testuser = User.objects.create_user(username='test')
+        client.force_login(self.testuser)
 
     def post(self, url, payload):
         response = client.post(
@@ -83,6 +88,7 @@ class ApiTestCase(TestCase):
 class ProjectsApiTest(ApiTestCase):
     """ Test module for Project model interaction with API """
     def setUp(self):
+        super().setUp()
         self.invalid_payload = {
             'not_a_name':'no name given'
         }
@@ -141,6 +147,7 @@ class ProjectsApiTest(ApiTestCase):
 
 class ProjectApiTest(ApiTestCase):
     def setUp(self):
+        super().setUp()
         self.project_1_name = "Test Project 1"
         self.project_2_name = "Test/Project#?2"
         self.project_1_slug = "test-project-1"
@@ -198,6 +205,7 @@ class ProjectApiTest(ApiTestCase):
 
 class ProjectSubmissionPropertiesApiTest(ApiTestCase):
     def setUp(self):
+        super().setUp()
         _, data = self.create_project("Test Project", "test-project")
         self.project_id = data['id']
         self.url = reverse('api_project_submission_properties', kwargs={'project_id' : self.project_id})
@@ -242,6 +250,7 @@ class ProjectSubmissionPropertiesApiTest(ApiTestCase):
 
 class ProjectSubmissionPropertyApiTest(ApiTestCase):
     def setUp(self):
+        super().setUp()
         _, data = self.create_project("Test Project", "test-project")
         self.project_id = data['id']
         create_url = reverse('api_project_submission_properties', kwargs={'project_id' : self.project_id})
@@ -295,6 +304,7 @@ class SubmissionsApiTest(ApiTestCase):
     """ Test module for submissions"""
 
     def setUp(self):
+        super().setUp()
         self.project_name = "Submission Project"
         self.project_slug = "submission-project"
         _, data = self.create_project(self.project_name, self.project_slug)
@@ -417,6 +427,7 @@ class SubmissionsApiTest(ApiTestCase):
 
 class SubmissionApiTest(ApiTestCase):
     def setUp(self):
+        super().setUp()
         _, data = self.create_project("Test Project", "test-project")
         self.project_id = data['id']
 
@@ -471,6 +482,7 @@ class TestResultsApiTest(ApiTestCase):
     """ Test module for submitting test results via the API """
 
     def setUp(self):
+        super().setUp()
         _, data = self.create_project("Test Project", "test-project")
         self.project_id = data['id']
         _, data = self.create_submission(project_id=self.project_id)
@@ -659,6 +671,7 @@ class TestResultsApiTest(ApiTestCase):
 
 class TestResultApiTest(ApiTestCase):
     def setUp(self):
+        super().setUp()
         _, data = self.create_project("Test Project", "test-project")
         self.project_id = data['id']
         _, data = self.create_submission(project_id=self.project_id)
@@ -719,6 +732,7 @@ class TestResultApiTest(ApiTestCase):
 
 class TestResultHistoryApiTest(ApiTestCase):
     def setUp(self):
+        super().setUp()
         _, data = self.create_project("Test Project", "test-project")
         self.project_id = data['id']
         property_url = reverse('api_project_submission_properties', kwargs={'project_id' : self.project_id})
@@ -846,6 +860,7 @@ class TestResultHistoryApiTest(ApiTestCase):
 
 class ProjectTestResultsApiTest(ApiTestCase):
     def setUp(self):
+        super().setUp()
         _, data = self.create_project("Test Project", "test-project")
         self.project_id = data['id']
         _, data = self.create_submission(project_id=self.project_id)
@@ -871,6 +886,7 @@ class ProjectTestResultsApiTest(ApiTestCase):
 
 class TestResultApiTest(ApiTestCase):
     def setUp(self):
+        super().setUp()
         _, data = self.create_project("Test Project", "test-project")
         self.project_id = data['id']
         _, data = self.create_submission(project_id=self.project_id)
@@ -932,6 +948,7 @@ class TestResultApiTest(ApiTestCase):
 
 class ReferenceSetsApiTest(ApiTestCase):
     def setUp(self):
+        super().setUp()
         # Create simple project without properties
         _, data = self.create_project("Test Project 1", "test-project-1")
         self.project_1_id = data['id']
@@ -1069,6 +1086,7 @@ class ReferenceSetsApiTest(ApiTestCase):
 
 class ReferenceSetApiTest(ApiTestCase):
     def setUp(self):
+        super().setUp()
         _, data = self.create_project("Test Project", "test-project")
         self.project_id = data['id']
         create_url = reverse('api_project_references', kwargs={'project_id' : self.project_id})
@@ -1138,6 +1156,7 @@ class ReferenceSetApiTest(ApiTestCase):
 
 class TestReferencesApiTest(ApiTestCase):
     def setUp(self):
+        super().setUp()
         _, data = self.create_project("Test Project 1", "test-project-1")
         self.project_id = data['id']
         self.project = Project.objects.get(id=data['id'])
@@ -1280,6 +1299,7 @@ class TestReferencesApiTest(ApiTestCase):
 
 class TestReferenceApiTest(ApiTestCase):
     def setUp(self):
+        super().setUp()
         _, data = self.create_project("Test Project 1", "test-project-1")
         self.project_id = data['id']
         self.project = Project.objects.get(id=data['id'])
@@ -1393,6 +1413,7 @@ class TestReferenceApiTest(ApiTestCase):
 
 class WebhooksApiTest(ApiTestCase):
     def setUp(self):
+        super().setUp()
         _, data = self.create_project("Test Project 1", "test-project-1")
         self.project_1_id = data['id']
         self.project_1 = Project.objects.get(id=self.project_1_id)
@@ -1438,6 +1459,7 @@ class WebhooksApiTest(ApiTestCase):
 
 class WebhookApiTest(ApiTestCase):
     def setUp(self):
+        super().setUp()
         _, data = self.create_project("Test Project 1", "test-project-1")
         self.project_id = data['id']
         create_url = reverse('api_project_webhooks', kwargs={'project_id' : self.project_id})
