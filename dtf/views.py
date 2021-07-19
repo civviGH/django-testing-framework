@@ -100,8 +100,8 @@ def view_project_settings(request, project_slug):
                 serializer = ProjectSerializer(project_form.instance, context={"request": request})
                 return JsonResponse({'result' : 'valid', 'property' : serializer.data})
             else:
-                data = project_form.errors.get_json_data()
-                return JsonResponse({'result' : 'invalid', 'errors' : project_form.errors.get_json_data()})
+                errors = project_form.errors.get_json_data()
+                return JsonResponse({'result' : 'invalid', 'errors' : errors})
 
         if request.POST.get('scope') == 'property':
             if request.POST.get('action') == 'add':
@@ -120,8 +120,8 @@ def view_project_settings(request, project_slug):
                 serializer = ProjectSubmissionPropertySerializer(property_form.instance)
                 return JsonResponse({'result' : 'valid', 'property' : serializer.data})
             else:
-                data = property_form.errors.get_json_data()
-                return JsonResponse({'result' : 'invalid', 'errors' : property_form.errors.get_json_data()})
+                errors = property_form.errors.get_json_data()
+                return JsonResponse({'result' : 'invalid', 'errors' : errors})
 
         if request.POST.get('scope') == 'webhook':
             if request.POST.get('action') == 'add':
@@ -140,8 +140,8 @@ def view_project_settings(request, project_slug):
                 serializer = WebhookSerializer(webhook_form.instance)
                 return JsonResponse({'result' : 'valid', 'webhook' : serializer.data})
             else:
-                data = webhook_form.errors.get_json_data()
-                return JsonResponse({'result' : 'invalid', 'errors' : webhook_form.errors.get_json_data()})
+                errors = webhook_form.errors.get_json_data()
+                return JsonResponse({'result' : 'invalid', 'errors' : errors})
 
     # Not any valid POST request: return the site
     project_form = ProjectSettingsForm(instance=project)
