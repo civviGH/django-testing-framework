@@ -10,6 +10,15 @@
         }
     },
     {
+        "model": "dtf.membership",
+        "pk": 1,
+        "fields": {
+            "user": 2,
+            "project": 1,
+            "role": "owner"
+        }
+    },
+    {
         "model": "dtf.projectsubmissionproperty",
         "pk": 1,
         "fields": {

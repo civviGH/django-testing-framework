@@ -1,0 +1,160 @@
+{% extends 'dtf/page_with_sidebar.html' %}
+
+{% load static %}
+
+{% load dtf.custom_filters %}
+
+{% block navigation-sidebar-content %}
+    {% include "dtf/project_sidebar.html" with active_page='members' %}
+{% endblock %}
+
+{% block content %}
+
+<div class="pt-3 pb-3 border-bottom">
+  <nav>
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item" aria-current="page">
+        <a href="{% url 'project_details' project.slug %}">{{ project.name }}</a>
+      </li>
+      <li class="breadcrumb-item active" aria-current="page">Members</li>
+    </ol>
+  </nav>
+</div>
+
+<div class="mt-3">
+  <section class="mt-2">
+    <h3>Project Members</h3>
+    <p>Add new members to this project:</p>
+    <form id="member_form_id" novalidate>
+      {% csrf_token %}
+
+      <!-- General -->
+
+      {% for hidden_field in member_form.hidden_fields %}
+        {{ hidden_field }}
+      {% endfor %}
+
+      <div class="alert alert-danger" role="alert" hidden>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group col-md">
+          {{ member_form.user.label_tag }}
+          {{ member_form.user|as_dynamic_bootstrap_field }}
+        </div>
+        <div class="form-group col-">
+          {{ member_form.role.label_tag }}
+          {{ member_form.role|as_dynamic_bootstrap_field }}
+        </div>
+      </div>
+
+      <input type="submit" value="Add Member" name="add" class="btn btn-success btn-sm">
+      <input type="submit" value="Save changes" name="edit" class="btn btn-success btn-sm" hidden>
+      <a id="member_edit_cancel" class="btn btn-outline-secondary btn-sm float-right" onclick="cancelEditMember()" hidden>Cancel</a>
+    </form>
+  </section>
+
+  <section class="mt-2">
+    <h4>Current Members</h4>
+
+    <table id="members_table" class="table table-hover table-sm mt-md-3">
+      <thead>
+        <tr>
+          <th scope="col" class="col-auto">Name</th>
+          <th scope="col" class="col-sm-auto">Role</th>
+          <th scope="col" class="col-sm-auto"><span hidden>Controls</span></th>
+        </tr>
+      </thead>
+      <tbody>
+      </tbody>
+    </table>
+  </section>
+
+  <script src="{% static 'dtf/dynamic_forms.js' %}"></script>
+
+  <script>
+    function deleteMember(membership_id) {
+      deleteInstance('/api/projects/{{ project.id }}/members/', membership_id, '#member_', "{{ csrf_token }}")
+    }
+
+    function startEditMember(membership_id) {
+      startEditInstance( '/api/projects/{{ project.id }}/members/', membership_id, '#member_', "{{ csrf_token }}")
+      let form = $('#member_form_id').first();
+      form.find("select[name='user']").attr('disabled', 'disabled');
+    }
+
+    function cancelEditMember() {
+      cancelEditInstance('#member_')
+      let form = $('#member_form_id').first();
+      form.find("select[name='user']").removeAttr("disabled");
+    }
+
+    function addMemberRow(data) {
+        $("#members_table").find('tbody')
+          .append($('<tr>')
+              .attr('id', 'member_' + data['id'])
+              .append($('<td>')
+                  .append($('<span>')
+                      .text(data['user']['username'])
+                  )
+              )
+              .append($('<td>')
+                  .text(data['role'])
+              )
+              .append($('<td>')
+                  .attr('class', 'text-right fit')
+                  .append($('<div>')
+                      .append($('<button>')
+                          .attr('class', 'btn btn-outline-dark btn-sm mr-md-1 ml-md-1')
+                          .attr('onclick', 'startEditMember(' + data['id'] + ')')
+                          .append($('<i>')
+                              .attr('class', 'bi bi-pencil')
+                          )
+                      )
+                      .append($('<button>')
+                          .attr('class', 'btn btn-danger btn-sm mr-md-1 ml-md-1')
+                          .attr('onclick', 'deleteMember(' + data['id'] + ')')
+                          .append($('<i>')
+                              .attr('class', 'bi bi-trash')
+                          )
+                      )
+                  )
+              )
+        );
+    }
+
+    function updateMemberRow(data) {
+      let tableData = $("#member_" + data['id']).find('td')
+      $(tableData[0]).find('span').first().text(data['user']['username'])
+      $(tableData[1]).text(data['role'])
+    }
+
+    $(function () {
+      $("#member_form_id :submit").click(function (ev) {
+          ev.preventDefault()
+          if ($(this).attr("name") == "add") {
+            submitForm('{% url 'project_members' project.slug %}', "#member_", 'member', 'add', "{{ csrf_token }}", function(data){
+              addMemberRow(data);
+              resetForm("#member_form_id");
+            });
+          }
+          if ($(this).attr("name") == "edit") {
+            submitForm('{% url 'project_members' project.slug %}', "#member_", 'member', 'edit', "{{ csrf_token }}", function(data){
+              updateMemberRow(data);
+              cancelEditMember();
+            });
+          }
+      });
+  });
+
+    {% for membership in project.memberships.all %}
+      addMemberRow({'id'   : {{ membership.id }},
+                    'user' : { 'id' : {{ membership.user.id }}, 'username' : '{{ membership.user.username }}' },
+                    'role' : '{{ membership.role }}',
+                    })
+    {% endfor %}
+</script>
+
+</div>
+
+{% endblock %}

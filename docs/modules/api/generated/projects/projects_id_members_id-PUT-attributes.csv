@@ -1,0 +1,5 @@
+Attribute|Type|Required|Description
+``:project_id``|string/integer|yes|The id or slug of the project.
+``:member_id``|integer|yes|The id of the membership to modify.
+``user``|integer|yes|The new user associated with this membership.
+``role``|string|no (default: ``"guest"``)|The new role of the user in the project. Can be 'guest', 'developer' or 'owner'.

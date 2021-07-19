@@ -1,0 +1,3 @@
+Attribute|Type|Required|Description
+``:project_id``|string/integer|yes|The id or slug of the project.
+``:member_id``|integer|yes|The id of the membership to delete.

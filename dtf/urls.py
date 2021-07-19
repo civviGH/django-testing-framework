@@ -26,6 +26,7 @@ urlpatterns = [
     path('users/password/reset_complete', views.ResetPasswordCompleteView.as_view(), name='reset_password_complete'),
 
     path('<str:project_slug>', RedirectView.as_view(pattern_name='project_submissions', permanent=False), name='project_details'),
+    path('<str:project_slug>/members', views.view_project_members, name='project_members'),
     path('<str:project_slug>/settings', views.view_project_settings, name='project_settings'),
     path('<str:project_slug>/webhook/<int:webhook_id>/log', views.view_webhook_log, name='webhook_log'),
     path('<str:project_slug>/submissions', views.view_project_submissions, name='project_submissions'),
@@ -41,6 +42,9 @@ urlpatterns = [
 
     path('api/projects', api.ProjectList.as_view(), name='api_projects'),
     path('api/projects/<str:id>', api.ProjectDetail.as_view(), name='api_project'),
+
+    path('api/projects/<str:project_id>/members', api.ProjectMemberList.as_view(), name='api_project_members'),
+    path('api/projects/<str:project_id>/members/<str:member_id>', api.ProjectMemberDetail.as_view(), name='api_project_member'),
 
     path('api/projects/<str:project_id>/properties', api.ProjectSubmissionPropertyList.as_view(), name='api_project_submission_properties'),
     path('api/projects/<str:project_id>/properties/<str:property_id>', api.ProjectSubmissionPropertyDetail.as_view(), name='api_project_submission_property'),

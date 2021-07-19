@@ -9,7 +9,7 @@ from rest_framework import serializers
 
 from django.contrib.auth.models import User
 
-from dtf.models import Project, TestResult, ReferenceSet, TestReference, Submission, ProjectSubmissionProperty, Webhook, WebhookLogEntry
+from dtf.models import Project, Membership, TestResult, ReferenceSet, TestReference, Submission, ProjectSubmissionProperty, Webhook, WebhookLogEntry
 from dtf.functions import fill_result_default_values
 
 from django.core.exceptions import ObjectDoesNotExist
@@ -37,6 +37,29 @@ class ProjectSerializer(serializers.ModelSerializer):
     def get_url(self, obj):
         url = reverse('project_details', kwargs={'project_slug' : obj.slug})
         return _try_build_absolute_uri(self, url)
+
+class MembershipSerializer(serializers.ModelSerializer):
+    user = UserSerializer()
+
+    class Meta:
+        model = Membership
+        fields = ['id', 'project', 'user', "role"]
+
+    def to_internal_value(self, data):
+        user_data = data.get('user')
+        if isinstance(user_data, dict):
+            user_data = UserSerializer(user_data).data
+            data['user'] = user_data.get('id')
+        self.fields['user'] = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
+        return super().to_internal_value(data)
+
+    def to_representation(self, value):
+        if isinstance(self.fields['user'], serializers.PrimaryKeyRelatedField):
+            self.fields['user'] = UserSerializer()
+        return super().to_representation(value)
+
+    def create(self, validated_data):
+        return Membership.objects.create(**validated_data)
 
 class ProjectSubmissionPropertySerializer(serializers.ModelSerializer):
     class Meta:

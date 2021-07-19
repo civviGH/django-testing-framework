@@ -21,6 +21,12 @@
                 <span class="item-name">References</span>
             </a>
         </li>
+        <li class="{% if active_page == 'members' %}active{% endif %}">
+            <a href="{% url 'project_members' project.slug %}">
+                <span class="item-icon"><i class="bi bi-people"></i></span>
+                <span class="item-name">Members</span>
+            </a>
+        </li>
         <li class="{% if active_page == 'settings' %}active{% endif %}">
             <a href="{% url 'project_settings' project.slug %}">
                 <span class="item-icon"><i class="bi bi-gear"></i></span>

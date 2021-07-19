@@ -1,0 +1,4 @@
+Attribute|Type|Required|Description
+``:project_id``|string/integer|yes|The id or slug of the project to add the new member to.
+``user``|integer|yes|The user to add as a member to the project.
+``role``|string|no (default: ``"guest"``)|The role of the user to be added. Can be 'guest', 'developer' or 'owner'.

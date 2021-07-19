@@ -16,6 +16,7 @@ from rest_framework import generics
 
 from dtf.serializers import UserSerializer
 from dtf.serializers import ProjectSerializer
+from dtf.serializers import MembershipSerializer
 from dtf.serializers import TestResultSerializer
 from dtf.serializers import ReferenceSetSerializer
 from dtf.serializers import TestReferenceSerializer
@@ -24,7 +25,7 @@ from dtf.serializers import ProjectSubmissionPropertySerializer
 from dtf.serializers import WebhookSerializer
 from dtf.serializers import WebhookLogEntrySerializer
 
-from dtf.models import TestResult, Project, ReferenceSet, TestReference, Submission, ProjectSubmissionProperty, Webhook
+from dtf.models import TestResult, Membership, Project, ReferenceSet, TestReference, Submission, ProjectSubmissionProperty, Webhook
 from dtf.functions import get_project_by_id_or_slug, create_reference_query
 
 def get_project_or_404(project_id):
@@ -67,6 +68,27 @@ class ProjectDetail(generics.RetrieveUpdateDestroyAPIView):
     def get_object(self):
         return get_project_or_404(self.kwargs['id'])
 
+#
+# Project Members API endpoints
+#
+class ProjectMemberList(generics.ListCreateAPIView):
+    serializer_class = MembershipSerializer
+
+    def get_queryset(self):
+        project = get_project_or_404(self.kwargs['project_id'])
+        return project.memberships.order_by('-pk')
+
+    def create(self, request, *args, **kwargs):
+        request.data['project'] = get_project_or_404(self.kwargs['project_id']).id
+        return super().create(request, *args, **kwargs)
+
+class ProjectMemberDetail(generics.RetrieveUpdateDestroyAPIView):
+    serializer_class = MembershipSerializer
+    lookup_url_kwarg = 'member_id'
+
+    def get_queryset(self):
+        project = get_project_or_404(self.kwargs['project_id'])
+        return project.memberships.order_by('-pk')
 #
 # Project Submission Properties API endpoints
 #

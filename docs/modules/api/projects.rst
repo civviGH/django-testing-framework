@@ -232,3 +232,119 @@ An example could look as follows:
 
 .. literalinclude :: generated/projects/projects_id_properties_id-DELETE-curl.sh
    :language: bash
+
+List project members
+--------------------
+
+List all members of a given project.
+
+.. literalinclude :: generated/projects/projects_id_members-GET-desc.txt
+
+.. csv-table::
+   :header-rows: 1
+   :file: generated/projects/projects_id_members-GET-attributes.csv
+   :delim: |
+
+An example could look as follows:
+
+.. literalinclude :: generated/projects/projects_id_members-GET-curl.sh
+   :language: bash
+
+which might give a result like this:
+
+.. literalinclude :: generated/projects/projects_id_members-GET-response.json
+   :language: json
+
+.. _api-projects-members-new:
+
+Add new project member
+----------------------
+
+Add a new member to a project.
+
+.. literalinclude :: generated/projects/projects_id_members-POST-desc.txt
+
+.. csv-table::
+   :header-rows: 1
+   :file: generated/projects/projects_id_members-POST-attributes.csv
+   :delim: |
+
+An example could look as follows:
+
+.. literalinclude :: generated/projects/projects_id_members-POST-curl.sh
+   :language: bash
+
+which might give a result like this:
+
+.. literalinclude :: generated/projects/projects_id_members-POST-response.json
+    :language: json
+
+
+.. _api-projects-members-get:
+
+Get single project member
+-------------------------
+
+Retrieve a specific member from a project.
+
+.. literalinclude :: generated/projects/projects_id_members_id-GET-desc.txt
+
+.. csv-table::
+   :header-rows: 1
+   :file: generated/projects/projects_id_members_id-GET-attributes.csv
+   :delim: |
+
+An example could look as follows:
+
+.. literalinclude :: generated/projects/projects_id_members_id-GET-curl.sh
+   :language: bash
+
+which might give a result like this:
+
+.. literalinclude :: generated/projects/projects_id_members_id-GET-response.json
+   :language: json
+
+.. _api-projects-members-modify:
+
+Modify project member
+---------------------
+
+Modify the fields of an existing members. All fields have to be given (even the ones that are unchanged).
+
+.. literalinclude :: generated/projects/projects_id_members_id-PUT-desc.txt
+
+.. csv-table::
+   :header-rows: 1
+   :file: generated/projects/projects_id_members_id-PUT-attributes.csv
+   :delim: |
+
+An example could look as follows:
+
+.. literalinclude :: generated/projects/projects_id_members_id-PUT-curl.sh
+   :language: bash
+
+which might give a result like this:
+
+.. literalinclude :: generated/projects/projects_id_members_id-PUT-response.json
+    :language: json
+
+.. _api-projects-members-delete:
+
+Delete project member
+---------------------
+
+Deletes a member from a project. This can not be undone!
+
+.. literalinclude :: generated/projects/projects_id_members_id-DELETE-desc.txt
+
+.. csv-table::
+   :header-rows: 1
+   :file: generated/projects/projects_id_members_id-DELETE-attributes.csv
+   :delim: |
+
+An example could look as follows:
+
+.. literalinclude :: generated/projects/projects_id_members_id-DELETE-curl.sh
+   :language: bash
+
+.. _api-projects-members-list:

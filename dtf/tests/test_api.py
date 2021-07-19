@@ -22,7 +22,7 @@ from django.utils.text import slugify
 from django.db import transaction
 from django.contrib.auth.models import User
 
-from dtf.models import Project, TestResult, ReferenceSet, TestReference, Submission, ProjectSubmissionProperty, Webhook
+from dtf.models import Project, Membership, TestResult, ReferenceSet, TestReference, Submission, ProjectSubmissionProperty, Webhook
 from dtf.serializers import ProjectSerializer
 from dtf.serializers import TestResultSerializer
 from dtf.serializers import ProjectSubmissionPropertySerializer
@@ -30,6 +30,8 @@ from dtf.serializers import SubmissionSerializer
 from dtf.serializers import ReferenceSetSerializer
 from dtf.serializers import TestReferenceSerializer
 from dtf.serializers import WebhookSerializer
+from dtf.serializers import MembershipSerializer
+from dtf.serializers import UserSerializer
 
 client = Client()
 
@@ -202,6 +204,101 @@ class ProjectApiTest(ApiTestCase):
         response = client.delete(reverse('api_project', kwargs={'id' : self.project_1_id}))
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertEqual(Project.objects.count(), 1)
+
+class ProjectMembersApiTest(ApiTestCase):
+    def setUp(self):
+        super().setUp()
+        _, data = self.create_project("Test Project", "test-project")
+        self.project_id = data['id']
+        self.project = Project.objects.get(id=data['id'])
+        self.url = reverse('api_project_members', kwargs={'project_id' : self.project_id})
+        self.user_1 = User.objects.create_user('user1')
+        self.user_2 = User.objects.create_user('user2')
+
+    def test_create(self):
+        min_payload = {
+            'user' : self.user_1.id,
+        }
+        response, data = self.post(self.url, min_payload)
+        self.assertEqual(self.project.members.count(), 1)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(data['id'], 1)
+        self.assertEqual(data['user'], UserSerializer(self.user_1).data)
+        self.assertEqual(data['role'], "guest")
+
+        full_payload = {
+            'user' : UserSerializer(self.user_2).data,
+            'role' : "owner"
+        }
+        response, data = self.post(self.url, full_payload)
+        self.assertEqual(self.project.members.count(), 2)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(data['id'], 2)
+        self.assertEqual(data['user'], UserSerializer(self.user_2).data)
+        self.assertEqual(data['role'], "owner")
+
+    def test_get(self):
+        self.post(self.url, {'user' : self.user_1.id})
+        self.post(self.url, {'user' : self.user_2.id})
+        response = client.get(self.url)
+        members = Membership.objects.order_by('-pk')
+        serializer = MembershipSerializer(members, many=True)
+        self.assertEqual(response.data, serializer.data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+class ProjectMemberApiTest(ApiTestCase):
+    def setUp(self):
+        super().setUp()
+        _, data = self.create_project("Test Project", "test-project")
+        self.project_id = data['id']
+        create_url = reverse('api_project_members', kwargs={'project_id' : self.project_id})
+        self.user_1 = User.objects.create_user('user1')
+        self.user_2 = User.objects.create_user('user2')
+
+        response, data = self.post(create_url, {'user' : self.user_1.id})
+        self.member_1_id = data['id']
+        self.url_1 = reverse('api_project_member', kwargs={'project_id' : self.project_id, 'member_id' : self.member_1_id})
+        self.member_1 = Membership.objects.get(id=self.member_1_id)
+
+        response, data = self.post(create_url, {'user' : self.user_2.id})
+        self.member_2_id = data['id']
+        self.url_2 = reverse('api_project_member', kwargs={'project_id' : self.project_id, 'member_id' : self.member_2_id})
+        self.member_2 = Membership.objects.get(id=self.member_2_id)
+
+    def test_get(self):
+        response = client.get(self.url_1)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        serializer = MembershipSerializer(self.member_1)
+        self.assertEqual(response.data, serializer.data)
+
+        response = client.get(self.url_2)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        serializer = MembershipSerializer(self.member_2)
+        self.assertEqual(response.data, serializer.data)
+
+    def test_get_invalid(self):
+        response = client.get(reverse('api_project_member', kwargs={'project_id' : "invalid", 'member_id' : self.member_1_id}))
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+        response = client.get(reverse('api_project_member', kwargs={'project_id' : self.project_id, 'member_id' : 123}))
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_modify(self):
+        response = client.get(self.url_1)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        new_role = "owner"
+        response.data['role'] = new_role
+        response, data = self.put(self.url_1, response.data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        member_1 = Membership.objects.get(id=self.member_1_id)
+        self.assertEqual(member_1.role, new_role)
+
+    def test_delete(self):
+        response = client.delete(self.url_1)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(Membership.objects.count(), 1)
 
 class ProjectSubmissionPropertiesApiTest(ApiTestCase):
     def setUp(self):
