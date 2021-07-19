@@ -161,6 +161,7 @@ def add_bootstrap_class(field, add_class=""):
         "textarea" : "form-control",
         "password" : "form-control",
         "email" : "form-control",
+        "select" : "form-control",
     }
 
     current_class = field.field.widget.attrs.get('class', None)

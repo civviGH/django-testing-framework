@@ -2,7 +2,7 @@
 function resetForm(form_id) {
     let form = $(form_id).first();
     form[0].reset();
-    form.find('input').each(function () {
+    form.find('input,select').each(function () {
         let field = $(this)
         field.removeClass("is-invalid");
         field.removeClass("is-valid");
@@ -10,7 +10,7 @@ function resetForm(form_id) {
 }
 
 function fillForm(form_id, data) {
-    $(form_id).find('input').each(function () {
+    $(form_id).find('input,select').each(function () {
         let field = $(this)
         if (this.name in data) {
             if (this.type == 'checkbox') {
@@ -24,7 +24,7 @@ function fillForm(form_id, data) {
 }
 
 function fillFormErrors(form_id, errors) {
-    $(form_id).find('input').each(function () {
+    $(form_id).find('input,select').each(function () {
         let field = $(this)
         if (this.name in errors) {
             field.removeClass("is-valid");
