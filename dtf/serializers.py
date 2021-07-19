@@ -109,7 +109,8 @@ class TestResultSerializer(serializers.ModelSerializer):
                   'created',
                   'last_updated',
                   'submission',
-                  'url']
+                  'url',
+                  'status']
         extra_kwargs = {'created': {'read_only': False, 'required':False}}
 
     def validate(self, data):

@@ -1,0 +1,6 @@
+Attribute|Type|Required|Description
+``:project_id``|string/integer|yes|The id or slug of the project.
+``:submission_id``|integer|yes|The id of the submission the test result belongs to.
+``:test_id``|integer|yes|The id of the test result to get the history for.
+``measurement_name``|integer|yes|Name of the measurement to get the history for.
+``limit``|integer|no|Maximum number of entries to be retrieved. Counting is started from the most recent entry to older ones.

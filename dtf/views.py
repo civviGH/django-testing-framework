@@ -3,6 +3,7 @@ from django.core.paginator import Paginator
 from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponseRedirect, JsonResponse, HttpResponse, Http404
 from django.urls import reverse
+from django.conf import settings
 
 from rest_framework import status
 
@@ -217,4 +218,43 @@ def view_test_reference_details(request, project_slug, test_id):
 
     return render(request, 'dtf/test_reference_details.html', {
         'test_reference': test_reference
+    })
+
+def view_test_measurement_history(request, project_slug, test_id):
+    project = get_object_or_404(Project, slug=project_slug)
+    test_result = get_object_or_404(TestResult, pk=test_id)
+    submission = test_result.submission
+    if submission.project != project:
+        raise Http404("The test does not belong to this project")
+
+    measurement_name = request.GET.get('measurement_name')
+    limit = request.GET.get('limit')
+
+    queries = create_reference_query(project, submission.info)
+
+    test_reference = None
+    try:
+        reference_set = project.reference_sets.get(**queries)
+        if reference_set.test_references.exists():
+            try:
+                test_reference = reference_set.test_references.get(test_name=test_result.name)
+            except TestReference.DoesNotExist:
+                test_reference = None
+    except ReferenceSet.DoesNotExist:
+        pass
+
+    from django.utils.dateparse import parse_duration
+
+    measurement_global_reference = None
+    if test_reference is not None:
+        reference = test_reference.references.get(measurement_name)
+        if reference is not None:
+            measurement_global_reference = reference['value']
+
+    return render(request, 'dtf/test_measurement_history.html', {
+        'test_result' : test_result,
+        'display_timezone' : settings.DTF_DEFAULT_DISPLAY_TIME_ZONE,
+        'measurement_name' : measurement_name,
+        'limit' : limit,
+        'measurement_global_reference' : measurement_global_reference
     })

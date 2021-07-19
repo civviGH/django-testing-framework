@@ -11,6 +11,7 @@ update_references
 import json
 import copy
 import datetime
+import time
 from urllib.parse import urlencode
 
 from rest_framework import status
@@ -693,6 +694,219 @@ class TestResultApiTest(ApiTestCase):
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
         
         response = client.get(reverse('api_project_submission_test', kwargs={'project_id' : self.project_id, 'submission_id' : self.submission_id, 'test_id' : 123}))
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_modify(self):
+        response = client.get(self.url_1)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        new_name = "Test 1 New Name"
+        response.data['name'] = new_name
+        new_test_data = {'name' : 'Result2', 'value' : { 'data' : 2, 'type' : 'integer'}}
+        response.data['results'].append(new_test_data)
+        response, data = self.put(self.url_1, response.data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        test_1 = TestResult.objects.get(id=self.test_1_id)
+        self.assertEqual(test_1.name, new_name)
+        self.assertEqual(test_1.results[1]["name"], new_test_data["name"])
+        self.assertEqual(test_1.results[1]["value"], new_test_data["value"])
+
+    def test_delete(self):
+        response = client.delete(self.url_1)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(TestResult.objects.count(), 1)
+
+class TestResultHistoryApiTest(ApiTestCase):
+    def setUp(self):
+        _, data = self.create_project("Test Project", "test-project")
+        self.project_id = data['id']
+        property_url = reverse('api_project_submission_properties', kwargs={'project_id' : self.project_id})
+        self.post(property_url, {
+            'name' : "Property1",
+            'required' : True,
+            'influence_reference' : True,
+        })
+
+        _, data = self.create_submission(project_id=self.project_id, info={"Property1": "Value1", "Property2": "Value1"})
+        self.submission_1_id = data['id']
+        create_url_1 = reverse('api_project_submission_tests', kwargs={'project_id' : self.project_id, 'submission_id' : self.submission_1_id})
+        _, data = self.post(create_url_1, {'name' : 'Test 1', 'results' : [{'name' : 'Result1', 'value' : { 'data' : 1, 'type' : 'integer'}}]})
+        self.test_1_id = data['id']
+        self.test_1 = TestResult.objects.get(id=self.test_1_id)
+
+        time.sleep(1e-6) # Wait a microsecond to make sure the next test has another 'created' date
+        _, data = self.create_submission(project_id=self.project_id, info={"Property1": "Value1", "Property2": "Value2"})
+        self.submission_2_id = data['id']
+        create_url_2 = reverse('api_project_submission_tests', kwargs={'project_id' : self.project_id, 'submission_id' : self.submission_2_id})
+        _, data = self.post(create_url_2, {'name' : 'Test 1', 'results' : [{'name' : 'Result2', 'value' : { 'data' : 2, 'type' : 'integer'}}]})
+        self.test_2_id = data['id']
+        self.test_2 = TestResult.objects.get(id=self.test_2_id)
+
+        time.sleep(1e-6) # Wait a microsecond to make sure the next test has another 'created' date
+        _, data = self.create_submission(project_id=self.project_id, info={"Property1": "Value1", "Property2": "Value3"})
+        self.submission_3_id = data['id']
+        create_url_3 = reverse('api_project_submission_tests', kwargs={'project_id' : self.project_id, 'submission_id' : self.submission_3_id})
+        _, data = self.post(create_url_3, {'name' : 'Test 1', 'results' : [{'name' : 'Result1', 'value' : { 'data' : 3, 'type' : 'integer'}}]})
+        self.test_3_id = data['id']
+        self.test_3 = TestResult.objects.get(id=self.test_3_id)
+
+        time.sleep(1e-6) # Wait a microsecond to make sure the next test has another 'created' date
+        _, data = self.create_submission(project_id=self.project_id, info={"Property1": "Value2", "Property2": "Value4"})
+        self.submission_4_id = data['id']
+        create_url_4 = reverse('api_project_submission_tests', kwargs={'project_id' : self.project_id, 'submission_id' : self.submission_4_id})
+        _, data = self.post(create_url_4, {'name' : 'Test 1', 'results' : [{'name' : 'Result1', 'value' : { 'data' : 3, 'type' : 'integer'}}]})
+        self.test_4_id = data['id']
+        self.test_4 = TestResult.objects.get(id=self.test_4_id)
+
+        self.url_1 = reverse('api_project_submission_test_measurement_history', kwargs={'project_id' : self.project_id, 'submission_id' : self.submission_1_id, 'test_id' : self.test_1_id})
+        self.url_2 = reverse('api_project_submission_test_measurement_history', kwargs={'project_id' : self.project_id, 'submission_id' : self.submission_2_id, 'test_id' : self.test_2_id})
+        self.url_3 = reverse('api_project_submission_test_measurement_history', kwargs={'project_id' : self.project_id, 'submission_id' : self.submission_3_id, 'test_id' : self.test_3_id})
+        self.url_4 = reverse('api_project_submission_test_measurement_history', kwargs={'project_id' : self.project_id, 'submission_id' : self.submission_4_id, 'test_id' : self.test_4_id})
+
+    def test_get(self):
+        expected_data = [{
+            'value_source' : self.test_3.id,
+            'date' : self.test_3.created,
+            'value' : self.test_3.results[0]['value'],
+            'reference' : self.test_3.results[0]['reference'],
+            'status' : self.test_3.results[0]['status'],
+            'reference_source' : self.test_3.results[0].get('reference_source'),
+        },
+        {
+            'value_source' : self.test_2.id,
+            'date' : self.test_2.created,
+        },
+        {
+            'value_source' : self.test_1.id,
+            'date' : self.test_1.created,
+            'value' : self.test_1.results[0]['value'],
+            'reference' : self.test_1.results[0]['reference'],
+            'status' : self.test_1.results[0]['status'],
+            'reference_source' : self.test_1.results[0].get('reference_source'),
+        }]
+
+        response = client.get(self.url_1, {"measurement_name": "Result1"})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data, expected_data)
+
+        # same tests in other submissions with same properties should give same results
+        response = client.get(self.url_2, {"measurement_name": "Result1"})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data, expected_data)
+
+        response = client.get(self.url_3, {"measurement_name": "Result1"})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data, expected_data)
+
+    def test_get_limit(self):
+        expected_data = [{
+            'value_source' : self.test_3.id,
+            'date' : self.test_3.created,
+            'value' : self.test_3.results[0]['value'],
+            'reference' : self.test_3.results[0]['reference'],
+            'status' : self.test_3.results[0]['status'],
+            'reference_source' : self.test_3.results[0].get('reference_source'),
+        },
+        {
+            'value_source' : self.test_2.id,
+            'date' : self.test_2.created,
+        }]
+
+        response = client.get(self.url_1, {"measurement_name": "Result1", "limit" : 2})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data, expected_data)
+
+    def test_empty(self):
+        response = client.get(self.url_1, {"measurement_name": "Does not exist"})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        expected_data = [{
+            'value_source' : self.test_3.id,
+            'date' : self.test_3.created
+        },
+        {
+            'value_source' : self.test_2.id,
+            'date' : self.test_2.created
+        },
+        {
+            'value_source' : self.test_1.id,
+            'date' : self.test_1.created
+        }]
+        self.assertEqual(response.data, expected_data)
+
+    def test_get_invalid(self):
+        response = client.get(reverse('api_project_submission_test_measurement_history', kwargs={'project_id' : "invalid", 'submission_id' : self.submission_1_id, 'test_id' : self.test_1_id}))
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+        response = client.get(reverse('api_project_submission_test_measurement_history', kwargs={'project_id' : self.project_id, 'submission_id' : 123, 'test_id' : self.test_1_id}))
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+        response = client.get(reverse('api_project_submission_test_measurement_history', kwargs={'project_id' : self.project_id, 'submission_id' : self.submission_1_id, 'test_id' : 123}))
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+class ProjectTestResultsApiTest(ApiTestCase):
+    def setUp(self):
+        _, data = self.create_project("Test Project", "test-project")
+        self.project_id = data['id']
+        _, data = self.create_submission(project_id=self.project_id)
+        self.submission_id_1 = data['id']
+        _, data = self.create_submission(project_id=self.project_id)
+        self.submission_id_2 = data['id']
+
+        self.url = reverse('api_project_tests', kwargs={'project_id' : self.project_id})
+
+        create_1_url = reverse('api_project_submission_tests', kwargs={'project_id' : self.project_id, 'submission_id' : self.submission_id_1})
+        create_2_url = reverse('api_project_submission_tests', kwargs={'project_id' : self.project_id, 'submission_id' : self.submission_id_2})
+
+        response, data = self.post(create_1_url, {'name' : 'Test 1', 'results' : [{'name' : 'Result1', 'value' : { 'data' : 1, 'type' : 'integer'}}]})
+        response, data = self.post(create_1_url, {'name' : 'Test 2', 'results' : [{'name' : 'Result1', 'value' : { 'data' : 2, 'type' : 'integer'}}]})
+        response, data = self.post(create_2_url, {'name' : 'Test 1', 'results' : [{'name' : 'Result1', 'value' : { 'data' : 3, 'type' : 'integer'}}]})
+
+    def test_get(self):
+        response = client.get(self.url)
+        tests = TestResult.objects.order_by('-pk')
+        serializer = TestResultSerializer(tests, many=True, context={"request": response.wsgi_request})
+        self.assertEqual(response.data, serializer.data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+class TestResultApiTest(ApiTestCase):
+    def setUp(self):
+        _, data = self.create_project("Test Project", "test-project")
+        self.project_id = data['id']
+        _, data = self.create_submission(project_id=self.project_id)
+        self.submission_id_1 = data['id']
+        _, data = self.create_submission(project_id=self.project_id)
+        self.submission_id_2 = data['id']
+
+        create_1_url = reverse('api_project_submission_tests', kwargs={'project_id' : self.project_id, 'submission_id' : self.submission_id_1})
+        create_2_url = reverse('api_project_submission_tests', kwargs={'project_id' : self.project_id, 'submission_id' : self.submission_id_2})
+
+        response, data = self.post(create_1_url, {'name' : 'Test 1', 'results' : [{'name' : 'Result1', 'value' : { 'data' : 1, 'type' : 'integer'}}]})
+        self.test_1_id = data['id']
+        self.url_1 = reverse('api_project_test', kwargs={'project_id' : self.project_id, 'test_id' : self.test_1_id})
+        self.test_1 = TestResult.objects.get(id=self.test_1_id)
+
+        response, data = self.post(create_2_url, {'name' : 'Test 2', 'results' : [{'name' : 'Result1', 'value' : { 'data' : 1, 'type' : 'integer'}}]})
+        self.test_2_id = data['id']
+        self.url_2 = reverse('api_project_test', kwargs={'project_id' : self.project_id, 'test_id' : self.test_2_id})
+        self.test_2 = TestResult.objects.get(id=self.test_2_id)
+
+    def test_get(self):
+        response = client.get(self.url_1)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        serializer = TestResultSerializer(self.test_1, context={"request": response.wsgi_request})
+        self.assertEqual(response.data, serializer.data)
+
+        response = client.get(self.url_2)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        serializer = TestResultSerializer(self.test_2, context={"request": response.wsgi_request})
+        self.assertEqual(response.data, serializer.data)
+
+    def test_get_invalid(self):
+        response = client.get(reverse('api_project_test', kwargs={'project_id' : "invalid", 'test_id' : self.test_1_id}))
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        
+        response = client.get(reverse('api_project_test', kwargs={'project_id' : self.project_id, 'test_id' : 123}))
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_modify(self):

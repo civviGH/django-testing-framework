@@ -1,0 +1,64 @@
+
+{% extends 'dtf/content_sidebar.html' %}
+
+{% load dtf.custom_filters %}
+
+{% block content-sidebar-inner-content %}
+<div>
+    <div class="pt-2 sidebar-header">
+        <h4>Properties</h4>
+    </div>
+    <hr class="mt-2 mb-2">
+    <div>
+        {% for property in submission.project.properties.all %}
+            {% if property.display and property.influence_reference %}
+                <p class="mb-1"><span><b>{{ property.name }}:</b> {{ property|submission_property:submission }}</span></p>
+            {% endif %}
+        {% endfor %}
+    </div>
+</div>
+<div>
+    <div class="pt-2 sidebar-header">
+        <h4>Test</h4>
+    </div>
+    <hr class="mt-2 mb-2">
+    <div>
+        <p class="mb-1">
+            <b>ID:</b>
+            <a class="ml-1"id="test-id">N/A</a>
+        </p>
+        <p class="mb-1">
+            <b>Created:</b>
+            <span class="ml-1" id="test-created">N/A</span>
+        </p>
+        <p class="mb-1">
+            <b>Status:</b>
+            <span class="ml-1" id="test-status">N/A</span>
+        </p>
+        <p class="mb-1">
+            <b>Value:</b>
+            <span class="ml-1" id="test-value">N/A</span>
+        </p>
+    </div>
+</div>
+<div>
+    <div class="pt-2 sidebar-header">
+        <h4>Reference</h4>
+    </div>
+    <hr class="mt-2 mb-2">
+    <div>
+        <p class="mb-1">
+            <b>ID:</b>
+            <a class="ml-1" id="reference-id">N/A</a>
+        </p>
+        <p class="mb-1">
+            <b>Created:</b>
+            <span class="ml-1" id="reference-created">N/A</span>
+        </p>
+        <p class="mb-1">
+            <b>Value:</b>
+            <span class="ml-1" id="reference-value">N/A</span>
+        </p>
+    </div>
+</div>
+{% endblock %}

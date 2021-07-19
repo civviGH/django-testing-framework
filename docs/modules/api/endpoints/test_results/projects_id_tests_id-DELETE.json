@@ -1,0 +1,24 @@
+{
+    "endpoint": "/projects/:project_id/tests/:test_id",
+    "method": "DELETE",
+    "attributes" : {
+        ":project_id" : {
+            "type": "string/integer",
+            "required": true,
+            "description": "The id or slug of the project."
+        },
+        ":test_id" : {
+            "type": "integer",
+            "required": true,
+            "description": "The id of the test results to delete."
+        }
+    },
+    "examples" : [
+        {
+            "arguments" : {
+                "project_id" : 1,
+                "test_id": 1
+            }
+        }
+    ]
+}

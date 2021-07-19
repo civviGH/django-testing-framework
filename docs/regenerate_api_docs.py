@@ -9,6 +9,7 @@ import time
 import requests
 import psutil
 import re
+import urllib
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--force', action='store_true',
@@ -59,6 +60,7 @@ def regenerate_docs():
         for example in examples:
 
             arguments = example.get('arguments', {})
+            query_params = example.get('query_params', {})
             name = example.get('name')
             data = example.get('data')
 
@@ -70,6 +72,14 @@ def regenerate_docs():
             if name is not None:
                 example_name += "-" + name
 
+            example_server_name = "dtf.example.com"
+            localhost_server_name = "127.0.0.1:8000"
+
+            example_url = f"http://{example_server_name}/api{example_endpoint}"
+
+            if len(query_params) > 0:
+                example_url += "?" + urllib.parse.urlencode(query_params)
+
             with open(os.path.join(output_dir, example_name + "-curl.sh"), 'w') as file:
                 file.write(f'curl -X {method} \\\n')
                 if data is not None:
@@ -79,9 +89,9 @@ def regenerate_docs():
                     data_str = "\n".join(data_lines)
                     file.write(f'  --header "Content-Type: application/json" \\\n')
                     file.write(f'  --data \'{data_str}\' \\\n')
-                file.write(f'  http://dtf.example.com/api{example_endpoint}')
+                file.write(f'  {example_url}')
 
-            url = f"http://127.0.0.1:8000/api{example_endpoint}"
+            url =  example_url.replace(example_server_name, localhost_server_name)
             response = requests.request(method, url, json=data)
 
             if not response.ok:
@@ -90,7 +100,7 @@ def regenerate_docs():
                 print(f"Response: {response.reason}")
                 print(f"  {response.text}")
             elif response.text:
-                result_data = json.loads(response.text.replace("127.0.0.1:8000", "dtf.example.com"))
+                result_data = json.loads(response.text.replace(localhost_server_name, example_server_name))
                 with open(os.path.join(output_dir, example_name + "-response.json"), 'w') as file:
                     file.write(json.dumps(result_data, indent=4))
 

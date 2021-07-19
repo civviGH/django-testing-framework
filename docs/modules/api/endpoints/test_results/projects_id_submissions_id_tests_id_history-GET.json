@@ -1,0 +1,56 @@
+{
+    "endpoint": "/projects/:project_id/submissions/:submission_id/tests/:test_id/history",
+    "method": "GET",
+    "attributes" : {
+        ":project_id" : {
+            "type": "string/integer",
+            "required": true,
+            "description": "The id or slug of the project."
+        },
+        ":submission_id" : {
+            "type": "integer",
+            "required": true,
+            "description": "The id of the submission the test result belongs to."
+        },
+        ":test_id" : {
+            "type": "integer",
+            "required": true,
+            "description": "The id of the test result to get the history for."
+        },
+        "measurement_name" : {
+            "type": "integer",
+            "required": true,
+            "description": "Name of the measurement to get the history for."
+        },
+        "limit" : {
+            "type": "integer",
+            "required": false,
+            "description": "Maximum number of entries to be retrieved. Counting is started from the most recent entry to older ones."
+        }
+    },
+    "examples" : [
+        {
+            "name" : "unlimited",
+            "arguments" : {
+                "project_id" : 1,
+                "submission_id" : 1,
+                "test_id" : 1
+            },
+            "query_params" : {
+                "measurement_name" : "runtime"
+            }
+        },
+        {
+            "name" : "limited",
+            "arguments" : {
+                "project_id" : 1,
+                "submission_id" : 1,
+                "test_id" : 1
+            },
+            "query_params" : {
+                "measurement_name" : "runtime",
+                "limit" : 2
+            }
+        }
+    ]
+}

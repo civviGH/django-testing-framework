@@ -28,6 +28,8 @@ API Overview
 
 :doc:`Submissions <api/submissions>`
 
+:doc:`Test Results <api/test_results>`
+
 :doc:`References <api/references>`
 
 .. toctree::
@@ -35,4 +37,5 @@ API Overview
 
    api/projects
    api/submissions
+   api/test_results
    api/references
