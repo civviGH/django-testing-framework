@@ -42,6 +42,9 @@ urlpatterns = [
     path('api/projects', api.ProjectList.as_view(), name='api_projects'),
     path('api/projects/<str:id>', api.ProjectDetail.as_view(), name='api_project'),
 
+    path('api/projects/<str:project_id>/members', api.ProjectMemberList.as_view(), name='api_project_members'),
+    path('api/projects/<str:project_id>/members/<str:member_id>', api.ProjectMemberDetail.as_view(), name='api_project_member'),
+
     path('api/projects/<str:project_id>/properties', api.ProjectSubmissionPropertyList.as_view(), name='api_project_submission_properties'),
     path('api/projects/<str:project_id>/properties/<str:property_id>', api.ProjectSubmissionPropertyDetail.as_view(), name='api_project_submission_property'),
 
