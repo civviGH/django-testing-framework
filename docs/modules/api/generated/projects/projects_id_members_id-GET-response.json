@@ -1,0 +1,11 @@
+{
+    "id": 1,
+    "project": 1,
+    "user": {
+        "id": 2,
+        "username": "demo",
+        "first_name": "Demo",
+        "last_name": "User"
+    },
+    "role": "owner"
+}
