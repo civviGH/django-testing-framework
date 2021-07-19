@@ -6,10 +6,37 @@ import json
 
 from django.db import models
 from django.utils import timezone
+from django.contrib.auth.models import User
 
 from dtf.validators import JSONSchemaValidator
 
-# Create your models here.
+class Membership(models.Model):
+    user = models.ForeignKey(
+        User,
+        null=False,
+        blank=False,
+        related_name="memberships",
+        on_delete=models.CASCADE,
+    )
+
+    project = models.ForeignKey(
+        "Project",
+        null=False,
+        blank=False,
+        related_name="memberships",
+        on_delete=models.CASCADE,
+    )
+
+    AVAILABLE_ROLES = [
+        ("owner", "Owner"),
+        ("developer", "Developer"),
+        ("guest", "Guest")
+    ]
+    role = models.CharField(choices=AVAILABLE_ROLES, default="guest", max_length=20)
+
+    class Meta:
+        unique_together = ("user", "project")
+
 class Project(models.Model):
     """
     Very simple project model
@@ -21,6 +48,8 @@ class Project(models.Model):
 
     created = models.DateTimeField(default=timezone.now, editable=False, blank=True)
     last_updated = models.DateTimeField(auto_now=True)
+
+    members = models.ManyToManyField(User, related_name="projects", through=Membership, through_fields=("project", "user"))
 
     def get_nav_data(self, test_name, submission_id):
         nav_data = {

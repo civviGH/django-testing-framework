@@ -1,8 +1,13 @@
 from django.contrib import admin
 
-from dtf.models import Project, ProjectSubmissionProperty, TestResult, ReferenceSet, TestReference, Submission, Webhook
+from dtf.models import Membership, Project, ProjectSubmissionProperty, TestResult, ReferenceSet, TestReference, Submission, Webhook
 
 # Register your models here.
+
+@admin.register(Membership)
+class MembershipAdmin(admin.ModelAdmin):
+    pass
+
 @admin.register(Project)
 class ProjectAdmin(admin.ModelAdmin):
     pass
