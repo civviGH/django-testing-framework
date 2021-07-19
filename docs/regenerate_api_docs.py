@@ -92,7 +92,7 @@ def regenerate_docs():
                 file.write(f'  {example_url}')
 
             url =  example_url.replace(example_server_name, localhost_server_name)
-            response = requests.request(method, url, json=data)
+            response = requests.request(method, url, json=data, auth=('root', 'test1234'))
 
             if not response.ok:
                 print(f"FAILED: {method} {url}")
