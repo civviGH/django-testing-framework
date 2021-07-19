@@ -7,6 +7,9 @@ function resetForm(form_id) {
         field.removeClass("is-invalid");
         field.removeClass("is-valid");
     });
+    let alert = $(form_id).find("div[role='alert']")
+    alert.attr("hidden", true);
+    alert.text("");
 }
 
 function fillForm(form_id, data) {
@@ -24,6 +27,17 @@ function fillForm(form_id, data) {
 }
 
 function fillFormErrors(form_id, errors) {
+    if ("__all__" in errors) {
+        let alert = $(form_id).find("div[role='alert']");
+        alert.removeAttr("hidden");
+        alert.text("");
+        errors["__all__"].forEach(function (element) {
+            if($.trim(alert.text())) {
+                alert.append('<br>');
+            }
+            alert.append(element['message']);
+        });
+    }
     $(form_id).find('input,select').each(function () {
         let field = $(this)
         if (this.name in errors) {
