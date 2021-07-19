@@ -7,12 +7,14 @@ from django.shortcuts import get_object_or_404
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import transaction
 from django.utils.dateparse import parse_duration
+from django.contrib.auth.models import User
 
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework import generics
 
+from dtf.serializers import UserSerializer
 from dtf.serializers import ProjectSerializer
 from dtf.serializers import TestResultSerializer
 from dtf.serializers import ReferenceSetSerializer
@@ -37,6 +39,18 @@ def get_child_or_404(objects, **kwargs):
     except ObjectDoesNotExist:
         raise Http404
     return obj
+
+#
+# User API endpoints
+#
+class UserList(generics.ListAPIView):
+    queryset = User.objects.order_by('pk')
+    serializer_class = UserSerializer
+
+class UserDetail(generics.RetrieveAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    lookup_url_kwarg = 'id'
 
 #
 # Project API endpoints

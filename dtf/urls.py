@@ -36,6 +36,9 @@ urlpatterns = [
     path('<str:project_slug>/reference_sets/<int:reference_id>', views.view_reference_set_details, name='reference_set_details'),
     path('<str:project_slug>/test_references/<int:test_id>', views.view_test_reference_details, name='test_reference_details'),
 
+    path('api/users', api.UserList.as_view(), name='api_users'),
+    path('api/users/<str:id>', api.UserDetail.as_view(), name='api_user'),
+
     path('api/projects', api.ProjectList.as_view(), name='api_projects'),
     path('api/projects/<str:id>', api.ProjectDetail.as_view(), name='api_project'),
 
