@@ -1,0 +1,2 @@
+Attribute|Type|Required|Description
+``:id``|integer|yes|The id of the user to get.

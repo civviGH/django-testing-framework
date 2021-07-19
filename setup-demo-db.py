@@ -41,7 +41,7 @@ if os.path.exists(db_path):
 os.environ["DTF_ENABLE_WEBHOOKS"] = "0"
 
 os.system(f"{sys.executable} {manage_script_path} migrate --database {args.db}")
-os.system(f"{sys.executable} {manage_script_path} loaddata --database {args.db} demo-user") # Name: root PW: test1234
+os.system(f"{sys.executable} {manage_script_path} loaddata --database {args.db} demo-user") # Name: root PW: test1234 ; Name: demo PW: demopassword
 os.system(f"{sys.executable} {manage_script_path} loaddata --database {args.db} demo-project")
 os.system(f"{sys.executable} {manage_script_path} loaddata --database {args.db} demo-submissions")
 os.system(f"{sys.executable} {manage_script_path} loaddata --database {args.db} demo-webhook-log")

@@ -7,6 +7,8 @@ import collections
 
 from rest_framework import serializers
 
+from django.contrib.auth.models import User
+
 from dtf.models import Project, TestResult, ReferenceSet, TestReference, Submission, ProjectSubmissionProperty, Webhook, WebhookLogEntry
 from dtf.functions import fill_result_default_values
 
@@ -18,6 +20,11 @@ def _try_build_absolute_uri(serializer, url):
     if request is not None:
         return request.build_absolute_uri(url)
     return url
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['id', 'username', 'first_name', 'last_name']
 
 class ProjectSerializer(serializers.ModelSerializer):
     url = serializers.SerializerMethodField()

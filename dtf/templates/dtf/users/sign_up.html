@@ -1,0 +1,64 @@
+{% extends 'dtf/base.html' %}
+
+{% load dtf.custom_filters %}
+
+{% load static %}
+
+{% block head %}
+<link rel="stylesheet" type="text/css" href="{% static 'dtf/users.css' %}">
+{% endblock %}
+
+{% block body %}
+<body class="text-center">
+  <form class="user-form signup-form" action="{% url 'sign_up' %}" method="post" novalidate>
+    {% csrf_token %}
+
+    {% comment %} <img class="mb-4" src="/docs/4.6/assets/brand/bootstrap-solid.svg" alt="" width="72" height="72"> {% endcomment %}
+    <h1 class="h3 mb-3 font-weight-normal">Create new account</h1>
+
+    {% for hidden_field in form.hidden_fields %}
+      {{ hidden_field }}
+    {% endfor %}
+
+    {% if form.non_field_errors %}
+      <div class="alert alert-danger" role="alert">
+        {% for error in form.non_field_errors %}
+          {{ error }}
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    <div class="form-row">
+      <div class="form-group col">
+        <label for="{{ form.first_name.id_for_label }}" class="sr-only">{{ form.first_name.label }}</label>
+        {{ form.first_name|as_bootstrap_field }}
+      </div>
+      <div class="form-group col">
+        <label for="{{ form.last_name.id_for_label }}" class="sr-only">{{ form.last_name.label }}</label>
+        {{ form.last_name|as_bootstrap_field }}
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="{{ form.username.id_for_label }}" class="sr-only">{{ form.username.label }}</label>
+      {{ form.username|as_bootstrap_field }}
+    </div>
+
+    <div class="form-group">
+      <label for="{{ form.email.id_for_label }}" class="sr-only">{{ form.email.label }}</label>
+      {{ form.email|as_bootstrap_field }}
+    </div>
+
+    <div class="form-group">
+      <label for="{{ form.password.id_for_label }}" class="sr-only">{{ form.password.label }}</label>
+      {{ form.password|as_bootstrap_field }}
+    </div>
+
+    <button class="btn btn-lg btn-primary btn-block" type="submit">Register</button>
+
+    <p class="mt-2">
+      You have an account already? <a href="{% url 'sign_in' %}">Login</a>
+    </p>
+  </form>
+</body>
+{% endblock %}

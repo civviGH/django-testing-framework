@@ -21,5 +21,7 @@ DATABASES = {
     }
 }
 
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
 default_database = os.environ.get('DTF_DEFAULT_DATABASE', 'main')
 DATABASES['default'] = DATABASES[default_database]

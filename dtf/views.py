@@ -2,7 +2,9 @@
 from django.core.paginator import Paginator
 from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponseRedirect, JsonResponse, HttpResponse, Http404
-from django.urls import reverse
+from django.urls import reverse, reverse_lazy
+from django.contrib.auth.views import LoginView, LogoutView, PasswordResetView, PasswordResetDoneView, PasswordResetConfirmView, PasswordResetCompleteView
+from django.contrib.auth.decorators import login_required
 from django.conf import settings
 
 from rest_framework import status
@@ -13,20 +15,64 @@ from dtf.serializers import WebhookSerializer
 
 from dtf.models import TestResult, Project, ReferenceSet, TestReference, Submission, ProjectSubmissionProperty, Webhook
 from dtf.functions import create_view_data_from_test_references, create_reference_query
-from dtf.forms import NewProjectForm, ProjectSettingsForm, ProjectSubmissionPropertyForm, WebhookForm
+from dtf.forms import NewProjectForm, ProjectSettingsForm, ProjectSubmissionPropertyForm, WebhookForm, NewUserForm, LoginForm, ResetPasswordForm, PasswordSetForm
 
 #
 # User views
 #
 
-def frontpage(request):
-    results = TestResult.objects.order_by('-created')[:5]
-    return render(request, 'dtf/index.html', {'data':results})
+def view_sign_up(request):
+    if request.method == 'POST':
+        form = NewUserForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return HttpResponseRedirect(reverse('projects'))
+    else:
+        form = NewUserForm()
+    return render(request, 'dtf/users/sign_up.html', {
+        'form': form}
+    )
+
+class SignInView(LoginView):
+    form_class = LoginForm
+    template_name = 'dtf/users/sign_in.html'
+
+    def form_valid(self, form):
+        remember_me = form.cleaned_data['remember_me']
+        if not remember_me:
+             self.request.session.set_expiry(0)
+             self.request.session.modified = True
+        return super().form_valid(form)
+
+class SignOutView(LogoutView):
+    template_name = 'dtf/users/sign_out.html'
+
+class ResetPasswordView(PasswordResetView):
+    form_class = ResetPasswordForm
+    template_name = 'dtf/users/reset_password.html'
+    email_template_name = 'dtf/users/reset_password_email.html'
+    success_url = reverse_lazy('reset_password_done')
+
+class ResetPasswordDoneView(PasswordResetDoneView):
+    template_name = 'dtf/users/reset_password_done.html'
+
+class ResetPasswordConfirmView(PasswordResetConfirmView):
+    form_class = PasswordSetForm
+    template_name = 'dtf/users/reset_password_confirm.html'
+    success_url = reverse_lazy('reset_password_complete')
+
+class ResetPasswordCompleteView(PasswordResetCompleteView):
+    template_name = 'dtf/users/reset_password_complete.html'
+
+#
+# Project views
+#
 
 def view_projects(request):
     projects = Project.objects.order_by('-name')
     return render(request, 'dtf/view_projects.html', {'projects':projects})
 
+@login_required
 def view_new_project(request):
     if request.method == 'POST':
         form = NewProjectForm(request.POST)
@@ -39,6 +85,7 @@ def view_new_project(request):
         'form': form}
     )
 
+@login_required
 def view_project_settings(request, project_slug):
     project = get_object_or_404(Project, slug=project_slug)
     properties = project.properties.all()
@@ -110,6 +157,7 @@ def view_project_settings(request, project_slug):
     })
 
 
+@login_required
 def view_webhook_log(request, project_slug, webhook_id):
     project = get_object_or_404(Project, slug=project_slug)
     webhook = project.webhooks.get(id=webhook_id)
@@ -117,6 +165,7 @@ def view_webhook_log(request, project_slug, webhook_id):
         'webhook': webhook,
     })
 
+@login_required
 def view_project_submissions(request, project_slug):
     project = get_object_or_404(Project, slug=project_slug)
     properties = ProjectSubmissionProperty.objects.filter(project=project)
@@ -132,6 +181,7 @@ def view_project_submissions(request, project_slug):
         'submissions':submissions
     })
 
+@login_required
 def view_test_result_details(request, project_slug, test_id):
     project = get_object_or_404(Project, slug=project_slug)
     test_result = get_object_or_404(TestResult, pk=test_id)
@@ -176,6 +226,7 @@ def view_test_result_details(request, project_slug, test_id):
         # 'nav_data':nav_data
     })
 
+@login_required
 def view_submission_details(request, project_slug, submission_id):
     project = get_object_or_404(Project, slug=project_slug)
     submission = get_object_or_404(Submission, pk=submission_id)
@@ -185,6 +236,7 @@ def view_submission_details(request, project_slug, submission_id):
         'submission':submission
     })
 
+@login_required
 def view_project_reference_sets(request, project_slug):
     project = get_object_or_404(Project, slug=project_slug)
     properties = ProjectSubmissionProperty.objects.filter(project=project)
@@ -200,6 +252,7 @@ def view_project_reference_sets(request, project_slug):
         'reference_sets':reference_sets
     })
 
+@login_required
 def view_reference_set_details(request, project_slug, reference_id):
     project = get_object_or_404(Project, slug=project_slug)
     reference_set = get_object_or_404(ReferenceSet, pk=reference_id)
@@ -209,6 +262,7 @@ def view_reference_set_details(request, project_slug, reference_id):
         'reference_set': reference_set
     })
 
+@login_required
 def view_test_reference_details(request, project_slug, test_id):
     project = get_object_or_404(Project, slug=project_slug)
     test_reference = get_object_or_404(TestReference, pk=test_id)
@@ -220,6 +274,7 @@ def view_test_reference_details(request, project_slug, test_id):
         'test_reference': test_reference
     })
 
+@login_required
 def view_test_measurement_history(request, project_slug, test_id):
     project = get_object_or_404(Project, slug=project_slug)
     test_result = get_object_or_404(TestResult, pk=test_id)

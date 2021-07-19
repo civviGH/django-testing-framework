@@ -1,0 +1,25 @@
+{% extends 'dtf/base.html' %}
+
+{% load dtf.custom_filters %}
+
+{% load static %}
+
+{% block head %}
+<link rel="stylesheet" type="text/css" href="{% static 'dtf/users.css' %}">
+{% endblock %}
+
+{% block body %}
+<body class="text-center">
+  <div class="user-info">
+    <h1 class="h3 mb-3 font-weight-normal">Signed out!</h1>
+    <p>You will be redirected in 5 seconds.</p>
+    <a href="{% url 'sign_in'%}">Or click here to sign in again</a>
+  </div>
+
+  <script>
+    setTimeout(function(){
+      window.location.href = '{% url 'home'%}';
+    }, 5000);
+  </script>
+</body>
+{% endblock %}

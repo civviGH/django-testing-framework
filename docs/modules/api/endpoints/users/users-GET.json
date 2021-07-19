@@ -1,0 +1,7 @@
+{
+    "endpoint": "/users",
+    "method": "GET",
+    "examples" : [
+        {}
+    ]
+}

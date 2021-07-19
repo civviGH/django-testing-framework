@@ -32,6 +32,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'rest_framework.authtoken',
 #    'lending.apps.LendingConfig'
     'dtf.apps.DtfConfig'
 ]
@@ -41,8 +42,15 @@ REST_FRAMEWORK = {
     # or allow read-only access for unauthenticated users.
     # voss: im not sure what this does for me right now
     # docs https://www.django-rest-framework.org/api-guide/permissions/#setting-the-permission-policy
-    # 'DEFAULT_PERMISSION_CLASSES': [],
-    'TEST_REQUEST_DEFAULT_FORMAT': 'json'
+    'TEST_REQUEST_DEFAULT_FORMAT': 'json',
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.BasicAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.TokenAuthentication',
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated'
+    ],
 }
 
 
@@ -77,8 +85,8 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'dtf.wsgi.application'
 
-
-
+LOGIN_URL = '/users/sign_in'
+LOGIN_REDIRECT_URL = '/'
 
 # Password validation
 # https://docs.djangoproject.com/en/3.0/ref/settings/#auth-password-validators
