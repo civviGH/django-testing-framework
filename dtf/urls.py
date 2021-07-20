@@ -14,8 +14,8 @@ urlpatterns = [
 
     path('', RedirectView.as_view(pattern_name='projects', permanent=False), name="home"),
 
-    path('projects/', views.view_projects, name='projects'),
-    path('projects/new', views.view_new_project, name='new_project'),
+    path('projects/', views.ProjectListView.as_view(), name='projects'),
+    path('projects/new', views.NewProjectView.as_view(), name='new_project'),
 
     path('users/sign_up', views.SignUpView.as_view(), name='sign_up'),
     path('users/sign_in', views.SignInView.as_view(), name='sign_in'),

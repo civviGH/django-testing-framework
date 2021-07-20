@@ -5,6 +5,7 @@ from django.http import HttpResponseRedirect, JsonResponse, HttpResponse, Http40
 from django.urls import reverse, reverse_lazy
 from django.contrib.auth.views import LoginView, LogoutView, PasswordResetView, PasswordResetDoneView, PasswordResetConfirmView, PasswordResetCompleteView
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.conf import settings
 from django.views import generic
 
@@ -68,29 +69,29 @@ class ResetPasswordCompleteView(PasswordResetCompleteView):
 # Project views
 #
 
-def view_projects(request):
-    if request.user.is_authenticated:
-        if request.user.is_superuser:
-            projects = Project.objects.order_by('-name')
-        else:
-            projects = request.user.projects.order_by('-name')
-    else:
-        projects = []
-    return render(request, 'dtf/view_projects.html', {'projects':projects})
+class ProjectListView(generic.ListView):
+    template_name = 'dtf/view_projects.html'
+    model = Project
+    ordering = '-name'
+    context_object_name = 'projects'
 
-@login_required
-def view_new_project(request):
-    if request.method == 'POST':
-        form = NewProjectForm(request.POST)
-        if form.is_valid():
-            form.save()
-            form.instance.memberships.create(user=request.user, role='owner')
-            return HttpResponseRedirect(reverse('projects'))
-    else:
-        form = NewProjectForm()
-    return render(request, 'dtf/new_project.html', {
-        'form': form}
-    )
+    def get_queryset(self):
+        if self.request.user.is_authenticated:
+            if self.request.user.is_superuser:
+                return Project.objects.order_by(self.ordering)
+            else:
+                return self.request.user.projects.order_by(self.ordering)
+        return []
+
+class NewProjectView(LoginRequiredMixin, generic.FormView):
+    template_name = 'dtf/new_project.html'
+    form_class = NewProjectForm
+    success_url = reverse_lazy('projects')
+
+    def form_valid(self, form):
+        form.save()
+        form.instance.memberships.create(user=self.request.user, role='owner')
+        return super().form_valid(form)
 
 @login_required
 def view_project_members(request, project_slug):
