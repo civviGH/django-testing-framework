@@ -6,6 +6,7 @@ from django.urls import reverse, reverse_lazy
 from django.contrib.auth.views import LoginView, LogoutView, PasswordResetView, PasswordResetDoneView, PasswordResetConfirmView, PasswordResetCompleteView
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
+from django.views import generic
 
 from rest_framework import status
 
@@ -23,17 +24,14 @@ from dtf.permissions import check_required_model_role
 # User views
 #
 
-def view_sign_up(request):
-    if request.method == 'POST':
-        form = NewUserForm(request.POST)
-        if form.is_valid():
-            form.save()
-            return HttpResponseRedirect(reverse('projects'))
-    else:
-        form = NewUserForm()
-    return render(request, 'dtf/users/sign_up.html', {
-        'form': form}
-    )
+class SignUpView(generic.FormView):
+    template_name = 'dtf/users/sign_up.html'
+    form_class = NewUserForm
+    success_url = reverse_lazy('projects')
+
+    def form_valid(self, form):
+        form.save()
+        return super().form_valid(form)
 
 class SignInView(LoginView):
     form_class = LoginForm
