@@ -41,7 +41,7 @@
     </tr>
     </thead>
     <tbody>
-    {% for submission in submissions %}
+    {% for submission in page_obj %}
     <tr class="submission">
         <td class="status">
             <a href="{% url 'submission_details' project.slug submission.pk %}">{{ submission.status|status_badge }}</a>
@@ -64,6 +64,6 @@
     </tbody>
 </table>
 
-{% include "dtf/bootstrap/paginator.html" with page_obj=submissions %}
+{% include "dtf/bootstrap/paginator.html" with page_obj=page_obj %}
 
 {% endblock %}
