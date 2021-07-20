@@ -28,8 +28,8 @@ from dtf.serializers import WebhookLogEntrySerializer
 from dtf.models import TestResult, Membership, Project, ReferenceSet, TestReference, Submission, ProjectSubmissionProperty, Webhook
 from dtf.functions import get_project_by_id_or_slug, create_reference_query
 
-def get_project_or_404(project_id):
-    project = get_project_by_id_or_slug(project_id)
+def get_project_or_404(project_id, queryset=Project.objects):
+    project = get_project_by_id_or_slug(project_id, queryset)
     if project is None:
         raise Http404
     return project
