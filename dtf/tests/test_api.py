@@ -220,9 +220,9 @@ class ProjectMembersApiTest(ApiTestCase):
             'user' : self.user_1.id,
         }
         response, data = self.post(self.url, min_payload)
-        self.assertEqual(self.project.members.count(), 1)
+        self.assertEqual(self.project.members.count(), 2)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(data['id'], 1)
+        self.assertEqual(data['id'], 2)
         self.assertEqual(data['user'], UserSerializer(self.user_1).data)
         self.assertEqual(data['role'], "guest")
 
@@ -231,9 +231,9 @@ class ProjectMembersApiTest(ApiTestCase):
             'role' : "owner"
         }
         response, data = self.post(self.url, full_payload)
-        self.assertEqual(self.project.members.count(), 2)
+        self.assertEqual(self.project.members.count(), 3)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(data['id'], 2)
+        self.assertEqual(data['id'], 3)
         self.assertEqual(data['user'], UserSerializer(self.user_2).data)
         self.assertEqual(data['role'], "owner")
 
@@ -298,7 +298,7 @@ class ProjectMemberApiTest(ApiTestCase):
     def test_delete(self):
         response = client.delete(self.url_1)
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
-        self.assertEqual(Membership.objects.count(), 1)
+        self.assertEqual(Membership.objects.count(), 2)
 
 class ProjectSubmissionPropertiesApiTest(ApiTestCase):
     def setUp(self):

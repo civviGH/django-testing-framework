@@ -83,6 +83,7 @@ def view_new_project(request):
         form = NewProjectForm(request.POST)
         if form.is_valid():
             form.save()
+            form.instance.memberships.create(user=request.user, role='owner')
             return HttpResponseRedirect(reverse('projects'))
     else:
         form = NewProjectForm()

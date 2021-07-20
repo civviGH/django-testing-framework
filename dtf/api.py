@@ -70,6 +70,10 @@ class ProjectList(generics.ListCreateAPIView):
     def get_queryset(self):
         return self.request.user.projects.order_by('-pk')
 
+    def perform_create(self, serializer):
+        super().perform_create(serializer)
+        serializer.instance.memberships.create(user=self.request.user, role='owner')
+
 class ProjectDetail(generics.RetrieveUpdateDestroyAPIView, ProjectAPIViewMixin):
     queryset = Project.objects.all()
     permission_classes = [ProjectPermission]
