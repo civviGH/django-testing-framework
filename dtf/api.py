@@ -11,6 +11,7 @@ from django.contrib.auth.models import User
 
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 from rest_framework import generics
 from rest_framework import views
@@ -66,9 +67,13 @@ class UserDetail(generics.RetrieveAPIView):
 #
 class ProjectList(generics.ListCreateAPIView):
     serializer_class = ProjectSerializer
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        return self.request.user.projects.order_by('-pk')
+        if self.request.user.is_superuser:
+            return Project.objects.order_by('-pk')
+        else:
+            return self.request.user.projects.order_by('-pk')
 
     def perform_create(self, serializer):
         super().perform_create(serializer)

@@ -72,7 +72,10 @@ class ResetPasswordCompleteView(PasswordResetCompleteView):
 
 def view_projects(request):
     if request.user.is_authenticated:
-        projects = request.user.projects.order_by('-name')
+        if request.user.is_superuser:
+            projects = Project.objects.order_by('-name')
+        else:
+            projects = request.user.projects.order_by('-name')
     else:
         projects = []
     return render(request, 'dtf/view_projects.html', {'projects':projects})
