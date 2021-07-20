@@ -100,3 +100,13 @@ def get_project_by_id_or_slug(id, queryset):
         project = get_project_by_slug(id, queryset)
 
     return project
+
+def get_object_or_none(klass, *args, **kwargs):
+    if hasattr(klass, '_default_manager'):
+        queryset = klass._default_manager.all()
+    else:
+        queryset = klass
+    try:
+        return queryset.get(*args, **kwargs)
+    except klass.model.DoesNotExist:
+        return None
