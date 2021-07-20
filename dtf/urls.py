@@ -69,8 +69,6 @@ urlpatterns = [
 
     path('api/projects/<str:project_id>/references/<str:reference_id>/tests', api.ProjectReferenceSetTestReferenceList.as_view(), name='api_project_reference_tests'),
     path('api/projects/<str:project_id>/references/<str:reference_id>/tests/<str:test_id>', api.ProjectReferenceSetTestReferenceDetail.as_view(), name='api_project_reference_test'),
-
-    path('api/WIPE_DATABASE', api.WIPE_DATABASE),
 ]
 
 urlpatterns = format_suffix_patterns(urlpatterns)

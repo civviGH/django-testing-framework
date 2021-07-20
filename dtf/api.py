@@ -366,13 +366,3 @@ def get_test_measurement_history(request, project_id, submission_id, test_id):
         data.append(entry)
 
     return Response(data, status.HTTP_200_OK)
-
-#
-# DEBUGGING
-#
-
-@api_view(["GET"])
-def WIPE_DATABASE(request):
-    for model in [Project, ProjectSubmissionProperty, Submission, TestResult, ReferenceSet, TestReference]:
-        model.objects.all().delete()
-    return Response({}, status.HTTP_200_OK)
