@@ -38,7 +38,7 @@
     </tr>
     </thead>
     <tbody>
-    {% for reference_set in reference_sets %}
+    {% for reference_set in page_obj %}
     <tr class="reference_set">
         <td class="id">
             <a href="{% url 'reference_set_details' project.slug reference_set.pk %}">{{ reference_set.pk }}</a>
@@ -58,6 +58,6 @@
     </tbody>
 </table>
 
-{% include "dtf/bootstrap/paginator.html" with page_obj=reference_sets %}
+{% include "dtf/bootstrap/paginator.html" with page_obj=page_obj %}
 
 {% endblock %}

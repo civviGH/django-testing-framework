@@ -5,7 +5,9 @@ from django.http import HttpResponseRedirect, JsonResponse, HttpResponse, Http40
 from django.urls import reverse, reverse_lazy
 from django.contrib.auth.views import LoginView, LogoutView, PasswordResetView, PasswordResetDoneView, PasswordResetConfirmView, PasswordResetCompleteView
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.conf import settings
+from django.views import generic
 
 from rest_framework import status
 
@@ -17,23 +19,20 @@ from dtf.serializers import WebhookSerializer
 from dtf.models import TestResult, Membership, Project, ReferenceSet, TestReference, Submission, ProjectSubmissionProperty, Webhook, WebhookLogEntry
 from dtf.functions import create_view_data_from_test_references, create_reference_query
 from dtf.forms import NewProjectForm, ProjectSettingsForm, ProjectSubmissionPropertyForm, MembershipForm, WebhookForm, NewUserForm, LoginForm, ResetPasswordForm, PasswordSetForm
-from dtf.permissions import check_required_model_role
+from dtf.permissions import ProjectPermissionRequiredMixin, check_required_model_role
 
 #
 # User views
 #
 
-def view_sign_up(request):
-    if request.method == 'POST':
-        form = NewUserForm(request.POST)
-        if form.is_valid():
-            form.save()
-            return HttpResponseRedirect(reverse('projects'))
-    else:
-        form = NewUserForm()
-    return render(request, 'dtf/users/sign_up.html', {
-        'form': form}
-    )
+class SignUpView(generic.FormView):
+    template_name = 'dtf/users/sign_up.html'
+    form_class = NewUserForm
+    success_url = reverse_lazy('projects')
+
+    def form_valid(self, form):
+        form.save()
+        return super().form_valid(form)
 
 class SignInView(LoginView):
     form_class = LoginForm
@@ -70,63 +69,80 @@ class ResetPasswordCompleteView(PasswordResetCompleteView):
 # Project views
 #
 
-def view_projects(request):
-    if request.user.is_authenticated:
-        if request.user.is_superuser:
-            projects = Project.objects.order_by('-name')
-        else:
-            projects = request.user.projects.order_by('-name')
-    else:
-        projects = []
-    return render(request, 'dtf/view_projects.html', {'projects':projects})
+class ProjectViewMixin():
+    project_slug_url_kwarg = 'project_slug'
 
-@login_required
-def view_new_project(request):
-    if request.method == 'POST':
-        form = NewProjectForm(request.POST)
-        if form.is_valid():
-            form.save()
-            form.instance.memberships.create(user=request.user, role='owner')
-            return HttpResponseRedirect(reverse('projects'))
-    else:
-        form = NewProjectForm()
-    return render(request, 'dtf/new_project.html', {
-        'form': form}
-    )
+    def get_project(self):
+        return get_object_or_404(Project, slug=self.kwargs[self.project_slug_url_kwarg])
 
-@login_required
-def view_project_members(request, project_slug):
-    project = get_object_or_404(Project, slug=project_slug)
-    check_required_model_role(request.user, project, Membership, 'view')
+class ProjectListView(generic.ListView):
+    template_name = 'dtf/view_projects.html'
+    model = Project
+    ordering = '-name'
+    context_object_name = 'projects'
 
-    if request.method == 'POST':
-        if request.POST.get('action') == 'add':
-            check_required_model_role(request.user, project, Membership, 'add')
-            member_form = MembershipForm(request.POST, initial={'project': project,})
-        elif request.POST.get('action') == 'edit':
-            check_required_model_role(request.user, project, Membership, 'change')
+    def get_queryset(self):
+        if self.request.user.is_authenticated:
+            if self.request.user.is_superuser:
+                return Project.objects.order_by(self.ordering)
+            else:
+                return self.request.user.projects.order_by(self.ordering)
+        return []
+
+class NewProjectView(LoginRequiredMixin, generic.FormView):
+    template_name = 'dtf/new_project.html'
+    form_class = NewProjectForm
+    success_url = reverse_lazy('projects')
+
+    def form_valid(self, form):
+        form.save()
+        form.instance.memberships.create(user=self.request.user, role='owner')
+        return super().form_valid(form)
+
+class ProjectMembersView(ProjectViewMixin, ProjectPermissionRequiredMixin, generic.UpdateView):
+    template_name = 'dtf/project_members.html'
+    model = Membership
+    form_class = MembershipForm
+
+    def get_requested_operations(self, request, model, **kwargs):
+        requested_operations = ['view']
+        if request.method == 'POST':
+            if self.request.POST.get('action') == 'add':
+                requested_operations.append('add')
+            elif self.request.POST.get('action') == 'edit':
+                requested_operations.append('change')
+            else:
+                requested_operations.append(None)
+        return requested_operations
+
+    def get_queryset(self):
+        return self.get_project().memberships.all()
+
+    def get_initial(self):
+        return {'project': self.get_project()}
+
+    def get_object(self):
+        if self.request.method == 'POST' and self.request.POST.get('action') == 'edit':
+            queryset = self.get_queryset()
             try:
-                membership = Membership.objects.get(pk=request.POST.get('id', None))
-            except Membership.DoesNotExist:
-                return HttpResponse(status=status.HTTP_404_NOT_FOUND)
-            member_form = MembershipForm(request.POST, initial={'project': project, 'user': membership.user}, instance=membership)
-        else:
-            return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
+                return queryset.get(pk=self.request.POST.get('id', None))
+            except queryset.model.DoesNotExist:
+                raise Http404(_("No %(verbose_name)s found matching the query") %
+                               {'verbose_name': queryset.model._meta.verbose_name})
+        return None
 
-        if member_form.is_valid():
-            member_form.save()
-            serializer = MembershipSerializer(member_form.instance)
-            return JsonResponse({'result' : 'valid', 'member' : serializer.data})
-        else:
-            errors = member_form.errors.get_json_data()
-            return JsonResponse({'result' : 'invalid', 'errors' : errors})
+    def form_valid(self, form):
+        form.save()
+        serializer = MembershipSerializer(form.instance)
+        return JsonResponse({'result' : 'valid', 'member' : serializer.data})
 
-    # Not any valid POST request: return the site
-    member_form = MembershipForm(initial={'project': project})
-    return render(request, 'dtf/project_members.html', {
-        'project': project,
-        'member_form': member_form,
-    })
+    def form_invalid(self, form):
+        errors = form.errors.get_json_data()
+        return JsonResponse({'result' : 'invalid', 'errors' : errors})
+
+    def get_context_data(self, **kwargs):
+        project = self.get_project()
+        return super().get_context_data(**kwargs, project=project)
 
 @login_required
 def view_project_settings(request, project_slug):
@@ -211,182 +227,167 @@ def view_project_settings(request, project_slug):
     })
 
 
-@login_required
-def view_webhook_log(request, project_slug, webhook_id):
-    project = get_object_or_404(Project, slug=project_slug)
-    check_required_model_role(request.user, project, WebhookLogEntry, 'view')
-    webhook = project.webhooks.get(id=webhook_id)
-    return render(request, 'dtf/webhook_log.html', {
-        'webhook': webhook,
-    })
+class WebhookDetailView(ProjectViewMixin, ProjectPermissionRequiredMixin, generic.DetailView):
+    template_name = 'dtf/webhook_log.html'
+    model = WebhookLogEntry
+    context_object_name = 'webhook'
+    pk_url_kwarg = 'webhook_id'
 
-@login_required
-def view_project_submissions(request, project_slug):
-    project = get_object_or_404(Project, slug=project_slug)
+    def get_queryset(self):
+        return self.get_project().webhooks.all()
 
-    check_required_model_role(request.user, project, Submission, 'view')
+class ProjectSubmissionListView(ProjectViewMixin, ProjectPermissionRequiredMixin, generic.ListView):
+    template_name = 'dtf/project_submissions.html'
+    model = Submission
+    ordering = '-created'
+    paginate_by = 20
 
-    properties = ProjectSubmissionProperty.objects.filter(project=project)
+    def get_queryset(self):
+        return self.get_project().submissions.order_by(self.ordering)
 
-    paginator = Paginator(project.submissions.order_by('-created'), per_page=20)
+    def get_context_data(self, **kwargs):
+        project = self.get_project()
+        return super().get_context_data(**kwargs, project=project, properties=project.properties.all())
 
-    page_number = request.GET.get('page')
-    submissions = paginator.get_page(page_number)
+class TestResultDetailView(ProjectViewMixin, ProjectPermissionRequiredMixin, generic.DetailView):
+    template_name = 'dtf/test_result_details.html'
+    model = TestResult
+    permission_models = [TestResult, TestReference]
+    context_object_name = 'test_result'
+    pk_url_kwarg = 'test_id'
 
-    return render(request, 'dtf/project_submissions.html', {
-        'project':project,
-        'properties':properties,
-        'submissions':submissions
-    })
+    def get_queryset(self):
+        return TestResult.objects.filter(submission__project=self.get_project())
 
-@login_required
-def view_test_result_details(request, project_slug, test_id):
-    project = get_object_or_404(Project, slug=project_slug)
-    check_required_model_role(request.user, project, TestResult, 'view')
-    check_required_model_role(request.user, project, TestReference, 'view')
+    def get_context_data(self, **kwargs):
+        test_result = self.object
+        submission = test_result.submission
+        project = submission.project
 
-    test_result = get_object_or_404(TestResult, pk=test_id)
-    submission = test_result.submission
-    if submission.project != project:
-        raise Http404("The test does not belong to this project")
+        queries = create_reference_query(project, submission.info)
 
-    queries = create_reference_query(project, submission.info)
+        reference_set = None
+        property_values = None
+        test_reference = None
+        try:
+            reference_set = project.reference_sets.get(**queries)
+            if reference_set.test_references.exists():
+                try:
+                    test_reference = reference_set.test_references.get(test_name=test_result.name)
+                except TestReference.DoesNotExist:
+                    test_reference = None
+        except ReferenceSet.DoesNotExist:
+            property_values = {}
+            for prop in project.properties.all():
+                if prop.influence_reference:
+                    prop_value = submission.info.get(prop.name, None)
+                    if not prop_value is None:
+                        property_values[prop.name] = prop_value
 
-    reference_set = None
-    property_values = None
-    test_reference = None
-    try:
-        reference_set = project.reference_sets.get(**queries)
-        if reference_set.test_references.exists():
-            try:
-                test_reference = reference_set.test_references.get(test_name=test_result.name)
-            except TestReference.DoesNotExist:
-                test_reference = None
-    except ReferenceSet.DoesNotExist:
-        property_values = {}
-        for prop in project.properties.all():
-            if prop.influence_reference:
-                prop_value = submission.info.get(prop.name, None)
-                if not prop_value is None:
-                    property_values[prop.name] = prop_value
+        if test_reference is not None:
+            references = test_reference.references
+        else:
+            references = {}
 
-    if test_reference is not None:
-        references = test_reference.references
-    else:
-        references = {}
+        data = create_view_data_from_test_references(test_result.results, references)
+        # nav_data = project.get_nav_data(test_result.name, test_result.submission.id)
+        return super().get_context_data(**kwargs,
+                                        project=project,
+                                        reference_set=reference_set,
+                                        test_reference=test_reference,
+                                        test_result=test_result,
+                                        property_values=str(property_values),
+                                        #nav_data=nav_data,
+                                        data=data)
 
-    data = create_view_data_from_test_references(test_result.results, references)
-    # nav_data = project.get_nav_data(test_result.name, test_result.submission.id)
-    return render(request, 'dtf/test_result_details.html', {
-        'project':project,
-        'reference_set':reference_set,
-        'test_reference':test_reference,
-        'test_result':test_result,
-        'property_values':str(property_values),
-        'data':data,
-        # 'nav_data':nav_data
-    })
+class SubmissionDetailView(ProjectViewMixin, ProjectPermissionRequiredMixin, generic.DetailView):
+    template_name = 'dtf/submission_details.html'
+    model = Submission
+    context_object_name = 'submission'
+    pk_url_kwarg = 'submission_id'
 
-@login_required
-def view_submission_details(request, project_slug, submission_id):
-    project = get_object_or_404(Project, slug=project_slug)
+    def get_queryset(self):
+        return self.get_project().submissions.all()
 
-    check_required_model_role(request.user, project, Submission, 'view')
+class ProjectReferenceSetListView(ProjectViewMixin, ProjectPermissionRequiredMixin, generic.ListView):
+    template_name = 'dtf/project_reference_sets.html'
+    model = ReferenceSet
+    ordering = '-created'
+    paginate_by = 20
 
-    submission = get_object_or_404(Submission, pk=submission_id)
-    if submission.project != project:
-        raise Http404("The submission does not belong to this project")
-    return render(request, 'dtf/submission_details.html', {
-        'submission':submission
-    })
+    def get_queryset(self):
+        return self.get_project().reference_sets.order_by(self.ordering)
 
-@login_required
-def view_project_reference_sets(request, project_slug):
-    project = get_object_or_404(Project, slug=project_slug)
+    def get_context_data(self, **kwargs):
+        project = self.get_project()
+        return super().get_context_data(**kwargs, project=project, properties=project.properties.all())
 
-    check_required_model_role(request.user, project, ReferenceSet, 'view')
+class ReferenceSetDetailView(ProjectViewMixin, ProjectPermissionRequiredMixin, generic.DetailView):
+    template_name = 'dtf/reference_set_details.html'
+    model = ReferenceSet
+    context_object_name = 'reference_set'
+    pk_url_kwarg = 'reference_id'
 
-    properties = ProjectSubmissionProperty.objects.filter(project=project)
+    def get_queryset(self):
+        return self.get_project().reference_sets.all()
 
-    paginator = Paginator(project.reference_sets.order_by('-created'), per_page=20)
+class TestReferenceDetailView(ProjectViewMixin, ProjectPermissionRequiredMixin, generic.DetailView):
+    template_name = 'dtf/test_reference_details.html'
+    model = TestReference
+    context_object_name = 'test_reference'
+    pk_url_kwarg = 'test_id'
 
-    page_number = request.GET.get('page')
-    reference_sets = paginator.get_page(page_number)
+    def get_queryset(self):
+        return TestReference.objects.filter(reference_set__project=self.get_project())
 
-    return render(request, 'dtf/project_reference_sets.html', {
-        'project':project,
-        'properties':properties,
-        'reference_sets':reference_sets
-    })
+class TestReferenceDetailView(ProjectViewMixin, ProjectPermissionRequiredMixin, generic.DetailView):
+    template_name = 'dtf/test_reference_details.html'
+    model = TestReference
+    context_object_name = 'test_reference'
+    pk_url_kwarg = 'test_id'
 
-@login_required
-def view_reference_set_details(request, project_slug, reference_id):
-    project = get_object_or_404(Project, slug=project_slug)
+    def get_queryset(self):
+        return TestReference.objects.filter(reference_set__project=self.get_project())
 
-    check_required_model_role(request.user, project, ReferenceSet, 'view')
+class TestMeasurementHistoryView(ProjectViewMixin, ProjectPermissionRequiredMixin, generic.DetailView):
+    template_name = 'dtf/test_measurement_history.html'
+    model = TestResult
+    permission_models = [TestResult, TestReference]
+    context_object_name = 'test_result'
+    pk_url_kwarg = 'test_id'
 
-    reference_set = get_object_or_404(ReferenceSet, pk=reference_id)
-    if reference_set.project != project:
-        raise Http404("The reference set does not belong to this project")
-    return render(request, 'dtf/reference_set_details.html', {
-        'reference_set': reference_set
-    })
+    def get_queryset(self):
+        return TestResult.objects.filter(submission__project=self.get_project())
 
-@login_required
-def view_test_reference_details(request, project_slug, test_id):
-    project = get_object_or_404(Project, slug=project_slug)
+    def get_context_data(self, **kwargs):
+        test_result = self.object
+        submission = test_result.submission
+        project = submission.project
 
-    check_required_model_role(request.user, project, TestReference, 'view')
+        measurement_name = self.request.GET.get('measurement_name')
+        limit = self.request.GET.get('limit')
 
-    test_reference = get_object_or_404(TestReference, pk=test_id)
-    reference_set = test_reference.reference_set
-    if reference_set.project != project:
-        raise Http404("The test does not belong to this project")
+        queries = create_reference_query(project, submission.info)
 
-    return render(request, 'dtf/test_reference_details.html', {
-        'test_reference': test_reference
-    })
+        test_reference = None
+        try:
+            reference_set = project.reference_sets.get(**queries)
+            if reference_set.test_references.exists():
+                try:
+                    test_reference = reference_set.test_references.get(test_name=test_result.name)
+                except TestReference.DoesNotExist:
+                    test_reference = None
+        except ReferenceSet.DoesNotExist:
+            pass
 
-@login_required
-def view_test_measurement_history(request, project_slug, test_id):
-    project = get_object_or_404(Project, slug=project_slug)
+        measurement_global_reference = None
+        if test_reference is not None:
+            reference = test_reference.references.get(measurement_name)
+            if reference is not None:
+                measurement_global_reference = reference['value']
 
-    check_required_model_role(request.user, project, TestResult, 'view')
-    check_required_model_role(request.user, project, TestReference, 'view')
-
-    test_result = get_object_or_404(TestResult, pk=test_id)
-    submission = test_result.submission
-    if submission.project != project:
-        raise Http404("The test does not belong to this project")
-
-    measurement_name = request.GET.get('measurement_name')
-    limit = request.GET.get('limit')
-
-    queries = create_reference_query(project, submission.info)
-
-    test_reference = None
-    try:
-        reference_set = project.reference_sets.get(**queries)
-        if reference_set.test_references.exists():
-            try:
-                test_reference = reference_set.test_references.get(test_name=test_result.name)
-            except TestReference.DoesNotExist:
-                test_reference = None
-    except ReferenceSet.DoesNotExist:
-        pass
-
-    from django.utils.dateparse import parse_duration
-
-    measurement_global_reference = None
-    if test_reference is not None:
-        reference = test_reference.references.get(measurement_name)
-        if reference is not None:
-            measurement_global_reference = reference['value']
-
-    return render(request, 'dtf/test_measurement_history.html', {
-        'test_result' : test_result,
-        'display_timezone' : settings.DTF_DEFAULT_DISPLAY_TIME_ZONE,
-        'measurement_name' : measurement_name,
-        'limit' : limit,
-        'measurement_global_reference' : measurement_global_reference
-    })
+        return super().get_context_data(**kwargs,
+                                        display_timezone=settings.DTF_DEFAULT_DISPLAY_TIME_ZONE,
+                                        measurement_name=measurement_name,
+                                        limit=limit,
+                                        measurement_global_reference=measurement_global_reference)

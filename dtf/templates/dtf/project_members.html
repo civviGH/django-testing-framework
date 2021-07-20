@@ -30,7 +30,7 @@
 
       <!-- General -->
 
-      {% for hidden_field in member_form.hidden_fields %}
+      {% for hidden_field in form.hidden_fields %}
         {{ hidden_field }}
       {% endfor %}
 
@@ -39,12 +39,12 @@
 
       <div class="form-row">
         <div class="form-group col-md">
-          {{ member_form.user.label_tag }}
-          {{ member_form.user|as_dynamic_bootstrap_field }}
+          {{ form.user.label_tag }}
+          {{ form.user|as_dynamic_bootstrap_field }}
         </div>
         <div class="form-group col-">
-          {{ member_form.role.label_tag }}
-          {{ member_form.role|as_dynamic_bootstrap_field }}
+          {{ form.role.label_tag }}
+          {{ form.role|as_dynamic_bootstrap_field }}
         </div>
       </div>
 

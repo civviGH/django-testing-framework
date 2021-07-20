@@ -1,4 +1,5 @@
 from django.core.exceptions import PermissionDenied
+from django.contrib.auth.mixins import AccessMixin
 
 from rest_framework import permissions
 from rest_framework import generics
@@ -46,23 +47,67 @@ def check_required_model_role(user, project, model, operation):
     if not has_required_model_role(user, project, model, operation):
         raise PermissionDenied
 
-class ProjectPermission(permissions.IsAuthenticated):
+class ProjectPermissionBase():
+
+    def get_permission_project(self, request, **kwargs):
+        return None
+
+    def get_permission_models(self, request, **kwargs):
+        return None
+
+    def get_requested_operations(self, request, model, **kwargs):
+        return [_get_requested_operation(request)]
+
+    def has_permission(self, request, **kwargs):
+        if not request.user.is_authenticated:
+            return False
+
+        project = self.get_permission_project(request, **kwargs)
+        models = self.get_permission_models(request, **kwargs)
+        if project is None or models is None:
+            return False
+
+        for model in models:
+            requested_operations = self.get_requested_operations(request, model, **kwargs)
+            for operation in requested_operations:
+                if not has_required_model_role(request.user, project, model, operation):
+                    return False
+
+        return True
+
+class ProjectPermission(ProjectPermissionBase, permissions.BasePermission):
+
+    def get_permission_project(self, request, view):
+        if hasattr(view, 'get_project'):
+            return view.get_project()
+        return None
+
+    def get_permission_models(self, request, view):
+        if isinstance(view, generics.GenericAPIView):
+            return [view.serializer_class.Meta.model]
+        elif hasattr(view, 'permission_model'):
+            return [view.permission_model]
+        return None
 
     def has_permission(self, request, view):
-        if not super().has_permission(request, view):
-            return False
+        return ProjectPermissionBase.has_permission(self, request, view=view)
 
-        if isinstance(view, generics.GenericAPIView):
-            model = view.serializer_class.Meta.model
-        elif hasattr(view, 'permission_model'):
-            model = view.permission_model
-        else:
-            return False
+class ProjectPermissionRequiredMixin(ProjectPermissionBase, AccessMixin):
+    permission_models = None
 
-        from dtf.api import ProjectAPIViewMixin
-        if not isinstance(view, ProjectAPIViewMixin):
-            return False
-        project = view.get_project()
+    def get_permission_project(self, request):
+        if hasattr(self, 'get_project'):
+            return self.get_project()
+        return None
 
-        request_operation = _get_requested_operation(request)
-        return has_required_model_role(request.user, project, model, request_operation)
+    def get_permission_models(self, request):
+        if self.permission_models is not None:
+            return self.permission_models
+        if hasattr(self, 'model'):
+            return [self.model]
+        return None
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.has_permission(self.request):
+            return self.handle_no_permission()
+        return super().dispatch(request, *args, **kwargs)
