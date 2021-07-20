@@ -14,9 +14,10 @@ from dtf.serializers import MembershipSerializer
 from dtf.serializers import ProjectSubmissionPropertySerializer
 from dtf.serializers import WebhookSerializer
 
-from dtf.models import TestResult, Membership, Project, ReferenceSet, TestReference, Submission, ProjectSubmissionProperty, Webhook
+from dtf.models import TestResult, Membership, Project, ReferenceSet, TestReference, Submission, ProjectSubmissionProperty, Webhook, WebhookLogEntry
 from dtf.functions import create_view_data_from_test_references, create_reference_query
 from dtf.forms import NewProjectForm, ProjectSettingsForm, ProjectSubmissionPropertyForm, MembershipForm, WebhookForm, NewUserForm, LoginForm, ResetPasswordForm, PasswordSetForm
+from dtf.permissions import check_required_model_role
 
 #
 # User views
@@ -70,7 +71,13 @@ class ResetPasswordCompleteView(PasswordResetCompleteView):
 #
 
 def view_projects(request):
-    projects = Project.objects.order_by('-name')
+    if request.user.is_authenticated:
+        if request.user.is_superuser:
+            projects = Project.objects.order_by('-name')
+        else:
+            projects = request.user.projects.order_by('-name')
+    else:
+        projects = []
     return render(request, 'dtf/view_projects.html', {'projects':projects})
 
 @login_required
@@ -79,6 +86,7 @@ def view_new_project(request):
         form = NewProjectForm(request.POST)
         if form.is_valid():
             form.save()
+            form.instance.memberships.create(user=request.user, role='owner')
             return HttpResponseRedirect(reverse('projects'))
     else:
         form = NewProjectForm()
@@ -89,11 +97,14 @@ def view_new_project(request):
 @login_required
 def view_project_members(request, project_slug):
     project = get_object_or_404(Project, slug=project_slug)
+    check_required_model_role(request.user, project, Membership, 'view')
 
     if request.method == 'POST':
         if request.POST.get('action') == 'add':
+            check_required_model_role(request.user, project, Membership, 'add')
             member_form = MembershipForm(request.POST, initial={'project': project,})
         elif request.POST.get('action') == 'edit':
+            check_required_model_role(request.user, project, Membership, 'change')
             try:
                 membership = Membership.objects.get(pk=request.POST.get('id', None))
             except Membership.DoesNotExist:
@@ -120,11 +131,18 @@ def view_project_members(request, project_slug):
 @login_required
 def view_project_settings(request, project_slug):
     project = get_object_or_404(Project, slug=project_slug)
+
+    check_required_model_role(request.user, project, Project, 'view')
+    check_required_model_role(request.user, project, ProjectSubmissionProperty, 'view')
+    check_required_model_role(request.user, project, Webhook, 'view')
+
     properties = project.properties.all()
     webhooks = project.webhooks.all()
 
     if request.method == 'POST':
         if request.POST.get('scope') == 'project':
+            check_required_model_role(request.user, project, Project, 'change')
+
             project_form = ProjectSettingsForm(request.POST, instance=project)
 
             if project_form.is_valid():
@@ -137,8 +155,10 @@ def view_project_settings(request, project_slug):
 
         if request.POST.get('scope') == 'property':
             if request.POST.get('action') == 'add':
+                check_required_model_role(request.user, project, ProjectSubmissionProperty, 'add')
                 property_form = ProjectSubmissionPropertyForm(request.POST, initial={'project': project,})
             elif request.POST.get('action') == 'edit':
+                check_required_model_role(request.user, project, ProjectSubmissionProperty, 'change')
                 try:
                     prop = ProjectSubmissionProperty.objects.get(pk=request.POST.get('id', None))
                 except ProjectSubmissionProperty.DoesNotExist:
@@ -157,8 +177,10 @@ def view_project_settings(request, project_slug):
 
         if request.POST.get('scope') == 'webhook':
             if request.POST.get('action') == 'add':
+                check_required_model_role(request.user, project, Webhook, 'add')
                 webhook_form = WebhookForm(request.POST, initial={'project': project,})
             elif request.POST.get('action') == 'edit':
+                check_required_model_role(request.user, project, Webhook, 'change')
                 try:
                     webhook = Webhook.objects.get(pk=request.POST.get('id', None))
                 except Webhook.DoesNotExist:
@@ -192,6 +214,7 @@ def view_project_settings(request, project_slug):
 @login_required
 def view_webhook_log(request, project_slug, webhook_id):
     project = get_object_or_404(Project, slug=project_slug)
+    check_required_model_role(request.user, project, WebhookLogEntry, 'view')
     webhook = project.webhooks.get(id=webhook_id)
     return render(request, 'dtf/webhook_log.html', {
         'webhook': webhook,
@@ -200,6 +223,9 @@ def view_webhook_log(request, project_slug, webhook_id):
 @login_required
 def view_project_submissions(request, project_slug):
     project = get_object_or_404(Project, slug=project_slug)
+
+    check_required_model_role(request.user, project, Submission, 'view')
+
     properties = ProjectSubmissionProperty.objects.filter(project=project)
 
     paginator = Paginator(project.submissions.order_by('-created'), per_page=20)
@@ -216,6 +242,9 @@ def view_project_submissions(request, project_slug):
 @login_required
 def view_test_result_details(request, project_slug, test_id):
     project = get_object_or_404(Project, slug=project_slug)
+    check_required_model_role(request.user, project, TestResult, 'view')
+    check_required_model_role(request.user, project, TestReference, 'view')
+
     test_result = get_object_or_404(TestResult, pk=test_id)
     submission = test_result.submission
     if submission.project != project:
@@ -261,6 +290,9 @@ def view_test_result_details(request, project_slug, test_id):
 @login_required
 def view_submission_details(request, project_slug, submission_id):
     project = get_object_or_404(Project, slug=project_slug)
+
+    check_required_model_role(request.user, project, Submission, 'view')
+
     submission = get_object_or_404(Submission, pk=submission_id)
     if submission.project != project:
         raise Http404("The submission does not belong to this project")
@@ -271,6 +303,9 @@ def view_submission_details(request, project_slug, submission_id):
 @login_required
 def view_project_reference_sets(request, project_slug):
     project = get_object_or_404(Project, slug=project_slug)
+
+    check_required_model_role(request.user, project, ReferenceSet, 'view')
+
     properties = ProjectSubmissionProperty.objects.filter(project=project)
 
     paginator = Paginator(project.reference_sets.order_by('-created'), per_page=20)
@@ -287,6 +322,9 @@ def view_project_reference_sets(request, project_slug):
 @login_required
 def view_reference_set_details(request, project_slug, reference_id):
     project = get_object_or_404(Project, slug=project_slug)
+
+    check_required_model_role(request.user, project, ReferenceSet, 'view')
+
     reference_set = get_object_or_404(ReferenceSet, pk=reference_id)
     if reference_set.project != project:
         raise Http404("The reference set does not belong to this project")
@@ -297,6 +335,9 @@ def view_reference_set_details(request, project_slug, reference_id):
 @login_required
 def view_test_reference_details(request, project_slug, test_id):
     project = get_object_or_404(Project, slug=project_slug)
+
+    check_required_model_role(request.user, project, TestReference, 'view')
+
     test_reference = get_object_or_404(TestReference, pk=test_id)
     reference_set = test_reference.reference_set
     if reference_set.project != project:
@@ -309,6 +350,10 @@ def view_test_reference_details(request, project_slug, test_id):
 @login_required
 def view_test_measurement_history(request, project_slug, test_id):
     project = get_object_or_404(Project, slug=project_slug)
+
+    check_required_model_role(request.user, project, TestResult, 'view')
+    check_required_model_role(request.user, project, TestReference, 'view')
+
     test_result = get_object_or_404(TestResult, pk=test_id)
     submission = test_result.submission
     if submission.project != project:

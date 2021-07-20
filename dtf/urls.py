@@ -62,15 +62,13 @@ urlpatterns = [
 
     path('api/projects/<str:project_id>/submissions/<str:submission_id>/tests', api.ProjectSubmissionTestResultList.as_view(), name='api_project_submission_tests'),
     path('api/projects/<str:project_id>/submissions/<str:submission_id>/tests/<str:test_id>', api.ProjectSubmissionTestResultDetail.as_view(), name='api_project_submission_test'),
-    path('api/projects/<str:project_id>/submissions/<str:submission_id>/tests/<str:test_id>/history', api.get_test_measurement_history, name='api_project_submission_test_measurement_history'),
+    path('api/projects/<str:project_id>/submissions/<str:submission_id>/tests/<str:test_id>/history', api.TestMeasurementHistory.as_view(), name='api_project_submission_test_measurement_history'),
 
     path('api/projects/<str:project_id>/references', api.ProjectReferenceSetList.as_view(), name='api_project_references'),
     path('api/projects/<str:project_id>/references/<str:reference_id>', api.ProjectReferenceSetDetail.as_view(), name='api_project_reference'),
 
     path('api/projects/<str:project_id>/references/<str:reference_id>/tests', api.ProjectReferenceSetTestReferenceList.as_view(), name='api_project_reference_tests'),
     path('api/projects/<str:project_id>/references/<str:reference_id>/tests/<str:test_id>', api.ProjectReferenceSetTestReferenceDetail.as_view(), name='api_project_reference_test'),
-
-    path('api/WIPE_DATABASE', api.WIPE_DATABASE),
 ]
 
 urlpatterns = format_suffix_patterns(urlpatterns)

@@ -34,6 +34,13 @@ class Membership(models.Model):
     ]
     role = models.CharField(choices=AVAILABLE_ROLES, default="guest", max_length=20)
 
+    required_project_membership_role = {
+        'view'   : 'guest',
+        'add'    : 'owner',
+        'change' : 'owner',
+        'delete' : 'owner'
+    }
+
     class Meta:
         unique_together = ("user", "project")
 
@@ -50,6 +57,12 @@ class Project(models.Model):
     last_updated = models.DateTimeField(auto_now=True)
 
     members = models.ManyToManyField(User, related_name="projects", through=Membership, through_fields=("project", "user"))
+
+    required_project_membership_role = {
+        'view'   : 'guest',
+        'change' : 'owner',
+        'delete' : 'owner'
+    }
 
     def get_nav_data(self, test_name, submission_id):
         nav_data = {
@@ -107,6 +120,13 @@ class ProjectSubmissionProperty(models.Model):
     display_as_link = models.BooleanField(default=False)
     influence_reference = models.BooleanField(default=False)
 
+    required_project_membership_role = {
+        'view'   : 'developer',
+        'add'    : 'owner',
+        'change' : 'owner',
+        'delete' : 'owner'
+    }
+
     class Meta:
         app_label = 'dtf'
         constraints = [
@@ -132,6 +152,13 @@ class Submission(models.Model):
     created = models.DateTimeField(default=timezone.now, editable=False, blank=True)
     last_updated = models.DateTimeField(auto_now=True)
     info = models.JSONField(null=False, default=dict, validators=[JSONSchemaValidator(schema=_info_json_schema)])
+
+    required_project_membership_role = {
+        'view'   : 'guest',
+        'add'    : 'owner',
+        'change' : 'owner',
+        'delete' : 'owner'
+    }
 
     def status(self):
         status = None
@@ -312,6 +339,13 @@ class TestResult(models.Model):
         "broken": 5
     }
 
+    required_project_membership_role = {
+        'view'   : 'guest',
+        'add'    : 'developer',
+        'change' : 'developer',
+        'delete' : 'owner'
+    }
+
     def calculate_status(self):
         status = None
         for result in self.results:
@@ -357,6 +391,13 @@ class ReferenceSet(models.Model):
 
     created = models.DateTimeField(default=timezone.now, editable=False, blank=True)
     last_updated = models.DateTimeField(auto_now=True)
+
+    required_project_membership_role = {
+        'view'   : 'guest',
+        'add'    : 'developer',
+        'change' : 'developer',
+        'delete' : 'owner'
+    }
 
     # We do use a special JSON decoder, that creates `OrderedDict` instead of `dict`
     # objects. This will allow us to sort the properties by their keys, so that the
@@ -421,6 +462,13 @@ class TestReference(models.Model):
     # maybe this should just have a testresult as a foreign key?
     references = models.JSONField(null=False, default=dict, validators=[JSONSchemaValidator(schema=_references_json_schema)])
 
+    required_project_membership_role = {
+        'view'   : 'guest',
+        'add'    : 'developer',
+        'change' : 'developer',
+        'delete' : 'owner'
+    }
+
     def update_references(self, new_references, default_source):
         for name, data in new_references.items():
             if data is not None:
@@ -460,6 +508,13 @@ class Webhook(models.Model):
     on_reference_set  = models.BooleanField(default=True)
     on_test_reference = models.BooleanField(default=True)
 
+    required_project_membership_role = {
+        'view'   : 'developer',
+        'add'    : 'owner',
+        'change' : 'owner',
+        'delete' : 'owner'
+    }
+
     def most_recent_status(self):
         recent_log = WebhookLogEntry.objects.filter(webhook=self).order_by('-created').first()
         if recent_log is None:
@@ -490,6 +545,13 @@ class WebhookLogEntry(models.Model):
     response_status  = models.IntegerField(null=False, blank=False)
     response_data    = models.TextField(null=False, blank=False)
     response_headers = models.JSONField(null=False, blank=False)
+
+    required_project_membership_role = {
+        'view'   : 'owner',
+        'add'    : 'owner',
+        'change' : 'owner',
+        'delete' : 'owner'
+    }
 
     class Meta:
         app_label = 'dtf'

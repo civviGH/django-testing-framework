@@ -69,45 +69,44 @@ def create_view_data_from_test_references(test_results, global_references):
 
     return view_data
 
-def get_project_by_id(project_id):
+def get_project_by_id(project_id, queryset):
     """
     Retrieve a project by its Id. Returns None if no project is found.
     """
     try:
-        return Project.objects.get(pk=project_id)
+        return queryset.get(pk=project_id)
     except Project.DoesNotExist:
         return None
 
-def get_project_by_name(project_name):
-    """
-    Retrieve a project by its name. Returns None if no project is found or multiple projects with the same name exist.
-    """
-    try:
-        return Project.objects.get(name=project_name)
-    except Project.DoesNotExist:
-        return None
-    except Project.MultipleObjectsReturned:
-        return None
-
-def get_project_by_slug(project_slug):
+def get_project_by_slug(project_slug, queryset):
     """
     Retrieve a project by its slug. Returns None if no project is found.
     """
     try:
-        return Project.objects.get(slug=project_slug)
+        return queryset.get(slug=project_slug)
     except Project.DoesNotExist:
         return None
 
-def get_project_by_id_or_slug(id):
+def get_project_by_id_or_slug(id, queryset):
     """
     Retrieve a project by its ID or slug. Returns None if no project is found.
     """
     if id.isdigit():
-        project = get_project_by_id(int(id))
+        project = get_project_by_id(int(id), queryset)
     else:
         project = None
 
     if project is None:
-        project = get_project_by_slug(id)
+        project = get_project_by_slug(id, queryset)
 
     return project
+
+def get_object_or_none(klass, *args, **kwargs):
+    if hasattr(klass, '_default_manager'):
+        queryset = klass._default_manager.all()
+    else:
+        queryset = klass
+    try:
+        return queryset.get(*args, **kwargs)
+    except klass.model.DoesNotExist:
+        return None
