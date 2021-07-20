@@ -41,6 +41,12 @@ def get_child_or_404(objects, **kwargs):
         raise Http404
     return obj
 
+class ProjectAPIViewMixin():
+    project_lookup_url_kwarg = 'project_id'
+
+    def get_project(self):
+        return get_project_or_404(self.kwargs[self.project_lookup_url_kwarg])
+
 #
 # User API endpoints
 #
@@ -62,10 +68,11 @@ class ProjectList(generics.ListCreateAPIView):
     def get_queryset(self):
         return self.request.user.projects.order_by('-pk')
 
-class ProjectDetail(generics.RetrieveUpdateDestroyAPIView):
+class ProjectDetail(generics.RetrieveUpdateDestroyAPIView, ProjectAPIViewMixin):
     queryset = Project.objects.all()
     serializer_class = ProjectSerializer
     lookup_url_kwarg = 'id'
+    project_lookup_url_kwarg = 'id'
 
     def get_object(self):
         return get_project_or_404(self.kwargs['id'])
@@ -73,91 +80,84 @@ class ProjectDetail(generics.RetrieveUpdateDestroyAPIView):
 #
 # Project Members API endpoints
 #
-class ProjectMemberList(generics.ListCreateAPIView):
+class ProjectMemberList(generics.ListCreateAPIView, ProjectAPIViewMixin):
     serializer_class = MembershipSerializer
 
     def get_queryset(self):
-        project = get_project_or_404(self.kwargs['project_id'])
-        return project.memberships.order_by('-pk')
+        return self.get_project().memberships.order_by('-pk')
 
     def create(self, request, *args, **kwargs):
-        request.data['project'] = get_project_or_404(self.kwargs['project_id']).id
+        request.data['project'] = self.get_project().id
         return super().create(request, *args, **kwargs)
 
-class ProjectMemberDetail(generics.RetrieveUpdateDestroyAPIView):
+class ProjectMemberDetail(generics.RetrieveUpdateDestroyAPIView, ProjectAPIViewMixin):
     serializer_class = MembershipSerializer
     lookup_url_kwarg = 'member_id'
 
     def get_queryset(self):
-        project = get_project_or_404(self.kwargs['project_id'])
-        return project.memberships.order_by('-pk')
+        return self.get_project().memberships.order_by('-pk')
+
 #
 # Project Submission Properties API endpoints
 #
 
-class ProjectSubmissionPropertyList(generics.ListCreateAPIView):
+class ProjectSubmissionPropertyList(generics.ListCreateAPIView, ProjectAPIViewMixin):
     serializer_class = ProjectSubmissionPropertySerializer
 
     def get_queryset(self):
-        project = get_project_or_404(self.kwargs['project_id'])
-        return project.properties.order_by('-pk')
+        return self.get_project().properties.order_by('-pk')
 
     def create(self, request, *args, **kwargs):
-        request.data['project'] = get_project_or_404(self.kwargs['project_id']).id
+        request.data['project'] = self.get_project().id
         return super().create(request, *args, **kwargs)
 
-class ProjectSubmissionPropertyDetail(generics.RetrieveUpdateDestroyAPIView):
+class ProjectSubmissionPropertyDetail(generics.RetrieveUpdateDestroyAPIView, ProjectAPIViewMixin):
     serializer_class = ProjectSubmissionPropertySerializer
     lookup_url_kwarg = 'property_id'
 
     def get_queryset(self):
-        project = get_project_or_404(self.kwargs['project_id'])
-        return project.properties.all()
+        return self.get_project().properties.all()
 
 #
 # Project Webhook API endpoints
 #
 
-class ProjectWebhookList(generics.ListCreateAPIView):
+class ProjectWebhookList(generics.ListCreateAPIView, ProjectAPIViewMixin):
     serializer_class = WebhookSerializer
 
     def get_queryset(self):
-        project = get_project_or_404(self.kwargs['project_id'])
-        return project.webhooks.order_by('-pk')
+        return self.get_project().webhooks.order_by('-pk')
 
     def create(self, request, *args, **kwargs):
-        request.data['project'] = get_project_or_404(self.kwargs['project_id']).id
+        request.data['project'] = self.get_project().id
         return super().create(request, *args, **kwargs)
 
-class ProjectWebhookDetail(generics.RetrieveUpdateDestroyAPIView):
+class ProjectWebhookDetail(generics.RetrieveUpdateDestroyAPIView, ProjectAPIViewMixin):
     serializer_class = WebhookSerializer
     lookup_url_kwarg = 'webhook_id'
 
     def get_queryset(self):
-        project = get_project_or_404(self.kwargs['project_id'])
-        return project.webhooks.all()
+        return self.get_project().webhooks.all()
 
-class ProjectWebhookLogList(generics.ListAPIView):
+class ProjectWebhookLogList(generics.ListAPIView, ProjectAPIViewMixin):
     serializer_class = WebhookLogEntrySerializer
 
     def get_queryset(self):
-        project = get_project_or_404(self.kwargs['project_id'])
-        webhook = get_child_or_404(project.webhooks, pk=self.kwargs['webhook_id'])
+        webhook = get_child_or_404(self.get_project().webhooks, pk=self.kwargs['webhook_id'])
         return webhook.logs.all()
 
 #
 # Project Submission API endpoints
 #
 
-class ProjectSubmissionList(generics.ListCreateAPIView):
+class ProjectSubmissionList(generics.ListCreateAPIView, ProjectAPIViewMixin):
     serializer_class = SubmissionSerializer
 
     def get_queryset(self):
-        project = get_project_or_404(self.kwargs['project_id'])
-        return project.submissions.filter(**self.request.query_params.dict()).order_by('-pk')
+        return self.get_project().submissions.filter(**self.request.query_params.dict()).order_by('-pk')
 
     def create(self, request, *args, **kwargs):
-        project = get_project_or_404(self.kwargs['project_id'])
+        project = self.get_project()
         request.data['project'] = project.id
         unique_key = request.query_params.get('unique_key')
         info = request.data.get('info')
@@ -175,81 +175,74 @@ class ProjectSubmissionList(generics.ListCreateAPIView):
 
         return super().create(request, *args, **kwargs)
 
-class ProjectSubmissionDetail(generics.RetrieveUpdateDestroyAPIView):
+class ProjectSubmissionDetail(generics.RetrieveUpdateDestroyAPIView, ProjectAPIViewMixin):
     serializer_class = SubmissionSerializer
     lookup_url_kwarg = 'submission_id'
 
     def get_queryset(self):
-        project = get_project_or_404(self.kwargs['project_id'])
-        return project.submissions.all()
+        return self.get_project().submissions.all()
 
-class ProjectTestResultList(generics.ListAPIView):
+class ProjectTestResultList(generics.ListAPIView, ProjectAPIViewMixin):
     serializer_class = TestResultSerializer
 
     def get_queryset(self):
-        project = get_project_or_404(self.kwargs['project_id'])
-        return TestResult.objects.filter(submission__project__id=project.id).all().order_by('-pk')
+        return TestResult.objects.filter(submission__project__id=self.get_project().id).all().order_by('-pk')
 
-class ProjectTestResultDetail(generics.RetrieveUpdateDestroyAPIView):
+class ProjectTestResultDetail(generics.RetrieveUpdateDestroyAPIView, ProjectAPIViewMixin):
     serializer_class = TestResultSerializer
     lookup_url_kwarg = 'test_id'
 
     def get_queryset(self):
-        project = get_project_or_404(self.kwargs['project_id'])
-        return TestResult.objects.filter(submission__project__id=project.id).all()
+        return TestResult.objects.filter(submission__project__id=self.get_project().id).all()
 
 #
 # Project Submission Test API endpoints
 #
 
-class ProjectSubmissionTestResultList(generics.ListCreateAPIView):
+class ProjectSubmissionTestResultList(generics.ListCreateAPIView, ProjectAPIViewMixin):
     serializer_class = TestResultSerializer
 
     def get_queryset(self):
-        project = get_project_or_404(self.kwargs['project_id'])
-        submission = get_child_or_404(project.submissions, pk=self.kwargs['submission_id'])
+        submission = get_child_or_404(self.get_project().submissions, pk=self.kwargs['submission_id'])
         return submission.tests.order_by('-pk')
 
     def create(self, request, *args, **kwargs):
-        project = get_project_or_404(self.kwargs['project_id'])
-        request.data['submission'] = get_child_or_404(project.submissions, pk=self.kwargs['submission_id']).id
+        request.data['submission'] = get_child_or_404(self.get_project().submissions, pk=self.kwargs['submission_id']).id
         return super().create(request, *args, **kwargs)
 
-class ProjectSubmissionTestResultDetail(generics.RetrieveUpdateDestroyAPIView):
+class ProjectSubmissionTestResultDetail(generics.RetrieveUpdateDestroyAPIView, ProjectAPIViewMixin):
     serializer_class = TestResultSerializer
     lookup_url_kwarg = 'test_id'
 
     def get_queryset(self):
-        project = get_project_or_404(self.kwargs['project_id'])
-        submission = get_child_or_404(project.submissions, pk=self.kwargs['submission_id'])
+        submission = get_child_or_404(self.get_project().submissions, pk=self.kwargs['submission_id'])
         return submission.tests.all()
 
 #
 # Project Reference API endpoints
 #
 
-class ProjectReferenceSetList(generics.ListCreateAPIView):
+class ProjectReferenceSetList(generics.ListCreateAPIView, ProjectAPIViewMixin):
     serializer_class = ReferenceSetSerializer
 
     def get_queryset(self):
-        project = get_project_or_404(self.kwargs['project_id'])
+        project = self.get_project()
         queries = create_reference_query(project, self.request.query_params)
         return project.reference_sets.filter(**queries).order_by('-pk')
 
     def create(self, request, *args, **kwargs):
-        request.data['project'] = get_project_or_404(self.kwargs['project_id']).id
+        request.data['project'] = self.get_project().id
         try:
             return super().create(request, *args, **kwargs)
         except IntegrityError as error:
             return Response(str(error), status.HTTP_400_BAD_REQUEST)
 
-class ProjectReferenceSetDetail(generics.RetrieveUpdateDestroyAPIView):
+class ProjectReferenceSetDetail(generics.RetrieveUpdateDestroyAPIView, ProjectAPIViewMixin):
     serializer_class = ReferenceSetSerializer
     lookup_url_kwarg = 'reference_id'
 
     def get_queryset(self):
-        project = get_project_or_404(self.kwargs['project_id'])
-        return project.reference_sets.all()
+        return self.get_project().reference_sets.all()
 
     def update(self, request, *args, **kwargs):
         try:
@@ -261,29 +254,26 @@ class ProjectReferenceSetDetail(generics.RetrieveUpdateDestroyAPIView):
 # Reference Tests API endpoints
 #
 
-class ProjectReferenceSetTestReferenceList(generics.ListCreateAPIView):
+class ProjectReferenceSetTestReferenceList(generics.ListCreateAPIView, ProjectAPIViewMixin):
     serializer_class = TestReferenceSerializer
 
     def get_queryset(self):
-        project = get_project_or_404(self.kwargs['project_id'])
-        reference_set = get_child_or_404(project.reference_sets, pk=self.kwargs['reference_id'])
+        reference_set = get_child_or_404(self.get_project().reference_sets, pk=self.kwargs['reference_id'])
         return reference_set.test_references.filter(**self.request.query_params.dict()).order_by('-pk')
 
     def create(self, request, *args, **kwargs):
-        project = get_project_or_404(self.kwargs['project_id'])
-        request.data['reference_set'] = get_child_or_404(project.reference_sets, pk=self.kwargs['reference_id']).id
+        request.data['reference_set'] = get_child_or_404(self.get_project().reference_sets, pk=self.kwargs['reference_id']).id
         try:
             return super().create(request, *args, **kwargs)
         except IntegrityError as error:
             return Response(str(error), status.HTTP_400_BAD_REQUEST)
 
-class ProjectReferenceSetTestReferenceDetail(generics.RetrieveUpdateDestroyAPIView):
+class ProjectReferenceSetTestReferenceDetail(generics.RetrieveUpdateDestroyAPIView, ProjectAPIViewMixin):
     serializer_class = TestReferenceSerializer
     lookup_url_kwarg = 'test_id'
 
     def get_queryset(self):
-        project = get_project_or_404(self.kwargs['project_id'])
-        reference_set = get_child_or_404(project.reference_sets, pk=self.kwargs['reference_id'])
+        reference_set = get_child_or_404(self.get_project().reference_sets, pk=self.kwargs['reference_id'])
         return reference_set.test_references.all()
 
     def update(self, request, *args, **kwargs):
