@@ -53,11 +53,11 @@
     <tr data-bs-toggle="collapse" data-bs-target="#entry_{{log_entry.id}}" class="collapsed" aria-expanded="false">
         <td>
             {% if log_entry.response_status >= 200 and log_entry.response_status < 300 %}
-                <span class="badge badge-success">{{ log_entry.response_status }}</span>
+                <span class="badge bg-success">{{ log_entry.response_status }}</span>
             {% elif log_entry.response_status >= 300 and log_entry.response_status < 500 %}
-                <span class="badge badge-danger">{{ log_entry.response_status }}</span>
+                <span class="badge bg-danger">{{ log_entry.response_status }}</span>
             {% else %}
-                <span class="badge badge-warning">{{ log_entry.response_status }}</span>
+                <span class="badge bg-warning">{{ log_entry.response_status }}</span>
             {% endif %}
         </td>
         <td>

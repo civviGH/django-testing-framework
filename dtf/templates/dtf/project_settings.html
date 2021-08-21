@@ -263,16 +263,16 @@
 
     function addWebhookRow(data) {
         if(data['status'] == "unknown") {
-            var status_badge_class = 'badge-secondary'
+            var status_badge_class = 'bg-secondary'
         }
         else if(data['status'] >= 200 && data['status'] < 300) {
-            var status_badge_class = 'badge-success'
+            var status_badge_class = 'bg-success'
         }
         else if(data['status'] >= 400 && data['status'] < 600) {
-            var status_badge_class = 'badge-danger'
+            var status_badge_class = 'bg-danger'
         }
         else {
-            var status_badge_class = 'badge-warning'
+            var status_badge_class = 'bg-warning'
         }
         $("#webhook_table").find('tbody')
           .append($('<tr>')
