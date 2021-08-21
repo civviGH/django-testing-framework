@@ -391,3 +391,10 @@ class TestMeasurementHistoryView(ProjectViewMixin, ProjectPermissionRequiredMixi
                                         measurement_name=measurement_name,
                                         limit=limit,
                                         measurement_global_reference=measurement_global_reference)
+
+#
+# Error views
+#
+
+def view_error_403(request, *args, **argv):
+    return render(request, 'dtf/errors/403.html')
