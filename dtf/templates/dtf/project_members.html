@@ -48,9 +48,15 @@
         </div>
       </div>
 
-      <input type="submit" value="Add Member" name="add" class="btn btn-success btn-sm">
-      <input type="submit" value="Save changes" name="edit" class="btn btn-success btn-sm" hidden>
-      <a id="member_edit_cancel" class="btn btn-outline-secondary btn-sm float-right" onclick="cancelEditMember()" hidden>Cancel</a>
+      <div class="row mb-3">
+        <div class="col">
+          <input type="submit" value="Add Member" name="add" class="btn btn-success btn-sm">
+          <input type="submit" value="Save changes" name="edit" class="btn btn-success btn-sm" hidden>
+        </div>
+        <div class="col-auto">
+          <a id="member_edit_cancel" class="btn btn-outline-secondary btn-sm" onclick="cancelEditMember()" hidden>Cancel</a>
+        </div>
+      </div>
     </form>
   </section>
 

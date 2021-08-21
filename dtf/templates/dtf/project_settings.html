@@ -122,9 +122,15 @@
         </div>
       </div>
 
-      <input type="submit" value="Add property" name="add" class="btn btn-success btn-sm">
-      <input type="submit" value="Save changes" name="edit" class="btn btn-success btn-sm" hidden>
-      <a id="property_edit_cancel" class="btn btn-outline-secondary btn-sm float-right" onclick="cancelEditProperty()" hidden>Cancel</a>
+      <div class="row mb-3">
+        <div class="col">
+          <input type="submit" value="Add property" name="add" class="btn btn-success btn-sm">
+          <input type="submit" value="Save changes" name="edit" class="btn btn-success btn-sm" hidden>
+        </div>
+        <div class="col-auto">
+          <a id="property_edit_cancel" class="btn btn-outline-secondary btn-sm" onclick="cancelEditProperty()" hidden>Cancel</a>
+        </div>
+      </div>
     </form>
 
     <table id="property_table" class="table table-hover table-sm mt-md-3">
@@ -213,9 +219,15 @@
         </div>
       </div>
 
-      <input type="submit" value="Add webhook" name="add" class="btn btn-success btn-sm">
-      <input type="submit" value="Save changes" name="edit" class="btn btn-success btn-sm" hidden>
-      <a id="webhook_edit_cancel" class="btn btn-outline-secondary btn-sm float-right" onclick="cancelEditWebhook()" hidden>Cancel</a>
+      <div class="row mb-3">
+        <div class="col">
+          <input type="submit" value="Add webhook" name="add" class="btn btn-success btn-sm">
+          <input type="submit" value="Save changes" name="edit" class="btn btn-success btn-sm" hidden>
+        </div>
+        <div class="col-auto">
+          <a id="webhook_edit_cancel" class="btn btn-outline-secondary btn-sm" onclick="cancelEditWebhook()" hidden>Cancel</a>
+        </div>
+      </div>
     </form>
 
     <table id="webhook_table" class="table table-hover table-sm mt-md-3">
