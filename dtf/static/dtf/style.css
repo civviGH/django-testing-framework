@@ -64,6 +64,16 @@ img {
     background-color: #f6f6f6;
 }
 
+a {
+    text-decoration: none;
+}
+a:hover {
+    text-decoration: underline;
+}
+a:hover.btn{
+    text-decoration: none;
+}
+
 /*
  * table
  */

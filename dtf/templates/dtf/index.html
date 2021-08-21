@@ -8,11 +8,13 @@
 <hr>
 {% for test_result in data %}
     <h6>Date: {{ test_result.last_updated}}</h6>
-    <div class="page-header">
-        <div class="float-left">
+    <div class="page-header row">
+        <div class="col">
             <h2>{{ test_result.name }}</h2>
         </div>
-        <h4 class="float-right">Project: {{test_result.project.name}}</h4><br>
+        <div class="col-md-auto">
+            <h4>Project: {{test_result.project.name}}</h4>
+        </div>
     </div>
     <table class="table table-striped table-hover table-sm">
         <tr>

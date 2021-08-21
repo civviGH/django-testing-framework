@@ -14,30 +14,35 @@
 
 {% block content %}
 
-<div class="pt-3 pb-3 border-bottom">
-<nav>
-  <ol class="breadcrumb">
-    <li class="breadcrumb-item" aria-current="page">
-        <a href="{% url 'project_details' test_result.submission.project.slug %}">{{ test_result.submission.project.name }}</a>
-    </li>
-    <li class="breadcrumb-item" aria-current="page">
-        <a href="{% url 'project_submissions' test_result.submission.project.slug %}">Submissions</a>
-    </li>
-    <li class="breadcrumb-item" aria-current="page">
-        <a href="{% url 'submission_details' test_result.submission.project.slug test_result.submission.pk %}">
-        {{test_result.submission.id}}
-        </a>
-    </li>
-    <li class="breadcrumb-item" aria-current="page">
-        <a href="{% url 'test_result_details' test_result.submission.project.slug test_result.pk %}">
-        {{ test_result.name }}
-        </a>
-    </li>
-    <li class="breadcrumb-item active" aria-current="page">
-        History
-    </li>
-  </ol>
-</nav>
+<div class="border-bottom">
+  <nav class="row">
+      <div class="col pt-3 pb-3">
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item" aria-current="page">
+            <a href="{% url 'project_details' test_result.submission.project.slug %}">{{ test_result.submission.project.name }}</a>
+        </li>
+        <li class="breadcrumb-item" aria-current="page">
+            <a href="{% url 'project_submissions' test_result.submission.project.slug %}">Submissions</a>
+        </li>
+        <li class="breadcrumb-item" aria-current="page">
+            <a href="{% url 'submission_details' test_result.submission.project.slug test_result.submission.pk %}">
+            {{test_result.submission.id}}
+            </a>
+        </li>
+        <li class="breadcrumb-item" aria-current="page">
+            <a href="{% url 'test_result_details' test_result.submission.project.slug test_result.pk %}">
+            {{ test_result.name }}
+            </a>
+        </li>
+        <li class="breadcrumb-item active" aria-current="page">
+            History
+        </li>
+      </ol>
+    </div>
+    <div class="col-md-auto mt-2 mb-2 content-sidebar-dependent">
+        <button class="btn btn-outline-dark btn-sm" onclick="toggleContentSidebar()"><i class="bi bi-chevron-double-left"></i></button>
+    </div>
+  </nav>
 </div>
 
 <div id="histrory_chart" class="mt-3" style="height:500px;"></div>
@@ -120,11 +125,11 @@
                     .append($('<div>')
                         .attr('class', 'd-flex mb-1')
                         .append($('<span>')
-                            .attr('class', 'mr-1')
+                            .attr('class', 'me-1')
                             .text('{{ measurement_name }} - status')
                         )
                         .append($('<span>')
-                            .attr('class', 'ml-auto badge border ' + statusToBadgeClass[params[0].data[3]])
+                            .attr('class', 'ms-auto badge border ' + statusToBadgeClass[params[0].data[3]])
                             .append($('<i>')
                                 .attr('class', 'bi ' + statusToIconClass[params[0].data[3]])
                             )
@@ -135,18 +140,18 @@
                     result.append($('<div>')
                             .attr('class', 'd-flex mb-1')
                             .append($('<div>')
-                                .attr('class', 'mr-1')
+                                .attr('class', 'me-1')
                                 .attr('style', `justify-content: center; align-items: center;`)
                                 .append($('<span>')
                                     .attr('style', `background: ${entry.color}; width: 10px; height: 10px; border-radius: 50%; display: inline-block;`)
                                 )
                             )
                             .append($('<span>')
-                                .attr('class', 'mr-3')
+                                .attr('class', 'me-3')
                                 .text(entry.seriesName)
                             )
                             .append($('<span>')
-                                .attr('class', 'ml-auto')
+                                .attr('class', 'ms-auto')
                                 .append($('<b>')
                                     .text(entry.data[entry.encode.y[0]])
                                 )
@@ -258,7 +263,7 @@
                     $('#test-created').text(date.toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'medium', timeZone: '{{ display_timezone }}' }));
                     $('#test-status').empty()
                         .append($('<span>')
-                            .attr('class', 'ml-auto badge border ' + statusToBadgeClass[data['status']])
+                            .attr('class', 'ms-auto badge border ' + statusToBadgeClass[data['status']])
                             .append($('<i>')
                                 .attr('class', 'bi ' + statusToIconClass[data['status']])
                             )

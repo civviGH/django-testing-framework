@@ -111,66 +111,52 @@ function toggleAllBoxes(){
 
 </script>
 
-<div class="pt-3 pb-3 border-bottom">
-<nav>
-  <ol class="breadcrumb">
-    <li class="breadcrumb-item" aria-current="page">
-        <a href="{% url 'project_details' test_result.submission.project.slug %}">{{ project.name }}</a>
-    </li>
-    <li class="breadcrumb-item" aria-current="page">
-        <a href="{% url 'project_submissions' test_result.submission.project.slug %}">Submissions</a>
-    </li>
-    <li class="breadcrumb-item" aria-current="page">
-        <a href="{% url 'submission_details' test_result.submission.project.slug test_result.submission.pk %}">
-        {{test_result.submission.id}}
-        </a>
-    </li>
-    <li class="breadcrumb-item active" aria-current="page">
-        {{ test_result.name }}
-    </li>
-  </ol>
-</nav>
+<div class="border-bottom">
+    <nav class="row">
+        <div class="col pt-3 pb-3">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item" aria-current="page">
+                    <a href="{% url 'project_details' test_result.submission.project.slug %}">{{ project.name }}</a>
+                </li>
+                <li class="breadcrumb-item" aria-current="page">
+                    <a href="{% url 'project_submissions' test_result.submission.project.slug %}">Submissions</a>
+                </li>
+                <li class="breadcrumb-item" aria-current="page">
+                    <a href="{% url 'submission_details' test_result.submission.project.slug test_result.submission.pk %}">
+                    {{test_result.submission.id}}
+                    </a>
+                </li>
+                <li class="breadcrumb-item active" aria-current="page">
+                    {{ test_result.name }}
+                </li>
+            </ol>
+        </div>
+        <div class="col-md-auto mt-2 mb-2 content-sidebar-dependent">
+            <button class="btn btn-outline-dark btn-sm" onclick="toggleContentSidebar()"><i class="bi bi-chevron-double-left"></i></button>
+        </div>
+    </nav>
 </div>
 
 <div class="bg-white pt-3 pb-1">
 
-<div class="page-header mb-5">
-    {# <h2 class="my-auto float-left">{{ test_result.name }} [{{ test_result.submission.pk }}]</h2> #}
+<div class="row">
+    <div class="col">
+        {% with not_successful=test_result.get_next_not_successful_test_id %}
+        {% if not_successful is None %}
+        <a href="#" class="btn btn-sm btn-secondary me-1 disabled">Next not successful</a>  
+        {% else %}
+        <a href="{% url 'test_result_details' test_result.submission.project.slug not_successful %}" class="ms-4 btn btn-sm btn-info active me-1">Next not successful</a>
+        {% endif %}
+        {% endwith %}
+    </div>
 
-    {% comment %} {% if nav_data.previous.exists %}
-    <a href="{% url 'test_result_details' test_result.submission.project.slug nav_data.previous.id %}" class="btn btn-sm btn-primary active mr-1 float-left">Previous</a> 
-    {% else %}
-    <a href="#" class="btn btn-sm btn-secondary mr-1 float-left disabled">Previous</a> 
-    {% endif %}
-
-    {% if nav_data.next.exists %}
-    <a href="{% url 'test_result_details' test_result.submission.project.slug nav_data.next.id %}" class="btn btn-sm btn-primary active mr-1 float-left">Next</a>
-    {% else %}
-    <a href="#" class="btn btn-sm btn-secondary mr-1 float-left disabled">Next</a>  
-    {% endif %}
-
-    {% if nav_data.most_recent.id == test_result.id %}
-    <a href="#" class="btn btn-sm btn-secondary mr-1 float-left disabled">>></a>  
-    {% else %}
-    <a href="{% url 'test_result_details' test_result.submission.project.slug nav_data.most_recent.id %}" class="btn btn-sm btn-primary active mr-1 float-left">>></a>
-    {% endif %} {% endcomment %}
-
-    {% with not_successful=test_result.get_next_not_successful_test_id %}
-    {% if not_successful is None %}
-    <a href="#" class="btn btn-sm btn-secondary mr-1 float-left disabled">Next not successful</a>  
-    {% else %}
-    <a href="{% url 'test_result_details' test_result.submission.project.slug not_successful %}" class="ml-4 btn btn-sm btn-info active mr-1 float-left">Next not successful</a>
-    {% endif %}
-    {% endwith %}
-
-    <button class="btn btn-sm btn-primary btn-lg active float-right" onclick="updateReferences()">Update selected references</button>
+    <div class="col-md-auto">
+        <button class="btn btn-sm btn-primary btn-lg active" onclick="updateReferences()">Update selected references</button>
+    </div>
 </div>
 
 <div class="mt-3 pb-1">
     {% include 'dtf/filter-box.html' with show_broken=False filter_context=test %}
-    <div class="float-right content-sidebar-dependent">
-        <button class="btn btn-outline-dark btn-sm" onclick="toggleContentSidebar()"><i class="bi bi-chevron-double-left"></i></button>
-    </div>
 </div>
 
 </div>
@@ -194,7 +180,7 @@ function toggleAllBoxes(){
             Global reference
         </th>
         <th class="noselect fit sorter-false">
-            <input class="ml-2 mr-2" id="allBox" type="checkbox" onclick="toggleAllBoxes()" autocomplete="off"/>
+            <input class="ms-2 me-2" id="allBox" type="checkbox" onclick="toggleAllBoxes()" autocomplete="off"/>
         </th>
     </tr>
     </thead>
@@ -210,8 +196,8 @@ function toggleAllBoxes(){
                         <span>{{ parameter.name }}</span>
                     </div>
                     {% if parameter.test.value is not None and parameter.test.value.type == 'duration' or parameter.test.value.type == 'integer' or parameter.test.value.type == 'float' %}
-                    <div class="ml-auto">
-                        <a class="btn btn-outline-dark dtf-btn-xs mr-1" href="{% url 'test_measurement_history' test_result.submission.project.slug test_result.id %}?measurement_name={{ parameter.name|urlencode:"" }}"><i class="bi bi-graph-up"></i></a>
+                    <div class="ms-auto">
+                        <a class="btn btn-outline-dark dtf-btn-xs me-1" href="{% url 'test_measurement_history' test_result.submission.project.slug test_result.id %}?measurement_name={{ parameter.name|urlencode:"" }}"><i class="bi bi-graph-up"></i></a>
                     </div>
                     {% endif %}
                 </div>
@@ -227,9 +213,9 @@ function toggleAllBoxes(){
             </td>
             <td>
                 {% if parameter.test %}
-                    <input id="{{ parameter.name }}" class="ml-2 mr-2 parameterBox" type="checkbox" pindex="{{ forloop.counter0 }}" autocomplete="off"/>
+                    <input id="{{ parameter.name }}" class="ms-2 me-2 parameterBox" type="checkbox" pindex="{{ forloop.counter0 }}" autocomplete="off"/>
                 {% else %}
-                    <input id="{{ parameter.name }}" class="ml-2 mr-2 parameterBox" type="checkbox" pindex="" autocomplete="off"/>
+                    <input id="{{ parameter.name }}" class="ms-2 me-2 parameterBox" type="checkbox" pindex="" autocomplete="off"/>
                 {% endif %}
             </td>
         </tr>

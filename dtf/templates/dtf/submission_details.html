@@ -12,25 +12,27 @@
 
 {% block content %}
 
-<div class="pt-3 pb-3 border-bottom">
-    <nav>
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item" aria-current="page">
-                <a href="{% url 'project_details' submission.project.slug %}">{{submission.project.name}}</a>
-            </li>
-            <li class="breadcrumb-item" aria-current="page">
-                <a href="{% url 'project_submissions' submission.project.slug %}">Submissions</a>
-            </li>
-            <li class="breadcrumb-item active" aria-current="page">{{submission.id}}</li>
-        </ol>
+<div class="border-bottom">
+    <nav class="row">
+        <div class="col pt-3 pb-3">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item" aria-current="page">
+                    <a href="{% url 'project_details' submission.project.slug %}">{{submission.project.name}}</a>
+                </li>
+                <li class="breadcrumb-item" aria-current="page">
+                    <a href="{% url 'project_submissions' submission.project.slug %}">Submissions</a>
+                </li>
+                <li class="breadcrumb-item active" aria-current="page">{{submission.id}}</li>
+            </ol>
+        </div>
+        <div class="col-md-auto mt-2 mb-2 content-sidebar-dependent">
+            <button class="btn btn-outline-dark btn-sm" onclick="toggleContentSidebar()"><i class="bi bi-chevron-double-left"></i></button>
+        </div>
     </nav>
 </div>
 
 <div class="pt-3 pb-1">
     {% include 'dtf/filter-box.html' with show_broken=True filter_context=submission%}
-    <div class="float-right content-sidebar-dependent">
-        <button class="btn btn-outline-dark btn-sm" onclick="toggleContentSidebar()"><i class="bi bi-chevron-double-left"></i></button>
-    </div>
 </div>
 
 <table class="table table-hover tablesorter">
