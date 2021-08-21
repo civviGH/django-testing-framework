@@ -28,27 +28,32 @@
       </div>
     {% endif %}
 
-    <div class="form-group">
-      <label for="{{ form.username.id_for_label }}" class="sr-only">{{ form.username.label }}</label>
+    <div class="form-floating">
       {{ form.username|as_bootstrap_field }}
-
-      <label for="{{ form.password.id_for_label }}" class="sr-only">{{ form.password.label }}</label>
+      <label for="{{ form.username.id_for_label }}">{{ form.username.label }}</label>
+    </div>
+    <div class="form-floating mb-2">
       {{ form.password|as_bootstrap_field }}
+      <label for="{{ form.password.id_for_label }}">{{ form.password.label }}</label>
     </div>
 
-    <div class="form-group form-check">
-      {{ form.remember_me|as_bootstrap_field }}
-      <label class="form-check-label" for="{{ form.remember_me.id_for_label }}">{{ form.remember_me.label }}</label>
-      <div class="float-right">
+    <div class="row mb-2">
+      <div class="col-md-auto">
+        {{ form.remember_me|as_bootstrap_field }}
+        <label class="form-check-label" for="{{ form.remember_me.id_for_label }}">{{ form.remember_me.label }}</label>
+      </div>
+      <div class="col">
         <a href="{% url 'reset_password' %}">Forgot your password?</a>
       </div>
     </div>
 
     <input type="hidden" name="next" value="{{ next }}" />
 
-    <button class="btn btn-lg btn-primary btn-block" type="submit">Sign in</button>
+    <div class="d-grid gap-2 mb-3">
+      <button class="btn btn-lg btn-primary" type="submit">Sign in</button>
+    </div>
 
-    <p class="mt-2">
+    <p>
       No account yet? <a href="{% url 'sign_up' %}">Create one now</a>
     </p>
   </form>

@@ -20,17 +20,7 @@ body {
     padding: 15px;
     margin: auto;
 }
-.user-form .form-check {
-    padding-left: 0;
-}
-.user-form .form-control {
-    position: relative;
-    box-sizing: border-box;
-    height: auto;
-    padding: 10px;
-    font-size: 16px;
-}
-.user-form .form-control:focus {
+.user-form .form-floating:focus-within {
     z-index: 2;
 }
 .signin-form input[name="username"] {
