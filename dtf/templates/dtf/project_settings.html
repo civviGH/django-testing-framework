@@ -42,18 +42,24 @@
       <div class="alert alert-danger" role="alert" hidden>
       </div>
 
-      <div class="form-row">
-        <div class="form-group col-md">
-          {{ project_form.name.label_tag }}
-          {{ project_form.name|as_dynamic_bootstrap_field }}
+      <div class="row mb-3">
+        <div class="col">
+          <div class="form-group">
+            {{ project_form.name.label_tag }}
+            {{ project_form.name|as_dynamic_bootstrap_field }}
+          </div>
         </div>
-        <div class="form-group col-">
-          {{ project_form.slug.label_tag }}
-          {{ project_form.slug|as_dynamic_bootstrap_field }}
+        <div class="col-2">
+          <div class="form-group">
+            {{ project_form.slug.label_tag }}
+            {{ project_form.slug|as_dynamic_bootstrap_field }}
+          </div>
         </div>
-        <div class="form-group col-">
-          <label for="project_id">ID:</label>
-          <input type="text" id="project_id" class="form-control" value="{{ project.id }}" disabled>
+        <div class="col-2">
+          <div class="form-group">
+            <label for="project_id">ID:</label>
+            <input type="text" id="project_id" class="form-control" value="{{ project.id }}" disabled>
+          </div>
         </div>
       </div>
 
@@ -81,41 +87,43 @@
       <div class="alert alert-danger" role="alert" hidden>
       </div>
 
-      <div class="form-row">
-        <div class="form-group col-md">
+      <div class="row mb-3">
+        <div class="form-group">
           {{ property_form.name.label_tag }}
           {{ property_form.name|as_dynamic_bootstrap_field }}
         </div>
       </div>
-      <div class="form-check col-md">
-        {{ property_form.required|as_dynamic_bootstrap_field }}
-        <label class="form-check-label" for="{{ property_form.required.id_for_label }}">{{ property_form.required.label }}</label>
-        {% if property_form.required.help_text %}
+      <div class="form-group mb-3">
+        <div class="form-check">
+          {{ property_form.required|as_dynamic_bootstrap_field }}
+          <label class="form-check-label" for="{{ property_form.required.id_for_label }}">{{ property_form.required.label }}</label>
+          {% if property_form.required.help_text %}
             <div class="form-text text-muted">{{ property_form.required.help_text }}</div>
-        {% endif %}
-      </div>
-      <div class="form-check col-md">
-        {{ property_form.influence_reference|as_dynamic_bootstrap_field }}
-        <label class="form-check-label" for="{{ property_form.influence_reference.id_for_label }}">{{ property_form.influence_reference.label }}</label>
-        {% if property_form.influence_reference.help_text %}
+          {% endif %}
+        </div>
+        <div class="form-check">
+          {{ property_form.influence_reference|as_dynamic_bootstrap_field }}
+          <label class="form-check-label" for="{{ property_form.influence_reference.id_for_label }}">{{ property_form.influence_reference.label }}</label>
+          {% if property_form.influence_reference.help_text %}
             <div class="form-text text-muted">{{ property_form.influence_reference.help_text }}</div>
-        {% endif %}
-      </div>
-      <div class="form-check col-md">
-        {{ property_form.display|as_dynamic_bootstrap_field }}
-        <label class="form-check-label" for="{{ property_form.display.id_for_label }}">{{ property_form.display.label }}</label>
-        {% if property_form.display.help_text %}
+          {% endif %}
+        </div>
+        <div class="form-check">
+          {{ property_form.display|as_dynamic_bootstrap_field }}
+          <label class="form-check-label" for="{{ property_form.display.id_for_label }}">{{ property_form.display.label }}</label>
+          {% if property_form.display.help_text %}
             <div class="form-text text-muted">{{ property_form.display.help_text }}</div>
-        {% endif %}
-      </div>
-      <div class="form-check col-md">
-        {{ property_form.display_as_link|as_dynamic_bootstrap_field }}
-        <label class="form-check-label" for="{{ property_form.display_as_link.id_for_label }}">{{ property_form.display_as_link.label }}</label>
-        {% if property_form.display_as_link.help_text %}
+          {% endif %}
+        </div>
+        <div class="form-check">
+          {{ property_form.display_as_link|as_dynamic_bootstrap_field }}
+          <label class="form-check-label" for="{{ property_form.display_as_link.id_for_label }}">{{ property_form.display_as_link.label }}</label>
+          {% if property_form.display_as_link.help_text %}
             <div class="form-text text-muted">{{ property_form.display_as_link.help_text }}</div>
-        {% endif %}
+          {% endif %}
+        </div>
       </div>
-      <div class="form-row">
+      <div class="row mb-3">
         <div class="form-group col-md">
           {{ property_form.display_replace.label_tag }}
           {{ property_form.display_replace|as_dynamic_bootstrap_field }}
@@ -168,26 +176,26 @@
       <div class="alert alert-danger" role="alert" hidden>
       </div>
 
-      <div class="form-row">
+      <div class="row mb-3">
         <div class="form-group col-md">
           {{ webhook_form.name.label_tag }}
           {{ webhook_form.name|as_dynamic_bootstrap_field }}
         </div>
       </div>
-      <div class="form-row">
+      <div class="row mb-3">
         <div class="form-group col-md">
           {{ webhook_form.url.label_tag }}
           {{ webhook_form.url|as_dynamic_bootstrap_field }}
         </div>
       </div>
-      <div class="form-row">
+      <div class="row mb-3">
         <div class="form-group col-md">
           {{ webhook_form.secret_token.label_tag }}
           {{ webhook_form.secret_token|as_dynamic_bootstrap_field }}
         </div>
       </div>
       
-      <div class="form-group">
+      <div class="form-group mb-3">
         <label>Triggers:</label>
         <div class="form-check col-md">
           {{ webhook_form.on_submission|as_dynamic_bootstrap_field }}

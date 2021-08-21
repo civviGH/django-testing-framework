@@ -37,14 +37,18 @@
       <div class="alert alert-danger" role="alert" hidden>
       </div>
 
-      <div class="form-row">
-        <div class="form-group col-md">
-          {{ form.user.label_tag }}
-          {{ form.user|as_dynamic_bootstrap_field }}
+      <div class="row mb-3">
+        <div class="col">
+          <div class="form-group">
+            {{ form.user.label_tag }}
+            {{ form.user|as_dynamic_bootstrap_field }}
+          </div>
         </div>
-        <div class="form-group col-">
-          {{ form.role.label_tag }}
-          {{ form.role|as_dynamic_bootstrap_field }}
+        <div class="col-2">
+          <div class="form-group">
+            {{ form.role.label_tag }}
+            {{ form.role|as_dynamic_bootstrap_field }}
+          </div>
         </div>
       </div>
 

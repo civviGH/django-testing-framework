@@ -31,14 +31,18 @@
       </div>
     {% endif %}
 
-    <div class="form-row">
-      <div class="form-group col-md">
-        {{ form.name.label_tag }}
-        {{ form.name|as_bootstrap_field }}
+    <div class="row mb-3">
+      <div class="col">
+        <div class="form-group">
+          {{ form.name.label_tag }}
+          {{ form.name|as_bootstrap_field }}
+        </div>
       </div>
-      <div class="form-group col-">
-        {{ form.slug.label_tag }}
-        {{ form.slug|as_bootstrap_field }}
+      <div class="col-2">
+        <div class="form-group">
+          {{ form.slug.label_tag }}
+          {{ form.slug|as_bootstrap_field }}
+        </div>
       </div>
     </div>
 
