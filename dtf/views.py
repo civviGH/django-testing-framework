@@ -324,7 +324,8 @@ class TestResultDetailView(ProjectViewMixin, ProjectPermissionRequiredMixin, gen
                                         test_result=test_result,
                                         property_values=str(property_values),
                                         #nav_data=nav_data,
-                                        data=data)
+                                        data=data,
+                                        test_reference_permissions=get_model_permissions(self.request.user, project, TestReference))
 
 class SubmissionDetailView(ProjectViewMixin, ProjectPermissionRequiredMixin, generic.DetailView):
     template_name = 'dtf/submission_details.html'
