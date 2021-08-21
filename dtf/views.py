@@ -19,7 +19,7 @@ from dtf.serializers import WebhookSerializer
 from dtf.models import TestResult, Membership, Project, ReferenceSet, TestReference, Submission, ProjectSubmissionProperty, Webhook, WebhookLogEntry
 from dtf.functions import create_view_data_from_test_references, create_reference_query
 from dtf.forms import NewProjectForm, ProjectSettingsForm, ProjectSubmissionPropertyForm, MembershipForm, WebhookForm, NewUserForm, LoginForm, ResetPasswordForm, PasswordSetForm
-from dtf.permissions import ProjectPermissionRequiredMixin, check_required_model_role
+from dtf.permissions import ProjectPermissionRequiredMixin, get_model_permissions, check_required_model_role
 
 #
 # User views
@@ -142,7 +142,9 @@ class ProjectMembersView(ProjectViewMixin, ProjectPermissionRequiredMixin, gener
 
     def get_context_data(self, **kwargs):
         project = self.get_project()
-        return super().get_context_data(**kwargs, project=project)
+        return super().get_context_data(**kwargs,
+                                        project=project,
+                                        member_permissions=get_model_permissions(self.request.user, project, Membership))
 
 @login_required
 def view_project_settings(request, project_slug):
