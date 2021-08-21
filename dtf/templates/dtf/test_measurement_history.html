@@ -1,6 +1,11 @@
 {% extends 'dtf/page_with_two_sidebars.html' %}
 
+{% load static %}
 {% load dtf.custom_filters %}
+
+{% block head %}
+    <script src="{% static 'dtf/echarts.min.js' %}"></script>
+{% endblock %}
 
 {% block containertype %}fluid{% endblock %}
 
