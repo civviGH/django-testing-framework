@@ -225,7 +225,11 @@ def view_project_settings(request, project_slug):
         'properties' : properties,
         'property_form': property_form,
         'webhooks' : webhooks,
-        'webhook_form': webhook_form
+        'webhook_form': webhook_form,
+        'project_permissions': get_model_permissions(request.user, project, Project),
+        'property_permissions': get_model_permissions(request.user, project, ProjectSubmissionProperty),
+        'webhook_permissions': get_model_permissions(request.user, project, Webhook),
+        'webhook_log_permissions': get_model_permissions(request.user, project, WebhookLogEntry, operations=['view'])
     })
 
 
