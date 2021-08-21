@@ -139,10 +139,18 @@ function postReferenceUpdate(csrfToken, testName, testId, testResults, reference
         url: url,
         data: JSON.stringify(data),
         success: function(result) {
+            $.toast({
+                type: 'success',
+                content: `Successfully updated ${updatedCount} references.`
+            });
             updateResultsTableReferences(projectSlug, testResults, result['references']);
             uncheckAllBoxes();
         },
         error: function(result) {
+            $.toast({
+                type: 'danger',
+                content: `Failed to update ${updatedCount} references.`
+            });
             console.log(result);
         }
     });
@@ -165,7 +173,10 @@ function updateReferences(csrfToken, testName, testId, testResults, propertyValu
                 postReferenceUpdate(csrfToken, testName, testId, testResults, result.id, null, projectSlug);
             },
             error: function(result) {
-                alert('error. log in console');
+                $.toast({
+                    type: 'danger',
+                    content: `Failed to create reference set.`
+                });
                 console.log(result);
             }
         });

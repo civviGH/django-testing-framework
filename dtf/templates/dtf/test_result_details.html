@@ -4,6 +4,7 @@
 {% load dtf.custom_filters %}
 
 {% block head %}
+    <script src="{% static 'dtf/toast.js' %}"></script>
     <script src="{% static 'dtf/duration.js' %}"></script>
     <script src="{% static 'dtf/badge.js' %}"></script>
     <script src="{% static 'dtf/test_result_value.js' %}"></script>
@@ -93,6 +94,9 @@ $('document').ready(function(){
 </div>
 
 <div class="bg-white pt-3 pb-1">
+
+<div id="toast-container" class="toast-container position-absolute content-wrapper p-3 top-0 start-50 translate-middle-x">
+</div>
 
 <div class="row">
     <div class="col">
