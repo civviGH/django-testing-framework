@@ -91,28 +91,28 @@
         {{ property_form.required|as_dynamic_bootstrap_field }}
         <label class="form-check-label" for="{{ property_form.required.id_for_label }}">{{ property_form.required.label }}</label>
         {% if property_form.required.help_text %}
-          <small class="form-text text-muted">{{ property_form.required.help_text }}</small>
+            <div class="form-text text-muted">{{ property_form.required.help_text }}</div>
         {% endif %}
       </div>
       <div class="form-check col-md">
         {{ property_form.influence_reference|as_dynamic_bootstrap_field }}
         <label class="form-check-label" for="{{ property_form.influence_reference.id_for_label }}">{{ property_form.influence_reference.label }}</label>
         {% if property_form.influence_reference.help_text %}
-          <small class="form-text text-muted">{{ property_form.influence_reference.help_text }}</small>
+            <div class="form-text text-muted">{{ property_form.influence_reference.help_text }}</div>
         {% endif %}
       </div>
       <div class="form-check col-md">
         {{ property_form.display|as_dynamic_bootstrap_field }}
         <label class="form-check-label" for="{{ property_form.display.id_for_label }}">{{ property_form.display.label }}</label>
         {% if property_form.display.help_text %}
-          <small class="form-text text-muted">{{ property_form.display.help_text }}</small>
+            <div class="form-text text-muted">{{ property_form.display.help_text }}</div>
         {% endif %}
       </div>
       <div class="form-check col-md">
         {{ property_form.display_as_link|as_dynamic_bootstrap_field }}
         <label class="form-check-label" for="{{ property_form.display_as_link.id_for_label }}">{{ property_form.display_as_link.label }}</label>
         {% if property_form.display_as_link.help_text %}
-          <small class="form-text text-muted">{{ property_form.display_as_link.help_text }}</small>
+            <div class="form-text text-muted">{{ property_form.display_as_link.help_text }}</div>
         {% endif %}
       </div>
       <div class="form-row">
@@ -193,28 +193,28 @@
           {{ webhook_form.on_submission|as_dynamic_bootstrap_field }}
           <label class="form-check-label" for="{{ webhook_form.on_submission.id_for_label }}">{{ webhook_form.on_submission.label }}</label>
           {% if webhook_form.on_submission.help_text %}
-            <small class="form-text text-muted">{{ webhook_form.on_submission.help_text }}</small>
+            <div class="form-text text-muted">{{ webhook_form.on_submission.help_text }}</div>
           {% endif %}
         </div>
         <div class="form-check col-md">
           {{ webhook_form.on_test_result|as_dynamic_bootstrap_field }}
           <label class="form-check-label" for="{{ webhook_form.on_test_result.id_for_label }}">{{ webhook_form.on_test_result.label }}</label>
           {% if webhook_form.on_test_result.help_text %}
-            <small class="form-text text-muted">{{ webhook_form.on_test_result.help_text }}</small>
+            <div class="form-text text-muted">{{ webhook_form.on_test_result.help_text }}</div>
           {% endif %}
         </div>
         <div class="form-check col-md">
           {{ webhook_form.on_reference_set|as_dynamic_bootstrap_field }}
           <label class="form-check-label" for="{{ webhook_form.on_reference_set.id_for_label }}">{{ webhook_form.on_reference_set.label }}</label>
           {% if webhook_form.on_reference_set.help_text %}
-            <small class="form-text text-muted">{{ webhook_form.on_reference_set.help_text }}</small>
+            <div class="form-text text-muted">{{ webhook_form.on_reference_set.help_text }}</div>
           {% endif %}
         </div>
         <div class="form-check col-md">
           {{ webhook_form.on_test_reference|as_dynamic_bootstrap_field }}
           <label class="form-check-label" for="{{ webhook_form.on_test_reference.id_for_label }}">{{ webhook_form.on_test_reference.label }}</label>
           {% if webhook_form.on_test_reference.help_text %}
-            <small class="form-text text-muted">{{ webhook_form.on_test_reference.help_text }}</small>
+            <div class="form-text text-muted">{{ webhook_form.on_test_reference.help_text }}</div>
           {% endif %}
         </div>
       </div>
