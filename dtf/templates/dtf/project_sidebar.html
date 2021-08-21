@@ -9,30 +9,38 @@
     </div>
 
     <ul>
+        {% if 'submissions' in project_sidebar_items %}
         <li class="{% if active_page == 'submissions' %}active{% endif %}">
             <a href="{% url 'project_submissions' project.slug %}">
                 <span class="item-icon"><i class="bi bi-box-arrow-in-right"></i></span>
                 <span class="item-name">Submissions</span>
             </a>
         </li>
+        {% endif %}
+        {% if 'references' in project_sidebar_items %}
         <li class="{% if active_page == 'references' %}active{% endif %}">
             <a href="{% url 'project_reference_sets' project.slug %}">
                 <span class="item-icon"><i class="bi bi-star"></i></span>
                 <span class="item-name">References</span>
             </a>
         </li>
+        {% endif %}
+        {% if 'members' in project_sidebar_items %}
         <li class="{% if active_page == 'members' %}active{% endif %}">
             <a href="{% url 'project_members' project.slug %}">
                 <span class="item-icon"><i class="bi bi-people"></i></span>
                 <span class="item-name">Members</span>
             </a>
         </li>
+        {% endif %}
+        {% if 'settings' in project_sidebar_items %}
         <li class="{% if active_page == 'settings' %}active{% endif %}">
             <a href="{% url 'project_settings' project.slug %}">
                 <span class="item-icon"><i class="bi bi-gear"></i></span>
                 <span class="item-name">Settings</span>
             </a>
         </li>
+        {% endif %}
     </ul>
 
     <a class="toggle-sidebar-button border-top" type="button" onclick="toggleNavigationSidebar()">

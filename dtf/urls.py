@@ -72,3 +72,5 @@ urlpatterns = [
 ]
 
 urlpatterns = format_suffix_patterns(urlpatterns)
+
+handler403 = 'dtf.views.view_error_403'

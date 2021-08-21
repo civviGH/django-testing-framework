@@ -43,6 +43,12 @@ def has_required_model_role(user, project, model, operation):
 
     return _is_sufficient_role(membership.role, required_role=required_role)
 
+def get_model_permissions(user, project, model, operations=['add', 'change', 'delete']):
+    result = {}
+    for operation in operations:
+        result[operation] = has_required_model_role(user, project, model, operation)
+    return result
+
 def check_required_model_role(user, project, model, operation):
     if not has_required_model_role(user, project, model, operation):
         raise PermissionDenied

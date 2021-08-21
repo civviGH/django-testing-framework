@@ -62,8 +62,9 @@
           </div>
         </div>
       </div>
-
+      {% if project_permissions.change %}
       <input type="submit" value="Save" name="edit" class="btn btn-success btn-sm">
+      {% endif %}
     </form>
   </div>
 </section>
@@ -77,6 +78,7 @@
   </div>
 
   <div id="properties" class="section-content collapse">
+    {% if property_permissions.change or property_permissions.add %}
     <form id="property_form_id" novalidate>
       {% csrf_token %}
 
@@ -132,16 +134,21 @@
 
       <div class="row mb-3">
         <div class="col">
+          {% if property_permissions.add %}
           <input type="submit" value="Add property" name="add" class="btn btn-success btn-sm">
+          {% endif %}
+          {% if property_permissions.change %}
           <input type="submit" value="Save changes" name="edit" class="btn btn-success btn-sm" hidden>
+          {% endif %}
         </div>
         <div class="col-auto">
           <a id="property_edit_cancel" class="btn btn-outline-secondary btn-sm" onclick="cancelEditProperty()" hidden>Cancel</a>
         </div>
       </div>
     </form>
+    {% endif %}
 
-    <table id="property_table" class="table table-hover table-sm mt-md-3">
+    <table id="property_table" class="table table-hover table-sm">
       <thead>
         <tr>
           <th scope="col" class="col-auto">Name</th>
@@ -166,6 +173,7 @@
   </div>
 
   <div id="webhooks" class="section-content collapse">
+    {% if webhook_permissions.change or webhook_permissions.add %}
     <form id="webhook_form_id" novalidate>
       {% csrf_token %}
 
@@ -229,16 +237,21 @@
 
       <div class="row mb-3">
         <div class="col">
+          {% if webhook_permissions.add %}
           <input type="submit" value="Add webhook" name="add" class="btn btn-success btn-sm">
+          {% endif %}
+          {% if webhook_permissions.change %}
           <input type="submit" value="Save changes" name="edit" class="btn btn-success btn-sm" hidden>
+          {% endif %}
         </div>
         <div class="col-auto">
           <a id="webhook_edit_cancel" class="btn btn-outline-secondary btn-sm" onclick="cancelEditWebhook()" hidden>Cancel</a>
         </div>
       </div>
     </form>
+    {% endif %}
 
-    <table id="webhook_table" class="table table-hover table-sm mt-md-3">
+    <table id="webhook_table" class="table table-hover table-sm">
       <thead>
         <tr>
           <th scope="col" class="col-auto">Name</th>
@@ -289,11 +302,13 @@
                   .append($('<span>')
                       .text(data['name'])
                   )
+                  {% if webhook_log_permissions.view %}
                   .append($('<a>')
                       .attr('href', '{% url 'webhook_log' project.slug 1234%}'.replace('1234', data['id']))
                       .attr('class', 'me-md-1 ms-md-1 badge ' + status_badge_class)
                       .text(data['status'])
                   )
+                  {% endif %}
               )
               .append($('<td>')
                   .text(data['url'])
@@ -301,6 +316,7 @@
               .append($('<td>')
                   .attr('class', 'text-right fit')
                   .append($('<div>')
+                      {% if webhook_permissions.change %}
                       .append($('<button>')
                           .attr('class', 'btn btn-outline-success btn-sm me-md-1 ms-md-1')
                           .append($('<i>')
@@ -314,6 +330,8 @@
                               .attr('class', 'bi bi-pencil')
                           )
                       )
+                      {% endif %}
+                      {% if webhook_permissions.delete %}
                       .append($('<button>')
                           .attr('class', 'btn btn-danger btn-sm me-md-1 ms-md-1')
                           .attr('onclick', 'deleteWebhook(' + data['id'] + ')')
@@ -321,6 +339,7 @@
                               .attr('class', 'bi bi-trash')
                           )
                       )
+                      {% endif %}
                   )
               )
         );
@@ -362,6 +381,7 @@
               .append($('<td>')
                   .attr('class', 'text-right fit')
                   .append($('<div>')
+                      {% if webhook_permissions.change %}
                       .append($('<button>')
                           .attr('class', 'btn btn-outline-dark btn-sm me-md-1 ms-md-1')
                           .attr('onclick', 'startEditProperty(' + data['id'] + ')')
@@ -369,6 +389,8 @@
                               .attr('class', 'bi bi-pencil')
                           )
                       )
+                      {% endif %}
+                      {% if webhook_permissions.delete %}
                       .append($('<button>')
                           .attr('class', 'btn btn-danger btn-sm me-md-1 ms-md-1')
                           .attr('onclick', 'deleteProperty(' + data['id'] + ')')
@@ -376,6 +398,7 @@
                               .attr('class', 'bi bi-trash')
                           )
                       )
+                      {% endif %}
                   )
               )
         
