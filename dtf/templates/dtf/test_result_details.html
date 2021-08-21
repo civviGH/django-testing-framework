@@ -143,9 +143,9 @@ function toggleAllBoxes(){
     <div class="col">
         {% with not_successful=test_result.get_next_not_successful_test_id %}
         {% if not_successful is None %}
-        <a href="#" class="btn btn-sm btn-secondary mr-1 disabled">Next not successful</a>  
+        <a href="#" class="btn btn-sm btn-secondary me-1 disabled">Next not successful</a>  
         {% else %}
-        <a href="{% url 'test_result_details' test_result.submission.project.slug not_successful %}" class="ml-4 btn btn-sm btn-info active mr-1">Next not successful</a>
+        <a href="{% url 'test_result_details' test_result.submission.project.slug not_successful %}" class="ms-4 btn btn-sm btn-info active me-1">Next not successful</a>
         {% endif %}
         {% endwith %}
     </div>
@@ -180,7 +180,7 @@ function toggleAllBoxes(){
             Global reference
         </th>
         <th class="noselect fit sorter-false">
-            <input class="ml-2 mr-2" id="allBox" type="checkbox" onclick="toggleAllBoxes()" autocomplete="off"/>
+            <input class="ms-2 me-2" id="allBox" type="checkbox" onclick="toggleAllBoxes()" autocomplete="off"/>
         </th>
     </tr>
     </thead>
@@ -196,8 +196,8 @@ function toggleAllBoxes(){
                         <span>{{ parameter.name }}</span>
                     </div>
                     {% if parameter.test.value is not None and parameter.test.value.type == 'duration' or parameter.test.value.type == 'integer' or parameter.test.value.type == 'float' %}
-                    <div class="ml-auto">
-                        <a class="btn btn-outline-dark dtf-btn-xs mr-1" href="{% url 'test_measurement_history' test_result.submission.project.slug test_result.id %}?measurement_name={{ parameter.name|urlencode:"" }}"><i class="bi bi-graph-up"></i></a>
+                    <div class="ms-auto">
+                        <a class="btn btn-outline-dark dtf-btn-xs me-1" href="{% url 'test_measurement_history' test_result.submission.project.slug test_result.id %}?measurement_name={{ parameter.name|urlencode:"" }}"><i class="bi bi-graph-up"></i></a>
                     </div>
                     {% endif %}
                 </div>
@@ -213,9 +213,9 @@ function toggleAllBoxes(){
             </td>
             <td>
                 {% if parameter.test %}
-                    <input id="{{ parameter.name }}" class="ml-2 mr-2 parameterBox" type="checkbox" pindex="{{ forloop.counter0 }}" autocomplete="off"/>
+                    <input id="{{ parameter.name }}" class="ms-2 me-2 parameterBox" type="checkbox" pindex="{{ forloop.counter0 }}" autocomplete="off"/>
                 {% else %}
-                    <input id="{{ parameter.name }}" class="ml-2 mr-2 parameterBox" type="checkbox" pindex="" autocomplete="off"/>
+                    <input id="{{ parameter.name }}" class="ms-2 me-2 parameterBox" type="checkbox" pindex="" autocomplete="off"/>
                 {% endif %}
             </td>
         </tr>
