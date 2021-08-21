@@ -19,7 +19,21 @@ from dtf.serializers import WebhookSerializer
 from dtf.models import TestResult, Membership, Project, ReferenceSet, TestReference, Submission, ProjectSubmissionProperty, Webhook, WebhookLogEntry
 from dtf.functions import create_view_data_from_test_references, create_reference_query
 from dtf.forms import NewProjectForm, ProjectSettingsForm, ProjectSubmissionPropertyForm, MembershipForm, WebhookForm, NewUserForm, LoginForm, ResetPasswordForm, PasswordSetForm
-from dtf.permissions import ProjectPermissionRequiredMixin, get_model_permissions, check_required_model_role
+from dtf.permissions import ProjectPermissionRequiredMixin, has_required_model_role, get_model_permissions, check_required_model_role
+
+def _get_project_sidebar_items(user, project):
+    result = []
+    if has_required_model_role(user, project, Submission, 'view'):
+        result.append('submissions')
+    if has_required_model_role(user, project, ReferenceSet, 'view'):
+        result.append('references')
+    if has_required_model_role(user, project, Membership, 'view'):
+        result.append('members')
+    if has_required_model_role(user, project, Project, 'view') and \
+       has_required_model_role(user, project, ProjectSubmissionProperty, 'view') and \
+       has_required_model_role(user, project, Webhook, 'view'):
+        result.append('settings')
+    return result
 
 #
 # User views
@@ -74,6 +88,11 @@ class ProjectViewMixin():
 
     def get_project(self):
         return get_object_or_404(Project, slug=self.kwargs[self.project_slug_url_kwarg])
+
+    def get_context_data(self, **kwargs):
+        project = self.get_project()
+        return super().get_context_data(**kwargs,
+                                        project_sidebar_items=_get_project_sidebar_items(self.request.user, project))
 
 class ProjectListView(generic.ListView):
     template_name = 'dtf/view_projects.html'
@@ -226,6 +245,7 @@ def view_project_settings(request, project_slug):
         'property_form': property_form,
         'webhooks' : webhooks,
         'webhook_form': webhook_form,
+        'project_sidebar_items': _get_project_sidebar_items(request.user, project),
         'project_permissions': get_model_permissions(request.user, project, Project),
         'property_permissions': get_model_permissions(request.user, project, ProjectSubmissionProperty),
         'webhook_permissions': get_model_permissions(request.user, project, Webhook),
