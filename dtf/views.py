@@ -359,6 +359,11 @@ class ReferenceSetDetailView(ProjectViewMixin, ProjectPermissionRequiredMixin, g
     def get_queryset(self):
         return self.get_project().reference_sets.all()
 
+    def get_context_data(self, **kwargs):
+        project = self.get_project()
+        return super().get_context_data(**kwargs,
+                                        reference_set_permissions=get_model_permissions(self.request.user, project, ReferenceSet, operations=['delete']))
+
 class TestReferenceDetailView(ProjectViewMixin, ProjectPermissionRequiredMixin, generic.DetailView):
     template_name = 'dtf/test_reference_details.html'
     model = TestReference
