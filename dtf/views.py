@@ -317,6 +317,7 @@ class TestResultDetailView(ProjectViewMixin, ProjectPermissionRequiredMixin, gen
                                         test_reference=test_reference,
                                         test_result=test_result,
                                         property_values=property_values,
+                                        placeholder_range=range(10),
                                         #nav_data=nav_data,
                                         test_reference_permissions=get_model_permissions(self.request.user, project, TestReference))
 

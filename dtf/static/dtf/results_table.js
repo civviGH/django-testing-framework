@@ -2,6 +2,8 @@
 function buildResultsTable(projectSlug, testId, results, references, canUpdate) {
     let tableBody = $("#resultsTable").find('tbody');
 
+    tableBody.empty();
+
     results.forEach(function (result, resultIndex) {
 
         let reference = references[result['name']];

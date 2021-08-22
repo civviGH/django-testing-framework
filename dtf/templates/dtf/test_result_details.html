@@ -148,6 +148,18 @@ $('document').ready(function(){
     </tr>
     </thead>
     <tbody>
+    {% for i in placeholder_range %}
+        <tr class="placeholder-glow">
+            <td><span class="placeholder placeholder-lg w-100"></span></td>
+            <td><span class="placeholder placeholder-lg w-100"></span></td>
+            <td><span class="placeholder placeholder-lg w-100"></span></td>
+            <td><span class="placeholder placeholder-lg w-100"></span></td>
+            <td><span class="placeholder placeholder-lg w-100"></span></td>
+            {% if test_reference_permissions.add or test_reference_permissions.change %}
+            <td><span class="placeholder placeholder-lg w-100"></span></td>
+            {% endif %}
+        </tr>
+    {% endfor %}
     </tbody>
 </table>
 
