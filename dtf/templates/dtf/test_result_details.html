@@ -1,6 +1,15 @@
 {% extends 'dtf/page_with_two_sidebars.html' %}
 
+{% load static %}
 {% load dtf.custom_filters %}
+
+{% block head %}
+    <script src="{% static 'dtf/toast.js' %}"></script>
+    <script src="{% static 'dtf/duration.js' %}"></script>
+    <script src="{% static 'dtf/badge.js' %}"></script>
+    <script src="{% static 'dtf/test_result_value.js' %}"></script>
+    <script src="{% static 'dtf/results_table.js' %}"></script>
+{% endblock %}
 
 {% block containertype %}fluid{% endblock %}
 
@@ -16,98 +25,45 @@
 
 <script>
 
-var all_data = {{ data | to_js_dict }};
+const initialTestResultsData =  {{ test_result.results | to_js_dict }};
+{% if test_reference is not None %}
+const initialTestReferencesData = {{ test_reference.references | to_js_dict }};
+{% else %}
+const initialTestReferencesData = {};
+{% endif %}
 
-function postReferenceUpdate(reference_set_id){
-    var data = {
-        "test_name":"{{ test_result.name }}",
-        "default_source":{{ test_result.id }},
-        "references":{
-        }
-    }
-
-    parameterBoxes = document.getElementsByClassName("parameterBox");
-    for (var i = 0; i < parameterBoxes.length; i++) {
-        box = parameterBoxes[i];
-        if (parameterBoxes[i].checked) {
-            if (box.getAttribute("pindex") === "") {
-                data["references"][box.getAttribute("id")]= {
-                    "value": null
-                };
-            }
-            else {
-                data["references"][box.getAttribute("id")] = {
-                    "value": all_data[box.getAttribute("pindex")]["test"]["value"]
-                };
-            }
-        }
-    }
-
-    {% if test_reference %}
-    var url = `/api/projects/{{ project.id }}/references/${reference_set_id}/tests/{{ test_reference.id }}`
-    var method = "PATCH"
-    {% else %}
-    var url = `/api/projects/{{ project.id }}/references/${reference_set_id}/tests`
-    var method = "POST"
-    {% endif %}
-
-    $.ajax({
-        beforeSend: function(xhr, settings) {
-            xhr.setRequestHeader("X-CSRFToken", "{{ csrf_token }}");
-        },
-        type: method,
-        contentType: "application/json; charset=utf-8",
-        url: url,
-        data: JSON.stringify(data),
-        success: function(result) {
-            location.reload();
-        },
-        error: function(result) {
-            alert('error. log in console');
-            console.log(result);
-        }
-    });
+function onReferenceUpdateButton() {
+    updateReferences(
+        "{{ csrf_token }}",
+        "{{ test_result.name }}",
+        {{ test_result.id }},
+        initialTestResultsData,
+        {{ property_values | to_js_dict }},
+        {% if reference_set is not None %}
+            {{ reference_set.id }},
+        {% else %}
+            null,
+        {% endif %}
+        {% if test_reference is not None %}
+            {{ test_reference.id }},
+        {% else %}
+            null,
+        {% endif %}
+        "{{ project.slug }}")
 }
 
-function updateReferences(){
-    {% if reference_set %}
-    // there is a reference set already
-    postReferenceUpdate({{ reference_set.id }})
-    {% else %}
-    // there is no reference set yet so we try to create one
-    var data = {
-        "property_values" : {{ property_values|safe }}
-    }
-    var reference_set_id = null
-    $.ajax({
-        beforeSend: function(xhr, settings) {
-            xhr.setRequestHeader("X-CSRFToken", "{{ csrf_token }}");
-        },
-        type: 'POST',
-        contentType: "application/json; charset=utf-8",
-        url: "/api/projects/{{ project.id }}/references",
-        data: JSON.stringify(data),
-        success: function(result) {
-            postReferenceUpdate(result.id)
-        },
-        error: function(result) {
-            alert('error. log in console');
-            console.log(result);
-        }
-    });
-    {% endif %}
-}
-
-function toggleAllBoxes(){
-    box = document.getElementById("allBox");
-    parameterBoxes = document.getElementsByClassName("parameterBox");
-    for (var i = 0; i < parameterBoxes.length; i++) {
-        if (parameterBoxes[i].parentElement.parentElement.style.display == "none") {
-            continue;
-        }
-        parameterBoxes[i].checked = box.checked;
-    }
-}
+$('document').ready(function(){
+    buildResultsTable(
+        "{{ test_result.submission.project.slug }}",
+        {{ test_result.id }},
+        initialTestResultsData,
+        initialTestReferencesData,
+        {% if test_reference_permissions.add or test_reference_permissions.change %}
+        true
+        {% else %}
+        false
+        {% endif %});
+});
 
 </script>
 
@@ -139,6 +95,9 @@ function toggleAllBoxes(){
 
 <div class="bg-white pt-3 pb-1">
 
+<div id="toast-container" class="toast-container position-absolute content-wrapper p-3 top-0 start-50 translate-middle-x">
+</div>
+
 <div class="row">
     <div class="col">
         {% with not_successful=test_result.get_next_not_successful_test_id %}
@@ -152,7 +111,7 @@ function toggleAllBoxes(){
 
     {% if test_reference_permissions.add or test_reference_permissions.change %}
     <div class="col-md-auto">
-        <button class="btn btn-sm btn-primary btn-lg active" onclick="updateReferences()">Update selected references</button>
+        <button class="btn btn-sm btn-primary btn-lg active" onclick="onReferenceUpdateButton()">Update selected references</button>
     </div>
     {% endif %}
 </div>
@@ -163,7 +122,7 @@ function toggleAllBoxes(){
 
 </div>
 
-<table class="table table-striped table-hover table-sm tablesorter">
+<table id="resultsTable" class="table table-striped table-hover table-sm tablesorter">
     <thead>
     <tr>
         <th class="noselect fit">
@@ -183,46 +142,21 @@ function toggleAllBoxes(){
         </th>
         {% if test_reference_permissions.add or test_reference_permissions.change %}
         <th class="noselect fit sorter-false">
-            <input class="ms-2 me-2" id="allBox" type="checkbox" onclick="toggleAllBoxes()" autocomplete="off"/>
+            <input class="form-check-input ms-2 me-2" id="toggleAllReferencesCheckbox" type="checkbox" onclick="toggleAllBoxes()" autocomplete="off"/>
         </th>
         {% endif %}
     </tr>
     </thead>
     <tbody>
-    {% for parameter in data %}
-        <tr class="filtered-row">
-            <td class="filter-status">
-                {{ parameter.status|status_badge }}
-            </td>
-            <td>
-                <div class="d-flex">
-                    <div class="">
-                        <span>{{ parameter.name }}</span>
-                    </div>
-                    {% if parameter.test.value is not None and parameter.test.value.type == 'duration' or parameter.test.value.type == 'integer' or parameter.test.value.type == 'float' %}
-                    <div class="ms-auto">
-                        <a class="btn btn-outline-dark dtf-btn-xs me-1" href="{% url 'test_measurement_history' test_result.submission.project.slug test_result.id %}?measurement_name={{ parameter.name|urlencode:"" }}"><i class="bi bi-graph-up"></i></a>
-                    </div>
-                    {% endif %}
-                </div>
-            </td>
-            <td>
-                {{ parameter.test|as_measurement_entry:test_result.submission.project }}
-            </td>
-            <td>
-                {{ parameter.reference_on_submission|as_measurement_entry:test_result.submission.project }}
-            </td>
-            <td>
-                {{ parameter.reference|as_measurement_entry:test_result.submission.project }}
-            </td>
+    {% for i in placeholder_range %}
+        <tr class="placeholder-glow">
+            <td><span class="placeholder placeholder-lg w-100"></span></td>
+            <td><span class="placeholder placeholder-lg w-100"></span></td>
+            <td><span class="placeholder placeholder-lg w-100"></span></td>
+            <td><span class="placeholder placeholder-lg w-100"></span></td>
+            <td><span class="placeholder placeholder-lg w-100"></span></td>
             {% if test_reference_permissions.add or test_reference_permissions.change %}
-            <td>
-                {% if parameter.test %}
-                    <input id="{{ parameter.name }}" class="ms-2 me-2 parameterBox" type="checkbox" pindex="{{ forloop.counter0 }}" autocomplete="off"/>
-                {% else %}
-                    <input id="{{ parameter.name }}" class="ms-2 me-2 parameterBox" type="checkbox" pindex="" autocomplete="off"/>
-                {% endif %}
-            </td>
+            <td><span class="placeholder placeholder-lg w-100"></span></td>
             {% endif %}
         </tr>
     {% endfor %}

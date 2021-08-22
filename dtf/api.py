@@ -323,7 +323,8 @@ class ProjectReferenceSetTestReferenceDetail(generics.RetrieveUpdateDestroyAPIVi
             request.data['default_source'])
         try:
             test_references.save()
-            return Response({}, status=status.HTTP_200_OK)
+            serializer = self.get_serializer(test_references)
+            return Response(serializer.data, status=status.HTTP_200_OK)
         except Exception as err:
             return Response(str(err), status=status.HTTP_400_BAD_REQUEST)
 

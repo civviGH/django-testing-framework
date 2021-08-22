@@ -28,47 +28,6 @@ def fill_result_default_values(results, test_name, submission):
             result['status'] = 'unknown'
     return results
 
-def create_view_data_from_test_references(test_results, global_references):
-    view_data = []
-    for item in test_results:
-
-        if 'value' in item and item['value'] is not None:
-            test = {
-                'value': item['value']
-            }
-        else:
-            test = None
-
-        reference_on_submission = None
-        if 'reference' in item and item['reference'] is not None:
-            if reference_on_submission is None:
-                reference_on_submission = {}
-            reference_on_submission['value'] = item['reference']
-        if 'reference_source' in item and item['reference_source'] is not None:
-            if reference_on_submission is None:
-                reference_on_submission = {}
-            reference_on_submission['source'] = item['reference_source']
-
-        global_reference = global_references.get(item['name'])
-        if global_reference is not None:
-            reference  = {
-                'value': global_reference['value']
-            }
-            if 'source' in global_reference:
-                reference['source'] = global_reference['source']
-        else:
-            reference = None
-
-        view_data.append({
-            'name': item['name'],
-            'status': item['status'],
-            'test': test,
-            'reference_on_submission': reference_on_submission,
-            'reference': reference,
-        })
-
-    return view_data
-
 def get_project_by_id(project_id, queryset):
     """
     Retrieve a project by its Id. Returns None if no project is found.

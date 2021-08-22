@@ -17,7 +17,7 @@ from dtf.serializers import ProjectSubmissionPropertySerializer
 from dtf.serializers import WebhookSerializer
 
 from dtf.models import TestResult, Membership, Project, ReferenceSet, TestReference, Submission, ProjectSubmissionProperty, Webhook, WebhookLogEntry
-from dtf.functions import create_view_data_from_test_references, create_reference_query
+from dtf.functions import create_reference_query
 from dtf.forms import NewProjectForm, ProjectSettingsForm, ProjectSubmissionPropertyForm, MembershipForm, WebhookForm, NewUserForm, LoginForm, ResetPasswordForm, PasswordSetForm
 from dtf.permissions import ProjectPermissionRequiredMixin, has_required_model_role, get_model_permissions, check_required_model_role
 
@@ -310,21 +310,15 @@ class TestResultDetailView(ProjectViewMixin, ProjectPermissionRequiredMixin, gen
                     if not prop_value is None:
                         property_values[prop.name] = prop_value
 
-        if test_reference is not None:
-            references = test_reference.references
-        else:
-            references = {}
-
-        data = create_view_data_from_test_references(test_result.results, references)
         # nav_data = project.get_nav_data(test_result.name, test_result.submission.id)
         return super().get_context_data(**kwargs,
                                         project=project,
                                         reference_set=reference_set,
                                         test_reference=test_reference,
                                         test_result=test_result,
-                                        property_values=str(property_values),
+                                        property_values=property_values,
+                                        placeholder_range=range(10),
                                         #nav_data=nav_data,
-                                        data=data,
                                         test_reference_permissions=get_model_permissions(self.request.user, project, TestReference))
 
 class SubmissionDetailView(ProjectViewMixin, ProjectPermissionRequiredMixin, generic.DetailView):
