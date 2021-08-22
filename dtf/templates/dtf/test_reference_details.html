@@ -32,8 +32,21 @@
       </li>
       </ol>
     </div>
-    <div class="col-md-auto mt-2 mb-2 content-sidebar-dependent">
-        <button class="btn btn-outline-dark btn-sm" onclick="toggleContentSidebar()"><i class="bi bi-chevron-double-left"></i></button>
+    <div class="col-auto mt-2 mb-2">
+        <div class="row">
+            {% if test_reference_permissions.delete %}
+            <div class="col ps-0 pe-0 me-2">
+                <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteTestReferenceModal" title="Delete Test Reference">
+                    <i class="bi bi-trash"></i>
+                </button>
+            </div>
+            {% endif %}
+            <div class="col ps-0 pe-0 me-2 content-sidebar-dependent">
+                <button class="btn btn-outline-dark btn-sm " onclick="toggleContentSidebar()" title="Expand sidebar">
+                    <i class="bi bi-chevron-double-left"></i>
+                </button>
+            </div>
+        </div>
     </div>
   </nav>
 </div>
@@ -62,5 +75,29 @@
     {% endfor %}
     </tbody>
 </table>
+
+{% if test_reference_permissions.delete %}
+
+{% include 'dtf/delete_modal.html' with modal_id='deleteTestReference' object_type='Test Reference' object_name=test_reference.test_name %}
+
+<script>
+  function deleteTestReference() {
+    $.ajax({
+      beforeSend: function (xhr, settings) {
+          xhr.setRequestHeader("X-CSRFToken", "{{ csrf_token }}");
+      },
+      type: 'DELETE',
+      url: "{% url 'api_project_reference_test' test_reference.reference_set.project.id test_reference.reference_set.id test_reference.id %}",
+      success: function (data) {
+          window.location.replace("{% url 'reference_set_details' test_reference.reference_set.project.slug test_reference.reference_set.pk %}");
+      },
+      error: function () {
+          alert("Error!")
+      }
+    });
+  }
+</script>
+
+{% endif %}
 
 {% endblock %}
