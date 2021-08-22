@@ -87,8 +87,21 @@ $('document').ready(function(){
                 </li>
             </ol>
         </div>
-        <div class="col-md-auto mt-2 mb-2 content-sidebar-dependent">
-            <button class="btn btn-outline-dark btn-sm" onclick="toggleContentSidebar()"><i class="bi bi-chevron-double-left"></i></button>
+        <div class="col-auto mt-2 mb-2">
+            <div class="row">
+                {% if test_result_permissions.delete %}
+                <div class="col ps-0 pe-0 me-2">
+                    <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteTestModal" title="Delete test">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </div>
+                {% endif %}
+                <div class="col ps-0 pe-0 me-2 content-sidebar-dependent">
+                    <button class="btn btn-outline-dark btn-sm " onclick="toggleContentSidebar()" title="Expand sidebar">
+                        <i class="bi bi-chevron-double-left"></i>
+                    </button>
+                </div>
+            </div>
         </div>
     </nav>
 </div>
@@ -102,9 +115,9 @@ $('document').ready(function(){
     <div class="col">
         {% with not_successful=test_result.get_next_not_successful_test_id %}
         {% if not_successful is None %}
-        <a href="#" class="btn btn-sm btn-secondary me-1 disabled">Next not successful</a>  
+        <a href="#" class="btn btn-sm btn-secondary me-1 disabled">Next not successful</a>
         {% else %}
-        <a href="{% url 'test_result_details' test_result.submission.project.slug not_successful %}" class="ms-4 btn btn-sm btn-info active me-1">Next not successful</a>
+        <a href="{% url 'test_result_details' test_result.submission.project.slug not_successful %}" class="btn btn-sm btn-secondary active me-1">Next not successful</a>
         {% endif %}
         {% endwith %}
     </div>
@@ -162,5 +175,29 @@ $('document').ready(function(){
     {% endfor %}
     </tbody>
 </table>
+
+{% if test_result_permissions.delete %}
+
+{% include 'dtf/delete_modal.html' with modal_id='deleteTest' object_type='Test' object_name=test_result.name %}
+
+<script>
+  function deleteTest() {
+    $.ajax({
+      beforeSend: function (xhr, settings) {
+          xhr.setRequestHeader("X-CSRFToken", "{{ csrf_token }}");
+      },
+      type: 'DELETE',
+      url: "{% url 'api_project_submission_test' test_result.submission.project.id test_result.submission.id test_result.id %}",
+      success: function (data) {
+          window.location.replace("{% url 'submission_details' test_result.submission.project.slug test_result.submission.pk %}");
+      },
+      error: function () {
+          alert("Error!")
+      }
+    });
+  }
+</script>
+
+{% endif %}
 
 {% endblock %}

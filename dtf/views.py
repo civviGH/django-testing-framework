@@ -319,6 +319,7 @@ class TestResultDetailView(ProjectViewMixin, ProjectPermissionRequiredMixin, gen
                                         property_values=property_values,
                                         placeholder_range=range(10),
                                         #nav_data=nav_data,
+                                        test_result_permissions=get_model_permissions(self.request.user, project, TestResult, operations=['delete']),
                                         test_reference_permissions=get_model_permissions(self.request.user, project, TestReference))
 
 class SubmissionDetailView(ProjectViewMixin, ProjectPermissionRequiredMixin, generic.DetailView):
