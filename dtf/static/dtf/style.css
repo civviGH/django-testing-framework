@@ -277,7 +277,6 @@ td.date a {
     min-height: 48px;
 }
 .sidebar li a:hover,
-.sidebar a.toggle-sidebar-button:hover,
 .sidebar-header a:hover {
     color: #000000;
     background: rgba(0,0,0,0.04);
@@ -313,10 +312,21 @@ td.date a {
     min-height: 48px;
 }
 
+.sidebar-inner-scroll {
+    height: calc(100% - 48px);;
+    overflow: auto;
+}
+
 .sidebar .toggle-sidebar-button {
     transition: width 0.3s, left 0.3s;
     position: fixed;
     bottom: 0;
+    background-color: #fafafa;
+    box-shadow: inset -1px 0 0 #dbdbdb;
+}
+.sidebar a.toggle-sidebar-button:hover {
+    color: #000000;
+    background-color: #f0f0f0;
 }
 .navigation-sidebar .toggle-sidebar-button {
     width: 220px;
