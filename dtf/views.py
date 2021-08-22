@@ -330,6 +330,12 @@ class SubmissionDetailView(ProjectViewMixin, ProjectPermissionRequiredMixin, gen
     def get_queryset(self):
         return self.get_project().submissions.all()
 
+    def get_context_data(self, **kwargs):
+        project = self.get_project()
+        return super().get_context_data(**kwargs,
+                                        submission_permissions=get_model_permissions(self.request.user, project, Submission, operations=['delete']))
+
+
 class ProjectReferenceSetListView(ProjectViewMixin, ProjectPermissionRequiredMixin, generic.ListView):
     template_name = 'dtf/project_reference_sets.html'
     model = ReferenceSet

@@ -25,8 +25,21 @@
                 <li class="breadcrumb-item active" aria-current="page">{{submission.id}}</li>
             </ol>
         </div>
-        <div class="col-md-auto mt-2 mb-2 content-sidebar-dependent">
-            <button class="btn btn-outline-dark btn-sm" onclick="toggleContentSidebar()"><i class="bi bi-chevron-double-left"></i></button>
+        <div class="col-auto mt-2 mb-2">
+            <div class="row">
+                {% if submission_permissions.delete %}
+                <div class="col ps-0 pe-0 me-2">
+                    <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteSubmissionModal" title="Delete submission">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </div>
+                {% endif %}
+                <div class="col ps-0 pe-0 me-2 content-sidebar-dependent">
+                    <button class="btn btn-outline-dark btn-sm " onclick="toggleContentSidebar()" title="Expand sidebar">
+                        <i class="bi bi-chevron-double-left"></i>
+                    </button>
+                </div>
+            </div>
         </div>
     </nav>
 </div>
@@ -65,5 +78,33 @@
     {% endfor %}
     </tbody>
 </table>
+
+{% if submission_permissions.delete %}
+
+{% with object_id=submission.id|stringformat:"s" %}
+{% with object_name="Submission "|add:object_id %}
+    {% include 'dtf/delete_modal.html' with modal_id='deleteSubmission' object_type='Submission' object_name=object_name %}
+{% endwith %}
+{% endwith %}
+
+<script>
+  function deleteSubmission() {
+    $.ajax({
+      beforeSend: function (xhr, settings) {
+          xhr.setRequestHeader("X-CSRFToken", "{{ csrf_token }}");
+      },
+      type: 'DELETE',
+      url: "{% url 'api_project_submission' submission.project.id submission.id %}",
+      success: function (data) {
+          window.location.replace("{% url 'project_details' submission.project.slug %}");
+      },
+      error: function () {
+          alert("Error!")
+      }
+    });
+  }
+</script>
+
+{% endif %}
 
 {% endblock %}
