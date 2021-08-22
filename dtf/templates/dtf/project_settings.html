@@ -266,6 +266,64 @@
   </div>
 </section>
 
+{% if project_permissions.delete %}
+
+<hr>
+
+<section>
+  <div class="section-header">
+    <h3 data-bs-toggle="collapse" data-bs-target="#advanced" class="section-toggle collapsed" aria-expanded="false">Advanced</h3>
+    <p>Come here to delete your project.</p>
+  </div>
+
+  <div id="advanced" class="section-content collapse">
+    <p>
+      Deleting this project will delete all associated data like submissions, tests and references.
+    </p>
+    <p>
+      <b>Deleting this project cannot be undone!</b>
+    </p>
+    <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteProjectModel">
+      Delete project
+    </button>
+
+    <div class="modal fade" id="deleteProjectModel" tabindex="-1" aria-labelledby="deleteProjectModelLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="deleteProjectModelLabel">Delete Project</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <div class="alert alert-danger d-flex" role="alert">
+              <div class="me-3">
+                <i class="bi bi-exclamation-triangle" style="font-size: 2em"></i>
+              </div>
+              <div>
+                <p>
+                  Deleting this project will delete all associated data like submissions, tests and references.
+                </p>
+                <p class="mb-0">
+                  <b>Deleting this project cannot be undone!</b>
+                </p>
+              </div>
+            </div>
+            <div>
+              You are about to delete <code>{{ project.name }}</code>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="button" class="btn btn-danger" onclick="deleteProject()">Delete project</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% endif %}
+
 <script src="{% static 'dtf/dynamic_forms.js' %}"></script>
 
 <script>
@@ -498,6 +556,22 @@
                      {% endif %}
                     })
   {% endfor %}
+
+  function deleteProject() {
+    $.ajax({
+      beforeSend: function (xhr, settings) {
+          xhr.setRequestHeader("X-CSRFToken", "{{ csrf_token }}");
+      },
+      type: 'DELETE',
+      url: "/api/projects/{{ project.id }}",
+      success: function (data) {
+          window.location.replace("/");
+      },
+      error: function () {
+          alert("Error!")
+      }
+    });
+  }
 </script>
 
 
