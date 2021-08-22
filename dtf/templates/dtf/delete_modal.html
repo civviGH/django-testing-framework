@@ -1,0 +1,33 @@
+
+<div class="modal fade" id="{{modal_id}}Modal" tabindex="-1" aria-labelledby="{{modal_id}}ModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+        <div class="modal-header">
+        <h5 class="modal-title" id="{{modal_id}}ModalLabel">Delete {{ object_type }}</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+        <div class="alert alert-danger d-flex" role="alert">
+            <div class="me-3">
+            <i class="bi bi-exclamation-triangle" style="font-size: 2em"></i>
+            </div>
+            <div>
+                <p>
+                    Deleting this {{ object_type|lower }} will additionally delete all its associated data.
+                </p>
+                <p class="mb-0">
+                    <b>Deleting this {{ object_type|lower }} cannot be undone!</b>
+                </p>
+            </div>
+        </div>
+        <div>
+            You are about to delete: <code>{{ object_name }}</code>
+        </div>
+        </div>
+        <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-danger" onclick="{{ modal_id }}()">Delete {{ object_type }}</button>
+        </div>
+    </div>
+    </div>
+</div>
