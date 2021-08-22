@@ -5,6 +5,9 @@
 
 {% block head %}
     <script src="{% static 'dtf/echarts.min.js' %}"></script>
+    <script src="{% static 'dtf/duration.js' %}"></script>
+    <script src="{% static 'dtf/badge.js' %}"></script>
+    <script src="{% static 'dtf/test_result_value.js' %}"></script>
 {% endblock %}
 
 {% block containertype %}fluid{% endblock %}
@@ -53,42 +56,6 @@
 <div id="histrory_chart" class="mt-3" style="height:500px;"></div>
 
 <script type="text/javascript">
-    const iso8601DurationRegex = /^(?<sign>[-+]?)P(?:(?<days>\d+(\.\d+)?)D)?(?:T(?:(?<hours>\d+(\.\d+)?)H)?(?:(?<minutes>\d+(\.\d+)?)M)?(?:(?<seconds>\d+(\.\d+)?)S)?)?$/u
-
-    parseISO8601Duration = function (iso8601DurationStr) {
-        var matches = iso8601DurationRegex.exec(iso8601DurationStr);
-
-        return {
-            sign: matches.groups.sign === undefined ? '+' : matches.groups.sign,
-            days: matches.groups.days === undefined ? 0 : parseFloat(matches.groups.days),
-            hours: matches.groups.hours === undefined ? 0 : parseFloat(matches.groups.hours),
-            minutes: matches.groups.minutes === undefined ? 0 : parseFloat(matches.groups.minutes),
-            seconds: matches.groups.seconds === undefined ? 0 : parseFloat(matches.groups.seconds)
-        };
-    };
-    totalSeconds = function (duration) {
-        return (duration.sign === '-' ? -1 : 1) *
-            (duration.days*24*60*60 +
-            duration.hours*60*60 +
-            duration.minutes*60 + 
-            duration.seconds);
-    };
-    statusToBadgeClass = {
-        successful: "text-success border-success",
-        unstable:   "text-warning border-warning",
-        failed:     "text-danger border-danger",
-        broken:     "text-danger border-danger",
-        unknown:    "text-secondary border-secondary",
-        skip:       "text-info border-info"
-    }
-    statusToIconClass = {
-        successful: "bi-check-circle-fill",
-        unstable:   "bi-exclamation-circle-fill",
-        failed:     "bi-x-circle-fill",
-        broken:     "bi-dash-circle-fill",
-        unknown:    "bi-question-circle-fill",
-        skip:       "bi-slash-circle-fill"
-    }
 
     extractValue = function (value) {
         if (value == null){
@@ -133,13 +100,7 @@
                             .attr('class', 'me-1')
                             .text('{{ measurement_name }} - status')
                         )
-                        .append($('<span>')
-                            .attr('class', 'ms-auto badge border ' + statusToBadgeClass[params[0].data[3]])
-                            .append($('<i>')
-                                .attr('class', 'bi ' + statusToIconClass[params[0].data[3]])
-                            )
-                            .append(" " + params[0].data[3])
-                        )
+                        .append(renderStatusBadge(params[0].data[3]).addClass('ms-auto'))
                     )
                 params.forEach(function (entry) {
                     result.append($('<div>')
@@ -267,15 +228,10 @@
                     const date = new Date(data['created']);
                     $('#test-created').text(date.toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'medium', timeZone: '{{ display_timezone }}' }));
                     $('#test-status').empty()
-                        .append($('<span>')
-                            .attr('class', 'ms-auto badge border ' + statusToBadgeClass[data['status']])
-                            .append($('<i>')
-                                .attr('class', 'bi ' + statusToIconClass[data['status']])
-                            )
-                            .append(" " + data['status'])
-                        )
+                        .append(renderStatusBadge(data['status']));
                     const measurement = data['results'].find(element => element.name == '{{ measurement_name }}');
-                    $('#test-value').text(measurement['value']['data']);
+                    $('#test-value').empty()
+                        .append(renderTestResultValueData(measurement['value']));
                 },
                 error: function (jqXHR, textStatus, errorThrown) {
                     $('#test-created').removeClass("spinner-border spinner-border-sm text-secondary");
@@ -321,7 +277,8 @@
                     const date = new Date(data['created']);
                     $('#reference-created').text(date.toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'medium', timeZone: '{{ display_timezone }}' }));
                     const measurement = data['results'].find(element => element.name == '{{ measurement_name }}');
-                    $('#reference-value').text(measurement['value']['data']);
+                    $('#reference-value').empty()
+                        .append(renderTestResultValueData(measurement['value']));
                 },
                 error: function (jqXHR, textStatus, errorThrown) {
                     $('#reference-created').removeClass("spinner-border spinner-border-sm text-secondary");
