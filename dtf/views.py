@@ -373,6 +373,11 @@ class TestReferenceDetailView(ProjectViewMixin, ProjectPermissionRequiredMixin, 
     def get_queryset(self):
         return TestReference.objects.filter(reference_set__project=self.get_project())
 
+    def get_context_data(self, **kwargs):
+        project = self.get_project()
+        return super().get_context_data(**kwargs,
+                                        test_reference_permissions=get_model_permissions(self.request.user, project, TestReference, operations=['delete']))
+
 class TestMeasurementHistoryView(ProjectViewMixin, ProjectPermissionRequiredMixin, generic.DetailView):
     template_name = 'dtf/test_measurement_history.html'
     model = TestResult
