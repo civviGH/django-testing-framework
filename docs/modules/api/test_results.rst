@@ -17,8 +17,17 @@ List all test results from all submissions of a given project.
 
 An example could look as follows:
 
-.. literalinclude :: generated/test_results/projects_id_tests-GET-curl.sh
-   :language: bash
+.. tabs::
+
+   .. group-tab:: Bash
+
+      .. literalinclude :: generated/test_results/projects_id_tests-GET-curl.sh
+         :language: bash
+
+   .. group-tab:: PowerShell
+
+      .. literalinclude :: generated/test_results/projects_id_tests-GET-curl.ps1
+         :language: powershell
 
 which might give a result like this:
 
@@ -42,8 +51,17 @@ Retrieve a specific test result from a project.
 
 An example could look as follows:
 
-.. literalinclude :: generated/test_results/projects_id_tests_id-GET-curl.sh
-   :language: bash
+.. tabs::
+
+   .. group-tab:: Bash
+
+      .. literalinclude :: generated/test_results/projects_id_tests_id-GET-curl.sh
+         :language: bash
+
+   .. group-tab:: PowerShell
+
+      .. literalinclude :: generated/test_results/projects_id_tests_id-GET-curl.ps1
+         :language: powershell
 
 which might give a result like this:
 
@@ -66,8 +84,17 @@ Modify the fields of an existing test result. All fields have to be given (even 
 
 An example could look as follows:
 
-.. literalinclude :: generated/test_results/projects_id_tests_id-PUT-curl.sh
-   :language: bash
+.. tabs::
+
+   .. group-tab:: Bash
+
+      .. literalinclude :: generated/test_results/projects_id_tests_id-PUT-curl.sh
+         :language: bash
+
+   .. group-tab:: PowerShell
+
+      .. literalinclude :: generated/test_results/projects_id_tests_id-PUT-curl.ps1
+         :language: powershell
 
 which might give a result like this:
 
@@ -90,8 +117,17 @@ Deletes a test result from a project. This can not be undone!
 
 An example could look as follows:
 
-.. literalinclude :: generated/test_results/projects_id_tests_id-DELETE-curl.sh
-   :language: bash
+.. tabs::
+
+   .. group-tab:: Bash
+
+      .. literalinclude :: generated/test_results/projects_id_tests_id-DELETE-curl.sh
+         :language: bash
+
+   .. group-tab:: PowerShell
+
+      .. literalinclude :: generated/test_results/projects_id_tests_id-DELETE-curl.ps1
+         :language: powershell
 
 
 .. _api-test_results-history:
@@ -112,8 +148,17 @@ which has the same *reference relevant properties* as the submission the current
 
 An example could look as follows:
 
-.. literalinclude :: generated/test_results/projects_id_submissions_id_tests_id_history-GET-limited-curl.sh
-   :language: bash
+.. tabs::
+
+   .. group-tab:: Bash
+
+      .. literalinclude :: generated/test_results/projects_id_submissions_id_tests_id_history-GET-limited-curl.sh
+         :language: bash
+
+   .. group-tab:: PowerShell
+
+      .. literalinclude :: generated/test_results/projects_id_submissions_id_tests_id_history-GET-limited-curl.ps1
+         :language: powershell
 
 which might give a result like this:
 

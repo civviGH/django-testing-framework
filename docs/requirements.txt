@@ -3,3 +3,4 @@ djangorestframework
 jsonschema
 sphinx
 sphinx_hand_theme
+sphinx_tabs

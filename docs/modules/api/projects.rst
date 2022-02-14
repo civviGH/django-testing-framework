@@ -12,9 +12,17 @@ List all projects available on the server.
 
 An example could look as follows:
 
+.. tabs::
 
-.. literalinclude :: generated/projects/projects-GET-curl.sh
-   :language: bash
+   .. group-tab:: Bash
+
+      .. literalinclude :: generated/projects/projects-GET-curl.sh
+         :language: bash
+
+   .. group-tab:: PowerShell
+
+      .. literalinclude :: generated/projects/projects-GET-curl.ps1
+         :language: PowerShell
 
 which might give a result like this:
 
@@ -37,8 +45,17 @@ Create a new, global project on the server.
 
 An example could look as follows:
 
-.. literalinclude :: generated/projects/projects-POST-curl.sh
-   :language: bash
+.. tabs::
+
+   .. group-tab:: Bash
+
+      .. literalinclude :: generated/projects/projects-POST-curl.sh
+         :language: bash
+
+   .. group-tab:: PowerShell
+
+      .. literalinclude :: generated/projects/projects-POST-curl.ps1
+         :language: PowerShell
 
 which might give a result like this:
 
@@ -61,13 +78,31 @@ Retrieve a specific project from the server.
 
 An example using the id could look as follows:
 
-.. literalinclude :: generated/projects/projects_id-GET-primary_key-curl.sh
-   :language: bash
+.. tabs::
+
+   .. group-tab:: Bash
+
+      .. literalinclude :: generated/projects/projects_id-GET-primary_key-curl.sh
+         :language: bash
+
+   .. group-tab:: PowerShell
+
+      .. literalinclude :: generated/projects/projects_id-GET-primary_key-curl.ps1
+         :language: PowerShell
 
 or using the project slug:
 
-.. literalinclude :: generated/projects/projects_id-GET-slug-curl.sh
-   :language: bash
+.. tabs::
+
+   .. group-tab:: Bash
+
+      .. literalinclude :: generated/projects/projects_id-GET-slug-curl.sh
+         :language: bash
+
+   .. group-tab:: PowerShell
+
+      .. literalinclude :: generated/projects/projects_id-GET-slug-curl.ps1
+         :language: PowerShell
 
 which might give a result like this:
 
@@ -90,8 +125,17 @@ Modify the fields of an existing project. All fields have to be given (even the 
 
 An example could look as follows:
 
-.. literalinclude :: generated/projects/projects_id-PUT-curl.sh
-   :language: bash
+.. tabs::
+
+   .. group-tab:: Bash
+
+      .. literalinclude :: generated/projects/projects_id-PUT-curl.sh
+         :language: bash
+
+   .. group-tab:: PowerShell
+
+      .. literalinclude :: generated/projects/projects_id-PUT-curl.ps1
+         :language: PowerShell
 
 which might give a result like this:
 
@@ -114,8 +158,17 @@ Deletes a project and all associated data. This can not be undone!
 
 An example could look as follows:
 
-.. literalinclude :: generated/projects/projects_id-DELETE-curl.sh
-   :language: bash
+.. tabs::
+
+   .. group-tab:: Bash
+
+      .. literalinclude :: generated/projects/projects_id-DELETE-curl.sh
+         :language: bash
+
+   .. group-tab:: PowerShell
+
+      .. literalinclude :: generated/projects/projects_id-DELETE-curl.ps1
+         :language: PowerShell
 
 .. _api-projects-properties-list:
 
@@ -133,8 +186,17 @@ List all properties of a given project.
 
 An example could look as follows:
 
-.. literalinclude :: generated/projects/projects_id_properties-GET-curl.sh
-   :language: bash
+.. tabs::
+
+   .. group-tab:: Bash
+
+      .. literalinclude :: generated/projects/projects_id_properties-GET-curl.sh
+         :language: bash
+
+   .. group-tab:: PowerShell
+
+      .. literalinclude :: generated/projects/projects_id_properties-GET-curl.ps1
+         :language: PowerShell
 
 which might give a result like this:
 
@@ -157,8 +219,17 @@ Add a new property to a project.
 
 An example could look as follows:
 
-.. literalinclude :: generated/projects/projects_id_properties-POST-curl.sh
-   :language: bash
+.. tabs::
+
+   .. group-tab:: Bash
+
+      .. literalinclude :: generated/projects/projects_id_properties-POST-curl.sh
+         :language: bash
+
+   .. group-tab:: PowerShell
+
+      .. literalinclude :: generated/projects/projects_id_properties-POST-curl.ps1
+         :language: PowerShell
 
 which might give a result like this:
 
@@ -182,8 +253,17 @@ Retrieve a specific property from a project.
 
 An example could look as follows:
 
-.. literalinclude :: generated/projects/projects_id_properties_id-GET-curl.sh
-   :language: bash
+.. tabs::
+
+   .. group-tab:: Bash
+
+      .. literalinclude :: generated/projects/projects_id_properties_id-GET-curl.sh
+         :language: bash
+
+   .. group-tab:: PowerShell
+
+      .. literalinclude :: generated/projects/projects_id_properties_id-GET-curl.ps1
+         :language: PowerShell
 
 which might give a result like this:
 
@@ -206,8 +286,17 @@ Modify the fields of an existing properties. All fields have to be given (even t
 
 An example could look as follows:
 
-.. literalinclude :: generated/projects/projects_id_properties_id-PUT-curl.sh
-   :language: bash
+.. tabs::
+
+   .. group-tab:: Bash
+
+      .. literalinclude :: generated/projects/projects_id_properties_id-PUT-curl.sh
+         :language: bash
+
+   .. group-tab:: PowerShell
+
+      .. literalinclude :: generated/projects/projects_id_properties_id-PUT-curl.ps1
+         :language: PowerShell
 
 which might give a result like this:
 
@@ -230,8 +319,17 @@ Deletes a property from a project. This can not be undone!
 
 An example could look as follows:
 
-.. literalinclude :: generated/projects/projects_id_properties_id-DELETE-curl.sh
-   :language: bash
+.. tabs::
+
+   .. group-tab:: Bash
+
+      .. literalinclude :: generated/projects/projects_id_properties_id-DELETE-curl.sh
+         :language: bash
+
+   .. group-tab:: PowerShell
+
+      .. literalinclude :: generated/projects/projects_id_properties_id-DELETE-curl.ps1
+         :language: PowerShell
 
 List project members
 --------------------
@@ -247,8 +345,17 @@ List all members of a given project.
 
 An example could look as follows:
 
-.. literalinclude :: generated/projects/projects_id_members-GET-curl.sh
-   :language: bash
+.. tabs::
+
+   .. group-tab:: Bash
+
+      .. literalinclude :: generated/projects/projects_id_members-GET-curl.sh
+         :language: bash
+
+   .. group-tab:: PowerShell
+
+      .. literalinclude :: generated/projects/projects_id_members-GET-curl.ps1
+         :language: PowerShell
 
 which might give a result like this:
 
@@ -271,8 +378,17 @@ Add a new member to a project.
 
 An example could look as follows:
 
-.. literalinclude :: generated/projects/projects_id_members-POST-curl.sh
-   :language: bash
+.. tabs::
+
+   .. group-tab:: Bash
+
+      .. literalinclude :: generated/projects/projects_id_members-POST-curl.sh
+         :language: bash
+
+   .. group-tab:: PowerShell
+
+      .. literalinclude :: generated/projects/projects_id_members-POST-curl.ps1
+         :language: PowerShell
 
 which might give a result like this:
 
@@ -296,8 +412,17 @@ Retrieve a specific member from a project.
 
 An example could look as follows:
 
-.. literalinclude :: generated/projects/projects_id_members_id-GET-curl.sh
-   :language: bash
+.. tabs::
+
+   .. group-tab:: Bash
+
+      .. literalinclude :: generated/projects/projects_id_members_id-GET-curl.sh
+         :language: bash
+
+   .. group-tab:: PowerShell
+
+      .. literalinclude :: generated/projects/projects_id_members_id-GET-curl.ps1
+         :language: PowerShell
 
 which might give a result like this:
 
@@ -320,8 +445,17 @@ Modify the fields of an existing members. All fields have to be given (even the 
 
 An example could look as follows:
 
-.. literalinclude :: generated/projects/projects_id_members_id-PUT-curl.sh
-   :language: bash
+.. tabs::
+
+   .. group-tab:: Bash
+
+      .. literalinclude :: generated/projects/projects_id_members_id-PUT-curl.sh
+         :language: bash
+
+   .. group-tab:: PowerShell
+
+      .. literalinclude :: generated/projects/projects_id_members_id-PUT-curl.ps1
+         :language: PowerShell
 
 which might give a result like this:
 
@@ -344,7 +478,16 @@ Deletes a member from a project. This can not be undone!
 
 An example could look as follows:
 
-.. literalinclude :: generated/projects/projects_id_members_id-DELETE-curl.sh
-   :language: bash
+.. tabs::
+
+   .. group-tab:: Bash
+
+      .. literalinclude :: generated/projects/projects_id_members_id-DELETE-curl.sh
+         :language: bash
+
+   .. group-tab:: PowerShell
+
+      .. literalinclude :: generated/projects/projects_id_members_id-DELETE-curl.ps1
+         :language: PowerShell
 
 .. _api-projects-members-list:

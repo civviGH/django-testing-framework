@@ -13,8 +13,17 @@ List all users available on the server.
 An example could look as follows:
 
 
-.. literalinclude :: generated/users/users-GET-curl.sh
-   :language: bash
+.. tabs::
+
+   .. group-tab:: Bash
+
+      .. literalinclude :: generated/users/users-GET-curl.sh
+         :language: bash
+
+   .. group-tab:: PowerShell
+
+      .. literalinclude :: generated/users/users-GET-curl.ps1
+         :language: powershell
 
 which might give a result like this:
 
@@ -38,8 +47,17 @@ Retrieve a specific user from the server.
 
 An example could look as follows:
 
-.. literalinclude :: generated/users/users_id-GET-curl.sh
-   :language: bash
+.. tabs::
+
+   .. group-tab:: Bash
+
+      .. literalinclude :: generated/users/users_id-GET-curl.sh
+         :language: bash
+
+   .. group-tab:: PowerShell
+
+      .. literalinclude :: generated/users/users_id-GET-curl.ps1
+         :language: powershell
 
 which might give a result like this:
 
