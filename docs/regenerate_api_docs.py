@@ -80,16 +80,23 @@ def regenerate_docs():
             if len(query_params) > 0:
                 example_url += "?" + urllib.parse.urlencode(query_params)
 
-            with open(os.path.join(output_dir, example_name + "-curl.sh"), 'w') as file:
-                file.write(f'curl -X {method} \\\n')
-                if data is not None:
-                    data_lines = json.dumps(data, indent=4).splitlines()
-                    for i in range(1, len(data_lines)):
-                        data_lines[i] = '         ' + data_lines[i]
-                    data_str = "\n".join(data_lines)
-                    file.write(f'  --header "Content-Type: application/json" \\\n')
-                    file.write(f'  --data \'{data_str}\' \\\n')
-                file.write(f'  {example_url}')
+            def write_example_command(file_extension, line_continuation_char, force_double_quotes=False):
+                with open(os.path.join(output_dir, example_name + f"-curl{file_extension}"), 'w') as file:
+                    file.write(f'curl -X {method} {line_continuation_char}\n')
+                    if data is not None:
+                        data_lines = json.dumps(data, indent=4).splitlines()
+                        for i in range(1, len(data_lines)):
+                            data_lines[i] = '         ' + data_lines[i]
+                            if force_double_quotes:
+                                # In the PowerShell we want to replace single quotes by double quotes.
+                                data_lines[i] = data_lines[i].replace('"', '""')
+                        data_str = "\n".join(data_lines)
+                        file.write(f'  --header "Content-Type: application/json" {line_continuation_char}\n')
+                        file.write(f'  --data \'{data_str}\' {line_continuation_char}\n')
+                    file.write(f'  {example_url}')
+
+            write_example_command(".sh", "\\")
+            write_example_command(".ps1", "`", force_double_quotes=True)
 
             url =  example_url.replace(example_server_name, localhost_server_name)
             response = requests.request(method, url, json=data, auth=('root', 'test1234'))
