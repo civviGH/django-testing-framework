@@ -4,3 +4,4 @@ jsonschema
 sphinx
 sphinx_hand_theme
 sphinx_tabs
+pygments>=2.9
